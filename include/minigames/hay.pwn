@@ -1,5 +1,7 @@
 #include <a_samp>
 
+#include "include/awesome/a_minigames.inc"
+
 #define ConvertTime(%0,%1,%2,%3,%4) \
 	new \
 	    Float: %0 = floatdiv(%1, 60000) \
@@ -17,15 +19,19 @@
 #define SPEED_FACTOR 3000.0
 #define ID_HAY_OBJECT 3374
 
+//TODO add countdown
+
 forward MG_HAY_TimerMove();
 forward MG_HAY_FinishTimer(id, xq, yq, zq);
 forward MG_HAY_TDScore();
+forward MG_HAY_CountDown();
 
 new hayMatrix[HAY_X][HAY_Y][HAY_Z]; // if element is 0, then object does not exists, otherwise exists
 new hayObjects[HAY_B]; // array of hay objects
 
 new playersInHay[MAX_PLAYERS];
 new playerLevel[MAX_PLAYERS];
+new Text:hayTextdraw[MAX_PLAYERS];
 
 new speed_xy; // moving speed across x-y axis
 new speed_z; // moving speed across z axis
@@ -33,17 +39,9 @@ new Center_x;
 new Center_y; //WTF?
 
 new hayStartTime;
+new gameTimer = -1;
 
-public OnFilterScriptInit()
-{
-	MG_HAY_Init();
-	MG_HAY_PreparePlayer(0);
-	MG_HAY_Start();
-	MG_HAY_Destroy();
-	MG_HAY_TimerMove();
-	MG_HAY_FinishTimer(0,0,0,0);
-	return 1;
-}
+new hayCountdownTimer[countdownTimerInfo];
 
 stock MG_HAY_Init()
 {
@@ -67,6 +65,7 @@ stock MG_HAY_Init()
 	{
 	    playerLevel[i] = 0;
 	    playersInHay[i] = -1;
+		hayTextdraw[i] = -1;
 	}
 	
 	for (new i = 0; i < HAY_B; i++)
@@ -98,8 +97,19 @@ stock MG_HAY_PreparePlayer(playerid) // prepare player for MG
     }
     else
     {
-        SendClientMessageToAll(ORANGE, "Something goes wrong...=(");
+        SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong...=(");
     }
+}
+
+stock MG_HAY_PlayerLeftMinigame(playerid)
+{
+	if(playersInHay[playerid] != -1)
+    {
+		playersInHay[playerid] = -1;
+		TextDrawHideForPlayer(playerid, hayTextdraw[playerid]);
+		PlayerTextDrawDestroy(playerid, hayTextdraw[playerid]);
+		hayTextdraw[playerid] = -1;
+	}
 }
 
 stock MG_HAY_Start()
@@ -110,15 +120,52 @@ stock MG_HAY_Start()
     	{
             SetPlayerPos(i, 0, 6.5, 3.2);
 			SetPlayerFacingAngle(i, 135);
+			hayTextdraw[i] = TextDrawCreate(549.000000,397.000000,"~h~~y~Hay Minigame~n~~r~Level: ~w~0/31 ~n~~r~Time: ~w~00:00:00");
+			TextDrawFont(hayTextdraw[i] , 1);
+			TextDrawSetProportional(hayTextdraw[i], 1);
+			TextDrawSetOutline(hayTextdraw[i], 0);
+			TextDrawColor(hayTextdraw[i],-65281);
+			TextDrawLetterSize(hayTextdraw[i] ,0.310000,1.400000);
+			TextDrawTextSize(hayTextdraw[i] , 640.000000,0.000000);
+			TextDrawAlignment(hayTextdraw[i],1);
+			TextDrawSetShadow(hayTextdraw[i], 0);
+			TextDrawUseBox(hayTextdraw[i], 1);
+			TextDrawBoxColor(hayTextdraw[i], 255);
+			TextDrawBackgroundColor(hayTextdraw[i], 255);
+			
+			TogglePlayerControllable(i,0);
     	}
 	}
+	hayCountdownTimer[count] = 5;
+	hayCountdownTimer[timer] = SetTimer("MG_HAY_CountDown", 1000, 1);
+	
 	hayStartTime = GetTickCount(); // set game start time
-    SetTimer ("MG_HAY_TimerMove", 100, 0); // move hays
-	SetTimer ("MG_HAY_TDScore", 1000, 1);
+    SetTimer("MG_HAY_TimerMove", 100, 0); // move hays
+	gameTimer = SetTimer("MG_HAY_TDScore", 1000, 1);
 }
 
 stock MG_HAY_Destroy()
 {
+	if(gameTimer != -1) 
+	{
+		KillTimer(gameTimer);
+	}
+	for (new i = 0; i < HAY_B; i++)
+	{
+		if(IsValidObject(hayObjects[i]))
+		{
+			DestroyObject(hayObjects[i]);
+		}
+	}
+	
+	for (new i = 0; i < MAX_PLAYERS; i++)
+	{
+		if(playersInHay[i] != -1 && hayTextdraw[i] != -1)
+		{
+			TextDrawHideForPlayer(i, hayTextdraw[i]);
+			PlayerTextDrawDestroy(i, hayTextdraw[i]);
+		}
+	}
 }
 
 public MG_HAY_TimerMove()
@@ -135,7 +182,7 @@ public MG_HAY_TimerMove()
 	hayId = hayObjects[rand];
 	if(IsObjectMoving(hayId))
 	{
-		SetTimer("TimerMove", 200, 0);
+		SetTimer("MG_HAY_TimerMove", 200, 0);
 		return 1;
 	}
 	move = random(6);
@@ -144,7 +191,6 @@ public MG_HAY_TimerMove()
 	xq = floatround(x2/-4.0);
 	yq = floatround(y2/-4.0);
 	zq = floatround(z2/3.0)-1;
-	
 	if((move == 0) && (xq != 0) && (hayMatrix[xq-1][yq][zq] == 0))
 	{
 		timeFinish = 4000 - speed_xy * zq;
@@ -205,7 +251,7 @@ public MG_HAY_TimerMove()
 		hayMatrix[xq][yq][zq] = 1;
 		MoveObject(hayId, x2, y2, z2+3.0, moveSpeed);
 	}
-	SetTimer("TimerMove", 200, 0);
+	SetTimer("MG_HAY_TimerMove", 200, 0);
 	return 1;
 }
 
@@ -217,7 +263,13 @@ public MG_HAY_FinishTimer(id, xq, yq, zq) // set empty place in hay
 public MG_HAY_TDScore()
 {
     MG_HAY_updatePlayersLevel();
-	new level, string[256], PlayerN[MAX_PLAYER_NAME];
+	new level, string[256], PlayerN[MAX_PLAYER_NAME], playersRemaining;
+	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInHay[i] != -1) playersRemaining++;
+	if(playersRemaining == 0) 
+	{
+		SendClientMessageToAll(TEXT_COLOR_GREEN, "No winners of Hay minigame!");
+		MG_OnCurrentMinigameFinish();
+	}
 	for (new i=0; i<MAX_PLAYERS; i++)
 	{
 	    if(playersInHay[i] != -1 && IsPlayerConnected(i))
@@ -228,15 +280,14 @@ public MG_HAY_TDScore()
 			ConvertTime(var, totalRaceTime, tH, tM, tS);
 			level = playerLevel[i];
 			format(string,sizeof(string),"Hay Minigame~n~Level: %d/31 ~n~Time: %02d:%02d",level,tH,tM,tS);
-			GameTextForPlayer(i, string, 1000, 2);
+			TextDrawSetString(hayTextdraw[i], string);
+	      	TextDrawShowForPlayer(i, hayTextdraw[i]);
    			if(playerLevel[i] == 31)
 			{
 				GetPlayerName(i, PlayerN, sizeof(PlayerN));
 				format(string, sizeof(string),"%s Finished The Hay Minigame In %02d Min %02d Sec", PlayerN,tH,tM,tS);
-				SendClientMessageToAll(ORANGE, string);
-				SetPlayerPos(i,0,0,0);
-				SpawnPlayer(i);
-				//here we need to end minigame TODO
+				SendClientMessageToAll(TEXT_COLOR_GREEN, string);
+				MG_OnCurrentMinigameFinish();
    			}
 		}
 	}
@@ -262,4 +313,37 @@ stock MG_HAY_updatePlayersLevel()
 			}
 	    }
 	}
+}
+
+public MG_HAY_CountDown()
+{
+	if(hayCountdownTimer[count] == 0) 
+	{
+		KillTimer(hayCountdownTimer[timer]);
+		for (new i=0; i<MAX_PLAYERS; i++)
+		{
+			if(playersInHay[i] != -1 && IsPlayerConnected(i))
+			{
+				GameTextForAll("GO", 1000, 3);
+				TogglePlayerControllable(i,1);
+			}
+		}
+		return 1;
+	}
+
+	new string[128], number[8];
+	string = "~g~ Starting in ~y~";
+
+	format(number, sizeof(number), "%d", hayCountdownTimer[count]);
+	strins(string, number, strlen(string));
+	for (new i=0; i<MAX_PLAYERS; i++)
+	{
+	    if(playersInHay[i] != -1 && IsPlayerConnected(i))
+    	{
+			GameTextForPlayer(i, string, 1000, 3);
+		}
+	}
+
+	hayCountdownTimer[count]--;
+	return 1;
 }

@@ -2,11 +2,11 @@
 
 #include "include/awesome/a_minigames.inc"
 
-forward CountDown();
-forward StartFalling();
-forward SolarFall();
-forward LoseGame();
-forward SquareShake(id);
+forward MG_FALLOUT_CountDown();
+forward MG_FALLOUT_StartFalling();
+forward MG_FALLOUT_SolarFall();
+forward MG_FALLOUT_LoseGame();
+forward MG_FALLOUT_SquareShake(id);
 
 #define PANEL_STATE_ACTIVE 0
 #define PANEL_STATE_DESTROYED 1
@@ -28,19 +28,18 @@ enum countdownTimerInfo
 
 enum gameInfo
 {
-	timer
+	timer,
+	losetimer
 }
 
 new panel[100][panelInfo];
 new countdownTimer[countdownTimerInfo];
 new game[gameInfo];
 
-new players[MAX_PLAYERS];
+new playersInFallout[MAX_PLAYERS];
 
 public MG_FALLOUT_Init()
-{
-	SendClientMessageToAll(TEXT_COLOR_GREEN, "Fallout minigame initializing...");
-	
+{	
 	countdownTimer[count] = 5;
 	new cc = 0;
 	
@@ -145,20 +144,21 @@ public MG_FALLOUT_Init()
 	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
 	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
 	
-	new msg[64];format(msg, sizeof msg, "Total objects: %d", cc);
-	SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
-	
 	for(new i=0; i < 100; i++)
 	{
 		panel[i][panelState] = PANEL_STATE_ACTIVE;
 		panel[i][shakecount] = 0;
 		panel[i][shaketimer] = -1;
 	}
+	
+	for (new i = 0; i < MAX_PLAYERS; i++) // init players array
+	{
+	    playersInFallout[i] = -1;
+	}
 }
 
 public MG_FALLOUT_Destroy()
 {
-	SendClientMessageToAll(TEXT_COLOR_GREEN, "Fallout minigame destroying...");
 	for(new i = 0; i < 100; i++) 
 	{
 		if(IsValidObject(panel[i][objectid])) 
@@ -174,36 +174,74 @@ public MG_FALLOUT_Destroy()
 
 public MG_FALLOUT_Start()
 {
-	SendClientMessageToAll(TEXT_COLOR_GREEN, "Fallout minigame starting...");
-	//set player pos random
+	//set player pos random 2442-2482, -1660 = -1612
 	//controllable false
-	countdownTimer[timer] = SetTimer("CountDown", 1000, 1);
-	SetTimer("StartFalling", countdownTimer[count] * 1000, 0);
+	for (new i=0; i<MAX_PLAYERS; i++)
+	{
+	    if(playersInFallout[i] != -1 && IsPlayerConnected(i))
+    	{
+			//rand position
+			new distx = random(15);
+			new distxdirection = random(10);
+			new disty = random(15)
+			new distydirection = random(10);
+			new x = 2442;
+			new y = -1612;
+			if(distxdirection <= 4) x -= distx; else x += distx;
+			if(distydirection <= 4) y -= disty; else y += disty;
+			//new msg[128];
+			//format(msg, sizeof msg, "x: %f, y: %f", float(x), float(y));
+			//SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
+			//SetPlayerPos(i, 2473.2869, -1617.5422, 162.0000);
+			SetPlayerPos(i, float(x), float(y), 162.0000);
+			TogglePlayerControllable(i,0);
+		}
+	}
+	countdownTimer[timer] = SetTimer("MG_FALLOUT_CountDown", 1000, 1);
+	SetTimer("MG_FALLOUT_StartFalling", countdownTimer[count] * 1000, 0);
 	
 }
 
 public MG_FALLOUT_PreparePlayer(playerid)
 {
-	SendClientMessage(playerid, TEXT_COLOR_GREEN, "You are now prepared to minigame Fallout");
-	SetPlayerPos(playerid, 2473.2869, -1617.5422, 162.0000);
+	if(playersInFallout[playerid] == -1)
+    {
+		playersInFallout[playerid] = 1;
+		SetPlayerPos(playerid, 2473.2869, -1617.5422, 162.0000);
+	}
+	else
+	{
+		SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong...=( player already in game");
+	}
 }
 
-public StartFalling()
+stock MG_FALLOUT_PlayerLeftMinigame(playerid)
 {
-	game[timer] = SetTimer("SolarFall", 500, 1);
-	//SetTimer("LoseGame", 500, 1);
+	if(playersInFallout[playerid] != -1)
+    {
+		playersInFallout[playerid] = -1;
+	}
+}
+
+public MG_FALLOUT_StartFalling()
+{
+	game[timer] = SetTimer("MG_FALLOUT_SolarFall", 500, 1);
+	game[losetimer] = SetTimer("MG_FALLOUT_LoseGame", 500, 1);
 	return 1;
 }
 
-public SolarFall()
+public MG_FALLOUT_SolarFall()
 {
 	new go;
+	new playersRemaining;
 	for(new i = 0; i < 100; i++) if(panel[i][panelState] == PANEL_STATE_ACTIVE) go++;
-	new msg[64];format(msg, sizeof msg, "Panels remained: %d", go);
-	SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
-	if(go == 3)
+	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInFallout[i] != -1) playersRemaining++;
+	
+	if(go == 3 || playersRemaining == 0)
 	{
 		KillTimer(game[timer]);
+		KillTimer(game[losetimer]);
+		SendClientMessageToAll(TEXT_COLOR_GREEN, "Fallout minigame ended");
 		MG_OnCurrentMinigameFinish();
 		return 1;
 		//decide winners
@@ -214,19 +252,11 @@ public SolarFall()
 	if(panel[objid][panelState] == PANEL_STATE_DESTROYED) goto start;
 	
 	panel[objid][panelState] = PANEL_STATE_DESTROYED;
-
-	if(panel[objid][shaketimer] == -1)
-	{
-		panel[objid][shaketimer] = SetTimerEx("SquareShake", 100, 1, "i", objid);
-	}
-	else
-	{
-		SendClientMessageToAll(TEXT_COLOR_GREEN, "FUUUUUUU");
-	}
+	panel[objid][shaketimer] = SetTimerEx("MG_FALLOUT_SquareShake", 100, 1, "i", objid);
 	return 1;
 }
 
-public SquareShake(id)
+public MG_FALLOUT_SquareShake(id)
 {
 	switch(panel[id][shakecount])
 	{
@@ -263,13 +293,7 @@ public SquareShake(id)
 		case 100:
 		{
 			DestroyObject(panel[id][objectid]);
-			if(panel[id][shaketimer] != -1)
-			{
-				KillTimer(panel[id][shaketimer]);
-			} else 
-			{
-				SendClientMessageToAll(TEXT_COLOR_GREEN, "TRATATATATATA");
-			}
+			KillTimer(panel[id][shaketimer]);
 			panel[id][shaketimer] = -1;
 		}
 	}
@@ -278,12 +302,39 @@ public SquareShake(id)
 	return 1;
 }
 
-public CountDown()
+public MG_FALLOUT_LoseGame()
+{
+	new Float:X, Float:Y, Float:Z;
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+		if(playersInFallout[i] != -1 && IsPlayerConnected(i))
+		{
+			GetPlayerPos(i, X, Y, Z);
+
+			if(Z <= 158)
+			{
+				GameTextForPlayer(i, "~r~You lose!", 5000, 3);
+				playersInFallout[i] = -1;
+				MG_PlayerLeftMinigame(i);
+			}
+		}
+	}
+	return 1;
+}
+
+public MG_FALLOUT_CountDown()
 {
 	if(countdownTimer[count] == 0) 
 	{
 		KillTimer(countdownTimer[timer]);
-		GameTextForAll("GO", 1000, 3);
+		for (new i=0; i<MAX_PLAYERS; i++)
+		{
+			if(playersInFallout[i] != -1 && IsPlayerConnected(i))
+			{
+				GameTextForAll("GO", 1000, 3);
+				TogglePlayerControllable(i,1);
+			}
+		}
 		return 1;
 	}
 
@@ -292,7 +343,13 @@ public CountDown()
 
 	format(number, sizeof(number), "%d", countdownTimer[count]);
 	strins(string, number, strlen(string));
-	GameTextForAll(string, 1000, 3);
+	for (new i=0; i<MAX_PLAYERS; i++)
+	{
+	    if(playersInFallout[i] != -1 && IsPlayerConnected(i))
+    	{
+			GameTextForPlayer(i, string, 1000, 3);
+		}
+	}
 
 	countdownTimer[count]--;
 	return 1;

@@ -86,6 +86,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	
 	//minigames
 	dcmd(join, 4, cmdtext, 1);
+	dcmd(leave, 5, cmdtext, 1);
 	
 	//admin commands
 	dcmd(setscore, 8, cmdtext, 2);

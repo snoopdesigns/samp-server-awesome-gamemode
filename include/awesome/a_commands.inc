@@ -64,6 +64,12 @@ dcmd_join(playerid, params[])
 	return 1;
 }
 
+dcmd_leave(playerid, params[])
+{
+	MG_PlayerLeftMinigame(playerid);
+	return 1;
+}
+
 dcmd_restart(playerid, params[])
 {
 	SendRconCommand("changemode awesome-freeroam");

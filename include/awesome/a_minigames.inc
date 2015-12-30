@@ -4,6 +4,7 @@
 #define _minigames_included
 
 #include "include/minigames/fallout.pwn"
+#include "include/minigames/hay.pwn"
 
 #define MINIGAMES_INTERVAL_IN_MIN 1
 
@@ -11,10 +12,8 @@
 #define MG_STATUS_WAITING_PLAYERS 1 
 #define MG_STATUS_ACTIVE 2 
 
-//TODO check player already in minigame on join
-
 new DB:db_handle_mg;
-new minigames[1][] = {"Fallout"};
+new minigames[2][] = {"Fallout", "Hay"};
 new activeMinigame = -1;
 new mgStatus;
 new minigamePlayers[MAX_PLAYERS];
@@ -40,10 +39,11 @@ public MG_initNewMinigame()
 	{
 		new rand = random(sizeof(minigames));
 		new msg[128];
-		format(msg, sizeof msg, "Minigame %s initialized!", minigames[rand]);
+		format(msg, sizeof msg, "Minigame %s is about to start!", minigames[rand]);
+		SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
+		SendClientMessageToAll(TEXT_COLOR_GREEN, "Type /join to join minigame");
 		activeMinigame = rand;
 		mgStatus = MG_STATUS_WAITING_PLAYERS;
-		SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
 		SetTimer("MG_startCurrentMinigame", 10000, false);
 		MG_InitMinigameEnv();
 	}
@@ -55,33 +55,33 @@ public MG_initNewMinigame()
 
 public MG_startCurrentMinigame()
 {
-	mgStatus = MG_STATUS_ACTIVE;
-	new msg[128];
-	format(msg, sizeof msg, "Minigame %s started!", minigames[activeMinigame]);
-	SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
-	MG_Start();
+	new playerCount = 0;
+	for(new i = 0; i < MAX_PLAYERS; i++) if(minigamePlayers[i] != -1) playerCount++;
+	if(playerCount == 0)
+	{
+		new msg[128];
+		format(msg, sizeof msg, "Minigame %s does not started, because no players", minigames[activeMinigame]); 
+		SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
+		MG_OnCurrentMinigameFinish();		
+	}
+	else 
+	{
+		mgStatus = MG_STATUS_ACTIVE;
+		MG_Start();
+	}
 }
 
 public MG_OnCurrentMinigameFinish()
 {
 	if(activeMinigame != -1)
 	{
-		new msg[128];
-		format(msg, sizeof msg, "Minigame %s ended!", minigames[activeMinigame]);
-		SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
+		for(new i; i < MAX_PLAYERS; i++)
+		{
+			MG_PlayerLeftMinigame(i);
+		}
 		MG_DestroyMinigameEnv();
 		activeMinigame = -1;		
 		mgStatus = MG_STATUS_INACTIVE;
-		for(new i; i < MAX_PLAYERS; i++)
-		{
-			if(minigamePlayers[i] != -1)
-			{
-				RemovePlayerFromVehicle(i);
-				SpawnPlayer(i);
-			}
-			minigamePlayers[i] = -1;
-		}
-		
 		//schedule new minigame
 		SetTimer("MG_initNewMinigame", 10000/*MINIGAMES_INTERVAL_IN_MIN * 60 * 1000*/, false);
 	}
@@ -97,7 +97,7 @@ stock MG_InitMinigameEnv()
 		}
 		case 1:
 		{
-			SendClientMessageToAll(TEXT_COLOR_GREEN, "init minigame env 1");
+			MG_HAY_Init();
 		}
 		default:
 		{
@@ -116,7 +116,7 @@ stock MG_DestroyMinigameEnv()
 		}
 		case 1:
 		{
-			SendClientMessageToAll(TEXT_COLOR_GREEN, "destroy minigame env 1");
+			MG_HAY_Destroy();
 		}
 		default:
 		{
@@ -135,7 +135,7 @@ stock MG_Start()
 		}
 		case 1:
 		{
-			SendClientMessageToAll(TEXT_COLOR_GREEN, "start minigame 1");
+			MG_HAY_Start();
 		}
 		default:
 		{
@@ -146,6 +146,11 @@ stock MG_Start()
 
 stock MG_registerPlayerForMinigame(playerid)
 {
+	if(minigamePlayers[playerid] != -1)
+	{
+		SendClientMessage(playerid, TEXT_COLOR_GREEN, "You already in minigame!");
+		return;
+	}
 	if(mgStatus == MG_STATUS_WAITING_PLAYERS)
 	{
 		for(new i; i < MAX_PLAYERS; i++)
@@ -175,6 +180,38 @@ stock MG_registerPlayerForMinigame(playerid)
 	}
 }
 
+stock MG_PlayerLeftMinigame(playerid)
+{
+	switch (activeMinigame)
+	{
+		case 0:
+		{
+			MG_FALLOUT_PlayerLeftMinigame(playerid);
+		}
+		case 1:
+		{
+			MG_HAY_PlayerLeftMinigame(playerid);
+		}
+		case -1:
+		{
+			SendClientMessage(playerid, TEXT_COLOR_GREEN, "There is no active minigame.");
+			return 1;
+		}
+		default:
+		{
+			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Something goes wrong... =(");
+			return 1;
+		}
+	}
+	if(minigamePlayers[playerid] != -1)
+	{
+		RemovePlayerFromVehicle(playerid);
+		SetPlayerPos(playerid, 0,0,0);
+		SpawnPlayer(playerid);
+	}
+	minigamePlayers[playerid] = -1;
+}
+
 stock MG_minigamePreparationForPlayer(playerid)
 {
 	switch (activeMinigame)
@@ -185,7 +222,7 @@ stock MG_minigamePreparationForPlayer(playerid)
 		}
 		case 1:
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Preparation for minigame 1");
+			MG_HAY_PreparePlayer(playerid);
 		}
 		default:
 		{
