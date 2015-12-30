@@ -7,6 +7,7 @@
 
 #define SHOW_3D_LABELS FALSE
 #define PROP_UNBUYABLE_TIME_IN_MIN 5
+#define PROP_EARNINGS_INTERVAL_IN_MIN 5
 
 //TODO add map markers on properties
 
@@ -105,7 +106,7 @@ stock PROPS_initPropsSystem(db_handle)
 		playerTDs[i] = -1;
 		playerTDsTimer[i] = -1;
 	}
-	SetTimer("PROPS_PlayerEarningsTimer", 5000, true);
+	SetTimer("PROPS_PlayerEarningsTimer", PROP_EARNINGS_INTERVAL_IN_MIN * 60 * 1000, true);
 }
 
 stock PROPS_createProperty(playerid, propname[], cost, earnings)

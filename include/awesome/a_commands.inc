@@ -9,10 +9,11 @@
 
 stock CMDS_checkCommandAccess(playerid, level)
 {
+	if(IsPlayerAdmin(playerid)) return TRUE;
 	if(REG_getPlayerLevel(playerid) >= level)
 	{
 		return TRUE;
-	} else {
+	} else {		
 		if(REG_getPlayerLevel(playerid) == 0) //player is not registered
 		{
 			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Sorry, you need to register to access this command!");
@@ -57,9 +58,15 @@ dcmd_help(playerid, params[])
 	return 1;
 }
 
+dcmd_join(playerid, params[])
+{
+	MG_registerPlayerForMinigame(playerid);
+	return 1;
+}
+
 dcmd_restart(playerid, params[])
 {
-	SendRconCommand("changemode mygamemode");
+	SendRconCommand("changemode awesome-freeroam");
 	return 1;
 }
 
@@ -87,6 +94,23 @@ dcmd_setmoney(playerid, params[])
 	else
 	{
 		GivePlayerMoney(playerid, money);
+	}
+	return 1;
+}
+
+dcmd_setlevel(playerid, params[])
+{
+	new	newlevel[16];
+	if (sscanf(params, "s", newlevel)) 
+	{
+		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Usage: \"/setlevel <level>\"");
+	}
+	else
+	{
+		REG_updatePropertyOfPlayer(playerid, "PlayerLevel", newlevel);
+		new msg[128];
+		format(msg, sizeof msg, "Your level has been set to %s", newlevel);
+		SendClientMessage(playerid, TEXT_COLOR_GREEN, msg);
 	}
 	return 1;
 }

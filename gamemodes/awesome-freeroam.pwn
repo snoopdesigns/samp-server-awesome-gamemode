@@ -9,6 +9,7 @@
 #include "include/awesome/a_menus.inc"
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_props.inc"
+#include "include/awesome/a_minigames.inc"
 
 //TODO add a define to simplify format strings
 //TODO camera up when re-spawning vehicle
@@ -22,19 +23,20 @@ new DB:db_handle;
 main()
 {
 	print("\n----------------------------------");
-	print(" My TEST gamemode by snoopdesigns");
+	print(" Awesome Freeroam v0.1 by snoopdesigns");
 	print("----------------------------------\n");
 }
 
 public OnGameModeInit()
 {
-	SetGameModeText("TEST gamemode");
+	SetGameModeText("Awesome Freeroam v0.1");
 	
 	db_handle = DBUTILS_initDatabase("test.db");
 	REG_initRegSystem(db_handle);
 	MENUS_initMenusSystem();
 	VEH_initVehiclesSystem();
 	PROPS_initPropsSystem(db_handle);
+	MG_initMinigamesSystem(db_handle);
 	
 	//player classes
 	AddPlayerClass(0,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
@@ -78,14 +80,18 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	dcmd(car, 3, cmdtext, 1);
 	dcmd(repair, 6, cmdtext, 1);
 	
+	//properties commands
+	dcmd(cprop, 5, cmdtext, 2);
+	dcmd(buy, 3, cmdtext, 1);
+	
+	//minigames
+	dcmd(join, 4, cmdtext, 1);
+	
 	//admin commands
 	dcmd(setscore, 8, cmdtext, 2);
 	dcmd(setmoney, 8, cmdtext, 2);
 	dcmd(restart, 7, cmdtext, 2);
-	
-	//properties commands
-	dcmd(cprop, 5, cmdtext, 2);
-	dcmd(buy, 3, cmdtext, 1);
+	dcmd(setlevel, 8, cmdtext, 2);	
 	return 0;
 }
 
