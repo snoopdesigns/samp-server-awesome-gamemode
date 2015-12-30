@@ -8,12 +8,13 @@
 #include "include/awesome/a_dbutils.inc"
 #include "include/awesome/a_consts.inc"
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/colors.inc"
 
 //player vars
 #define PLAYER_VAR_LEVEL "LEVEL"
 
 //interval of saving player data to DB
-#define DB_SAVE_INTERVAL 60000
+#define DB_SAVE_INTERVAL 5 * 60 * 1000 //5 minutes
 
 #define PLAYER_PROP_PASSWORD "PlayerPassword"
 #define PLAYER_PROP_IP "PlayerIP"
@@ -64,7 +65,7 @@ stock REG_saveSinglePlayerData(playerid)
 	REG_updatePropertyOfPlayer(playerid, PLAYER_PROP_SCORE, intToStr(GetPlayerScore(playerid)));
 	REG_updatePropertyOfPlayer(playerid, PLAYER_PROP_MONEY, intToStr(GetPlayerMoney(playerid)));
 	REG_updatePropertyOfPlayer(playerid, PLAYER_PROP_LEVEL, intToStr(GetPVarInt(playerid, PLAYER_VAR_LEVEL)));
-	SendClientMessage(playerid, TEXT_COLOR_GREEN, "Your stats has been successfully saved to database.");
+	SendClientMessage(playerid, COLOR_GREEN, "* Your player stats has been saved to the database.");
 }
 
 stock REG_restoreSinglePlayerData(playerid)
@@ -94,7 +95,9 @@ stock REG_registerNewPlayer(playerid, password[])
 		{
 			// player successfully registered
 			SetPVarInt(playerid, PLAYER_VAR_LEVEL, 1);
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Registerred successfully!");
+			new msg[128];
+			format(msg, sizeof msg, "* New account %s has been registerred successfully", name);
+			SendClientMessage(playerid, COLOR_REG, msg);
 		}
 	} 
 	else 
@@ -102,14 +105,14 @@ stock REG_registerNewPlayer(playerid, password[])
 		if(REG_isPlayerAuthenticated(playerid) == TRUE)
 		{
 			// player is autheticated and requests register - bad
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "You are already registered.");
+			SendClientMessage(playerid, COLOR_ERROR, "* You are already registered.");
 		} 
 		else 
 		{
 			// player is not autheticated and requests register under existing name - bad
 			new string[256];
-			format(string, sizeof string, "This nickname: %s is registered already. If this is you nickname, please /login, otherwise please choose other nickname", name);
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, string);
+			format(string, sizeof string, "* This nickname: '%s' is registered already. If this is you nickname, please /login, otherwise please choose other nickname", name);
+			SendClientMessage(playerid, COLOR_REG, string);
 		}
 	}
 }
@@ -125,31 +128,28 @@ stock REG_loginPlayer(playerid, password[])
 		{
 			new password_from_db[128];
 			password_from_db = REG_getPropertyOfPlayer(playerid, PLAYER_PROP_IP);
-			new string[128];
-			format(string, sizeof string, "pwd from DB: '%s', entered: '%s'", password_from_db, password);
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, string);
 			if(strcmp(password_from_db, password) == 0)
 			{
-				SendClientMessage(playerid, TEXT_COLOR_GREEN, "Login using password successfull.");
+				SendClientMessage(playerid, COLOR_LAWNGREEN, "* Login using password successfull.");
 				//restore player props from db
 				REG_restoreSinglePlayerData(playerid);
 				//restore player props from db end
 			} else {
-				SendClientMessage(playerid, TEXT_COLOR_GREEN, "Login using password unsuccessfull.");
+				SendClientMessage(playerid, COLOR_ERROR, "* Login using password unsuccessfull.");
 			}
 		}
 		else 
 		{
 			// players nickname is not registered in db
 			new string[256];
-			format(string, sizeof string, "This nickname: %s is not registered. Please use /register to register your nickname", name);
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, string);
+			format(string, sizeof string, "* Your nickname: '%s' is not registered. Please use /register to register your nickname", name);
+			SendClientMessage(playerid, COLOR_REG, string);
 		}
 	}
 	else 
 	{
 		// player already authenticated
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "You are already logged in.");
+		SendClientMessage(playerid, COLOR_REG, "* You are already logged in.");
 	}
 }
 
@@ -176,8 +176,9 @@ stock REG_authenticatePlayerOnConnect(playerid)
 {
 	SetPVarInt(playerid, PLAYER_VAR_LEVEL, 0); // set default level to 0
 	
-	new player_ip[128];
+	new player_ip[128], player_name[256];
    	GetPlayerIp(playerid, player_ip, sizeof(player_ip));
+	GetPlayerName(playerid, player_name, sizeof(player_name));
 	
 	if(REG_checkPlayerRegistered(playerid) == TRUE)
 	{
@@ -187,14 +188,16 @@ stock REG_authenticatePlayerOnConnect(playerid)
 		if(strcmp(ip_from_db, player_ip) == 0)
 		{
 			REG_restoreSinglePlayerData(playerid);
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "IP auto-login successfull");
+			new msg[128];
+			format(msg, sizeof msg, "* IP auto-login successfull. Welcome back, %s!", player_name);
+			SendClientMessage(playerid, COLOR_REG, msg);
 		} else {
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "IP auto-login failed. Please type login using your password.");
+			SendClientMessage(playerid, COLOR_ERROR, "* IP auto-login failed. Please /login using your password.");
 		}
 	}
 	else 
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Your name is not registered. Please register using /register [password]");
+		SendClientMessage(playerid, COLOR_REG, "* Your name is not registered. Please register using /register <password>");
 	}
 }
 

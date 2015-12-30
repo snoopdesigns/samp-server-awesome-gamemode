@@ -6,7 +6,8 @@
 #include "include/minigames/fallout.pwn"
 #include "include/minigames/hay.pwn"
 
-#define MINIGAMES_INTERVAL_IN_MIN 1
+#define MINIGAMES_INTERVAL 4 * 60 * 1000 // 4 minutes
+#define MINIGAMES_START_DELAY 15000 // 15 secs
 
 #define MG_STATUS_INACTIVE 0 
 #define MG_STATUS_WAITING_PLAYERS 1 
@@ -25,7 +26,7 @@ forward MG_startCurrentMinigame();
 stock MG_initMinigamesSystem(db_handle)
 {
 	db_handle_mg = db_handle;
-	SetTimer("MG_initNewMinigame", 10000/*MINIGAMES_INTERVAL_IN_MIN * 60 * 1000*/, false);
+	SetTimer("MG_initNewMinigame", MINIGAMES_INTERVAL, false);
 	mgStatus = MG_STATUS_INACTIVE;
 	for(new i; i < MAX_PLAYERS; i++)
 	{
@@ -39,17 +40,17 @@ public MG_initNewMinigame()
 	{
 		new rand = random(sizeof(minigames));
 		new msg[128];
-		format(msg, sizeof msg, "Minigame %s is about to start!", minigames[rand]);
-		SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
-		SendClientMessageToAll(TEXT_COLOR_GREEN, "Type /join to join minigame");
+		format(msg, sizeof msg, "** Minigame %s is about to start...", minigames[rand]);
+		SendClientMessageToAll(COLOR_MG, msg);
+		SendClientMessageToAll(COLOR_MG, "* Type /join if you wish to join this minigame");
 		activeMinigame = rand;
 		mgStatus = MG_STATUS_WAITING_PLAYERS;
-		SetTimer("MG_startCurrentMinigame", 10000, false);
+		SetTimer("MG_startCurrentMinigame", MINIGAMES_START_DELAY, false);
 		MG_InitMinigameEnv();
 	}
 	else
 	{
-		SendClientMessageToAll(TEXT_COLOR_GREEN, "There is still active MG!");
+		SendClientMessageToAll(COLOR_ERROR, "There is still active MG!");
 	}
 }
 
@@ -60,8 +61,8 @@ public MG_startCurrentMinigame()
 	if(playerCount == 0)
 	{
 		new msg[128];
-		format(msg, sizeof msg, "Minigame %s does not started, because no players", minigames[activeMinigame]); 
-		SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
+		format(msg, sizeof msg, "* Minigame %s does not started, because of nobody comes.", minigames[activeMinigame]); 
+		SendClientMessageToAll(COLOR_MG, msg);
 		MG_OnCurrentMinigameFinish();		
 	}
 	else 
@@ -83,7 +84,7 @@ public MG_OnCurrentMinigameFinish()
 		activeMinigame = -1;		
 		mgStatus = MG_STATUS_INACTIVE;
 		//schedule new minigame
-		SetTimer("MG_initNewMinigame", 10000/*MINIGAMES_INTERVAL_IN_MIN * 60 * 1000*/, false);
+		SetTimer("MG_initNewMinigame", MINIGAMES_INTERVAL, false);
 	}
 }
 
@@ -101,7 +102,7 @@ stock MG_InitMinigameEnv()
 		}
 		default:
 		{
-			SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong... =(");
+			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
 		}
 	}
 }
@@ -120,7 +121,7 @@ stock MG_DestroyMinigameEnv()
 		}
 		default:
 		{
-			SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong... =(");
+			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
 		}
 	}
 }
@@ -139,7 +140,7 @@ stock MG_Start()
 		}
 		default:
 		{
-			SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong... =(");
+			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
 		}
 	}
 }
@@ -148,7 +149,7 @@ stock MG_registerPlayerForMinigame(playerid)
 {
 	if(minigamePlayers[playerid] != -1)
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "You already in minigame!");
+		SendClientMessage(playerid, COLOR_MG, "* You already in minigame!");
 		return;
 	}
 	if(mgStatus == MG_STATUS_WAITING_PLAYERS)
@@ -161,8 +162,8 @@ stock MG_registerPlayerForMinigame(playerid)
 			}
 		}
 		new msg[128];
-		format(msg, sizeof msg, "You joined %s minigame", minigames[activeMinigame]);
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, msg);
+		format(msg, sizeof msg, "* You joined %s minigame", minigames[activeMinigame]);
+		SendClientMessage(playerid, COLOR_MG, msg);
 		
 		// prepare player for minigame
 		MG_minigamePreparationForPlayer(playerid);
@@ -171,11 +172,13 @@ stock MG_registerPlayerForMinigame(playerid)
 	{
 		if(mgStatus == MG_STATUS_INACTIVE)
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "No active minigames for now!");
+			SendClientMessage(playerid, COLOR_ERROR, "* There is no active minigames for now!");
 		} 
 		else 
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Minigame already started!");
+			new msg[128];
+			format(msg, sizeof msg, "* Minigame %s already started", minigames[activeMinigame]);
+			SendClientMessage(playerid, COLOR_MG, msg);
 		}
 	}
 }
@@ -194,12 +197,12 @@ stock MG_PlayerLeftMinigame(playerid)
 		}
 		case -1:
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "There is no active minigame.");
+			SendClientMessage(playerid, COLOR_ERROR, "* There is no active minigames for now!");
 			return 1;
 		}
 		default:
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Something goes wrong... =(");
+			SendClientMessage(playerid, COLOR_ERROR, "* Something goes wrong... =(");
 			return 1;
 		}
 	}
@@ -226,7 +229,7 @@ stock MG_minigamePreparationForPlayer(playerid)
 		}
 		default:
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Something goes wrong... =(");
+			SendClientMessage(playerid, COLOR_ERROR, "Something goes wrong... =(");
 		}
 	}
 }

@@ -3,6 +3,8 @@
 #endif
 #define _vehutils_included
 
+#include "include/awesome/colors.inc"
+
 #define VEH_CONTROL_TIMER_INTERVAL 3000
 
 //player vars
@@ -75,7 +77,7 @@ stock VEH_OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 stock VEH_RepairPlayerVehicle(playerid)
 {
 	RepairVehicle(GetPlayerVehicleID(playerid));
-	SendClientMessage(playerid, TEXT_COLOR_GREEN, "Your vehicle has been repaired!");
+	SendClientMessage(playerid, COLOR_GREEN, "* Your vehicle has been repaired!");
 }
 
 stock VEH_SpawnPlayerVehicle(playerid, modelid) 

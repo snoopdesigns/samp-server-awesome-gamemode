@@ -189,10 +189,6 @@ public MG_FALLOUT_Start()
 			new y = -1612;
 			if(distxdirection <= 4) x -= distx; else x += distx;
 			if(distydirection <= 4) y -= disty; else y += disty;
-			//new msg[128];
-			//format(msg, sizeof msg, "x: %f, y: %f", float(x), float(y));
-			//SendClientMessageToAll(TEXT_COLOR_GREEN, msg);
-			//SetPlayerPos(i, 2473.2869, -1617.5422, 162.0000);
 			SetPlayerPos(i, float(x), float(y), 162.0000);
 			TogglePlayerControllable(i,0);
 		}
@@ -211,7 +207,7 @@ public MG_FALLOUT_PreparePlayer(playerid)
 	}
 	else
 	{
-		SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong...=( player already in game");
+		SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong...=( player already in game");
 	}
 }
 
@@ -241,7 +237,7 @@ public MG_FALLOUT_SolarFall()
 	{
 		KillTimer(game[timer]);
 		KillTimer(game[losetimer]);
-		SendClientMessageToAll(TEXT_COLOR_GREEN, "Fallout minigame ended");
+		SendClientMessageToAll(COLOR_MG, "* Fallout minigame ended");
 		MG_OnCurrentMinigameFinish();
 		return 1;
 		//decide winners

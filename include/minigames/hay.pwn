@@ -97,7 +97,7 @@ stock MG_HAY_PreparePlayer(playerid) // prepare player for MG
     }
     else
     {
-        SendClientMessageToAll(TEXT_COLOR_GREEN, "Something goes wrong...=(");
+        SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong...=(");
     }
 }
 
@@ -267,7 +267,7 @@ public MG_HAY_TDScore()
 	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInHay[i] != -1) playersRemaining++;
 	if(playersRemaining == 0) 
 	{
-		SendClientMessageToAll(TEXT_COLOR_GREEN, "No winners of Hay minigame!");
+		SendClientMessageToAll(COLOR_MG, "* No winners of Hay minigame!");
 		MG_OnCurrentMinigameFinish();
 	}
 	for (new i=0; i<MAX_PLAYERS; i++)
@@ -285,8 +285,8 @@ public MG_HAY_TDScore()
    			if(playerLevel[i] == 31)
 			{
 				GetPlayerName(i, PlayerN, sizeof(PlayerN));
-				format(string, sizeof(string),"%s Finished The Hay Minigame In %02d Min %02d Sec", PlayerN,tH,tM,tS);
-				SendClientMessageToAll(TEXT_COLOR_GREEN, string);
+				format(string, sizeof(string),"* %s Finished The Hay Minigame In %02d Min %02d Sec", PlayerN,tH,tM,tS);
+				SendClientMessageToAll(COLOR_MG, string);
 				MG_OnCurrentMinigameFinish();
    			}
 		}

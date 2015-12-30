@@ -4,12 +4,14 @@
 #define _props_included
 
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/colors.inc"
 
 #define SHOW_3D_LABELS FALSE
 #define PROP_UNBUYABLE_TIME_IN_MIN 5
 #define PROP_EARNINGS_INTERVAL_IN_MIN 5
 
 //TODO add map markers on properties
+//TODO message to all when prop purchased
 
 forward PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z);
 forward PROPS_PlayerEarningsTimer();
@@ -42,6 +44,13 @@ public PROPS_PlayerEarningsTimer()
 	db_result = DBUTILS_runSelectQuery(db_handle_reg, "SELECT * FROM `properties`");
 	if(DBUTILS_getResultsetSize(db_result) > 0)
 	{
+		new earns[MAX_PLAYERS];
+		new earnCount[MAX_PLAYERS];
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+			earns[i] = 0;
+			earnCount[i] = 0;
+		}
 		do
 		{
 			new propowner[128];
@@ -50,13 +59,20 @@ public PROPS_PlayerEarningsTimer()
 			new playerid = GetPlayerIdByName(propowner);
 			if(playerid != -1) 
 			{
-				GivePlayerMoney(playerid, earnings);
-				new msg[128];
-				format(msg, sizeof msg, "You earned %d$ from your property!", earnings);
-				//TODO summ earnings for player
-				SendClientMessage(playerid, TEXT_COLOR_GREEN, msg);
+				//GivePlayerMoney(playerid, earnings);
+				earns[playerid] += earnings;
+				earnCount[playerid] ++;
 			}
 		} while(DBUTILS_nextItem(db_result));
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+			if(earnCount[i] > 0)
+			{	
+				new msg[128];
+				format(msg, sizeof msg, "* You earned %d$ from your [%d] properties!", earns[i], earnCount[i]);
+				SendClientMessage(i, COLOR_PROPS, msg);
+			}
+		}
 	}
 	DBUTILS_runSelectQueryClear(db_result);
 }
@@ -115,7 +131,7 @@ stock PROPS_createProperty(playerid, propname[], cost, earnings)
 	GetPlayerPos(playerid, x, y, z);
 	new id = CreatePickup(1273, 1, x, y, z, -1);
 	if(SHOW_3D_LABELS) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
-	SendClientMessage(playerid, TEXT_COLOR_GREEN, "Property created successfully!");
+	SendClientMessage(playerid, COLOR_PROPS, "* Property created successfully!");
 	
 	static query[256];
 	format(query, sizeof query, "INSERT INTO `properties` (`ID`,`PropName`, `PropCost`, `PropEarnings`, `PropOwner`, `PropLocX`, `PropLocY`, `PropLocZ`) VALUES (%d,'%s',%d,%d,'',%f,%f,%f)", 
@@ -152,7 +168,7 @@ stock PROPS_buyPropertyForPlayer(playerid)
 				GetPlayerName(playerid, player_name, sizeof(player_name));
 				if(strlen(propowner) != 0 && strcmp(player_name, propowner, false) == 0) 
 				{
-					SendClientMessage(playerid, TEXT_COLOR_GREEN, "This property is already yours!");
+					SendClientMessage(playerid, COLOR_ERROR, "* This property is already yours!");
 					return;
 				}
 				new purchaseTime = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropPurchaseTime"));
@@ -165,16 +181,18 @@ stock PROPS_buyPropertyForPlayer(playerid)
 						format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='%s',`PropPurchaseTime`=%d WHERE `ID`=%d", player_name, gettime(), propid);
 						DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
 						new msg[128];
-						format(msg, sizeof msg, "Property %s successfully purchased!", propname);
-						SendClientMessage(playerid, TEXT_COLOR_GREEN, msg);
+						format(msg, sizeof msg, "* Property %s successfully purchased!", propname);
+						SendClientMessage(playerid, COLOR_PROPS, msg);
+						format(msg, sizeof msg, "* %s purchased property '%s' for %d$", player_name, propname, cost);
+						SendClientMessageToAll(COLOR_PROPS, msg);
 					}
 					else {
-						SendClientMessage(playerid, TEXT_COLOR_GREEN, "You have not enough money to buy this property!");
+						SendClientMessage(playerid, COLOR_ERROR, "* You have not enough money to buy this property!");
 					}
 				}
 				else 
 				{
-					SendClientMessage(playerid, TEXT_COLOR_GREEN, "You are not allowed to buy this prop yet.");
+					SendClientMessage(playerid, COLOR_ERROR, "* You are not allowed to buy this prop yet.");
 				}
 			}
 		} while(DBUTILS_nextItem(db_result));

@@ -7,6 +7,8 @@
 #include "include/awesome/a_menus.inc"
 #include "include/awesome/a_props.inc"
 
+#include "include/awesome/colors.inc"
+
 stock CMDS_checkCommandAccess(playerid, level)
 {
 	if(IsPlayerAdmin(playerid)) return TRUE;
@@ -16,14 +18,14 @@ stock CMDS_checkCommandAccess(playerid, level)
 	} else {		
 		if(REG_getPlayerLevel(playerid) == 0) //player is not registered
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Sorry, you need to register to access this command!");
+			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you need to register to access this command!");
 		}
 		else 
 		{
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, "Sorry, you have not access to this command!");
+			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you have not access to this command!");
 			new string[128];
-			format(string, sizeof string, "Required player level: %d", level);
-			SendClientMessage(playerid, TEXT_COLOR_GREEN, string);
+			format(string, sizeof string, "* Required player level: %d", level);
+			SendClientMessage(playerid, COLOR_ERROR, string);
 		}
 		return FALSE;
 	}
@@ -36,7 +38,7 @@ dcmd_cprop(playerid, params[])
 	new earnings;
 	if (sscanf(params, "sii", propname, cost, earnings)) 
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Usage: \"/cprop <prop_name> <cost> <earnings>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cprop <prop_name> <cost> <earnings>\"");
 	}
 	else
 	{
@@ -81,7 +83,7 @@ dcmd_setscore(playerid, params[])
 	new	score;
 	if (sscanf(params, "i", score)) 
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Usage: \"/setscore <score>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setscore <score>\"");
 	}
 	else
 	{
@@ -95,7 +97,7 @@ dcmd_setmoney(playerid, params[])
 	new	money;
 	if (sscanf(params, "i", money)) 
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Usage: \"/setmoney <money>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setmoney <money>\"");
 	}
 	else
 	{
@@ -109,14 +111,14 @@ dcmd_setlevel(playerid, params[])
 	new	newlevel[16];
 	if (sscanf(params, "s", newlevel)) 
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Usage: \"/setlevel <level>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setlevel <level>\"");
 	}
 	else
 	{
 		REG_updatePropertyOfPlayer(playerid, "PlayerLevel", newlevel);
 		new msg[128];
-		format(msg, sizeof msg, "Your level has been set to %s", newlevel);
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, msg);
+		format(msg, sizeof msg, "* Your level has been set to %s", newlevel);
+		SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
 	}
 	return 1;
 }
@@ -132,7 +134,7 @@ dcmd_v(playerid, params[])
 	new	modelid;
 	if (sscanf(params, "i", modelid)) 
 	{
-		SendClientMessage(playerid, TEXT_COLOR_GREEN, "Usage: \"/v <modelid>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/v <modelid>\"");
 	}
 	else
 	{
@@ -152,7 +154,7 @@ dcmd_register(playerid, params[])
 	new	password[64];
 	if (sscanf(params, "s", password)) 
 	{
-		SendClientMessage(playerid, 0xFF0000AA, "Usage: \"/register <password>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/register <password>\"");
 	}
 	else
 	{
@@ -166,7 +168,7 @@ dcmd_login(playerid, params[])
 	new	password[64];
 	if (sscanf(params, "s", password)) 
 	{
-		SendClientMessage(playerid, 0xFF0000AA, "Usage: \"/login <password>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/login <password>\"");
 	}
 	else
 	{

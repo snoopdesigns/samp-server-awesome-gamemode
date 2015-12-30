@@ -61,7 +61,7 @@ public OnPlayerRequestClass(playerid, classid)
 
 public OnPlayerConnect(playerid)
 {
-    SendClientMessage(playerid, TEXT_COLOR_GREEN, "Welcome to our new server!");
+    //SendClientMessage(playerid, TEXT_COLOR_GREEN, "Welcome to our new server!");
     REG_authenticatePlayerOnConnect(playerid);
 	return 1;
 }

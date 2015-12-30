@@ -4,6 +4,7 @@
 #define _menus_included
 
 #include "include/awesome/a_commands.inc"
+#include "include/awesome/colors.inc"
 
 #define PLAYER_MENU_HELP 0
 #define PLAYER_MENU_VEHICLES 1
@@ -50,11 +51,11 @@ stock MENUS_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]
 					}
 					case 1:
 					{
-						SendClientMessage(playerid, TEXT_COLOR_GREEN, "Sorry, nothing here :(");
+						SendClientMessage(playerid, COLOR_ERROR, "Sorry, nothing here :(");
 					}
 					case 2:
 					{
-						SendClientMessage(playerid, TEXT_COLOR_GREEN, "Sorry, nothing here :(");
+						SendClientMessage(playerid, COLOR_ERROR, "Sorry, nothing here :(");
 					}
 				}
 			}
