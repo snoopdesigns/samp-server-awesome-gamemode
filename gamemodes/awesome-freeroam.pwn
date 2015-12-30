@@ -10,6 +10,7 @@
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_minigames.inc"
+#include "include/awesome/a_randmsg.inc"
 
 //TODO add a define to simplify format strings
 //TODO camera up when re-spawning vehicle
@@ -37,6 +38,7 @@ public OnGameModeInit()
 	VEH_initVehiclesSystem();
 	PROPS_initPropsSystem(db_handle);
 	MG_initMinigamesSystem(db_handle);
+	RMSG_InitRandomMsg();
 	
 	//player classes
 	AddPlayerClass(0,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
