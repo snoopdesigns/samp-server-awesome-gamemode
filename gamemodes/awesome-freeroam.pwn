@@ -12,10 +12,13 @@
 #include "include/awesome/a_minigames.inc"
 #include "include/awesome/a_randmsg.inc"
 
+//TODO add textdraw to players joim minigame
+//add simple description dialog to every minigame
 //TODO add a define to simplify format strings
 //TODO camera up when re-spawning vehicle
 //TODO auto-repair on-off
 //TODO auto-flip on-off
+//TODO fallout mg get winners fix
 
 #define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
@@ -87,7 +90,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	dcmd(buy, 3, cmdtext, 1);
 	
 	//minigames
-	dcmd(join, 4, cmdtext, 1);
+	dcmd(event, 5, cmdtext, 1);
 	dcmd(leave, 5, cmdtext, 1);
 	
 	//admin commands
@@ -100,6 +103,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 
 public OnPlayerDisconnect(playerid, reason)
 {
+	MG_OnPlayerDisconnect(playerid);
 	return 1;
 }
 
@@ -110,6 +114,7 @@ public OnPlayerSpawn(playerid)
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
+	MG_OnPlayerDeath(playerid);
 	return 1;
 }
 

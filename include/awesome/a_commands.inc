@@ -60,7 +60,7 @@ dcmd_help(playerid, params[])
 	return 1;
 }
 
-dcmd_join(playerid, params[])
+dcmd_event(playerid, params[])
 {
 	MG_registerPlayerForMinigame(playerid);
 	return 1;

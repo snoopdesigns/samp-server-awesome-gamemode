@@ -11,7 +11,6 @@
 #define PROP_EARNINGS_INTERVAL_IN_MIN 5
 
 //TODO add map markers on properties
-//TODO message to all when prop purchased
 
 forward PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z);
 forward PROPS_PlayerEarningsTimer();

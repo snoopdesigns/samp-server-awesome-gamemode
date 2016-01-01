@@ -203,7 +203,9 @@ public MG_FALLOUT_PreparePlayer(playerid)
 	if(playersInFallout[playerid] == -1)
     {
 		playersInFallout[playerid] = 1;
+		if(IsPlayerInAnyVehicle(playerid)) RemovePlayerFromVehicle(playerid);
 		SetPlayerPos(playerid, 2473.2869, -1617.5422, 162.0000);
+		ShowPlayerDialog(playerid, 69, DIALOG_STYLE_MSGBOX, "Fallout Minigame", "Fallout Minigame by Lazarus", "OK", "");
 	}
 	else
 	{

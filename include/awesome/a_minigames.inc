@@ -19,19 +19,37 @@ new activeMinigame = -1;
 new mgStatus;
 new minigamePlayers[MAX_PLAYERS];
 
+//textdraw
+new Text:minigameTD;
+
 forward MG_initNewMinigame();
 forward MG_terminateCurrentMinigame();
 forward MG_startCurrentMinigame();
+forward MG_updateTextdraw(textDrawShowCount);
 
 stock MG_initMinigamesSystem(db_handle)
 {
 	db_handle_mg = db_handle;
-	SetTimer("MG_initNewMinigame", MINIGAMES_INTERVAL, false);
+	SetTimer("MG_initNewMinigame", 10000/*MINIGAMES_INTERVAL*/, false);
 	mgStatus = MG_STATUS_INACTIVE;
 	for(new i; i < MAX_PLAYERS; i++)
 	{
 		minigamePlayers[i] = -1;
 	}
+	
+	minigameTD = TextDrawCreate(399.999725, 0.222215, "test");
+	TextDrawLetterSize(minigameTD, 0.271664, 1.107404);
+	TextDrawTextSize(minigameTD, 638.000000, 0.000000);
+	TextDrawAlignment(minigameTD, 1);
+	TextDrawColor(minigameTD, -1);
+	TextDrawUseBox(minigameTD, 1);
+	TextDrawBoxColor(minigameTD, 13141);
+	TextDrawSetShadow(minigameTD, 1);
+	TextDrawSetOutline(minigameTD, 0);
+	TextDrawBackgroundColor(minigameTD, 1499227944);
+	TextDrawFont(minigameTD, 2);
+	TextDrawSetProportional(minigameTD, 1);
+	TextDrawSetShadow(minigameTD, 1);
 }
 
 public MG_initNewMinigame()
@@ -42,7 +60,15 @@ public MG_initNewMinigame()
 		new msg[128];
 		format(msg, sizeof msg, "** Minigame %s is about to start...", minigames[rand]);
 		SendClientMessageToAll(COLOR_MG, msg);
-		SendClientMessageToAll(COLOR_MG, "* Type /join if you wish to join this minigame");
+		SendClientMessageToAll(COLOR_MG, "* Type /event if you wish to join this minigame");
+		
+		new tdmsg[128];
+		format(tdmsg, sizeof tdmsg, "~w~type_~y~event_~w~to_join_the_~g~%s~n~~w~starting_in_~r~%d_seconds", minigames[rand], MINIGAMES_START_DELAY/1000);
+		TextDrawSetString(minigameTD, tdmsg); 
+		TextDrawShowForAll(minigameTD);
+		new ccount = MINIGAMES_START_DELAY / 5000;
+		SetTimerEx("MG_updateTextdraw", 5000, false, "i", ccount);
+		
 		activeMinigame = rand;
 		mgStatus = MG_STATUS_WAITING_PLAYERS;
 		SetTimer("MG_startCurrentMinigame", MINIGAMES_START_DELAY, false);
@@ -51,6 +77,24 @@ public MG_initNewMinigame()
 	else
 	{
 		SendClientMessageToAll(COLOR_ERROR, "There is still active MG!");
+	}
+}
+
+public MG_updateTextdraw(textDrawShowCount)
+{
+	new cc = textDrawShowCount;
+	cc--;
+	new tdmsg[128];
+	format(tdmsg, sizeof tdmsg, "~w~type_~y~event_~w~to_join_the_~g~%s~n~~w~starting_in_~r~%d_seconds", minigames[activeMinigame], 5*cc);
+	TextDrawSetString(minigameTD, tdmsg); 
+	TextDrawShowForAll(minigameTD);
+	if(cc > 0) 
+	{
+		SetTimerEx("MG_updateTextdraw", 5000, false, "i", cc);
+	}
+	else 
+	{
+		TextDrawHideForAll(minigameTD);
 	}
 }
 
@@ -70,6 +114,7 @@ public MG_startCurrentMinigame()
 		mgStatus = MG_STATUS_ACTIVE;
 		MG_Start();
 	}
+	//TextDrawHideForAll(minigameTD);
 }
 
 public MG_OnCurrentMinigameFinish()
@@ -208,7 +253,10 @@ stock MG_PlayerLeftMinigame(playerid)
 	}
 	if(minigamePlayers[playerid] != -1)
 	{
-		RemovePlayerFromVehicle(playerid);
+		new msg[128];
+		format(msg, sizeof msg, "* You left %s minigame", minigames[activeMinigame]);
+		SendClientMessage(playerid, COLOR_MG, msg);
+		if(IsPlayerInAnyVehicle(playerid)) RemovePlayerFromVehicle(playerid);
 		SetPlayerPos(playerid, 0,0,0);
 		SpawnPlayer(playerid);
 	}
@@ -232,4 +280,31 @@ stock MG_minigamePreparationForPlayer(playerid)
 			SendClientMessage(playerid, COLOR_ERROR, "Something goes wrong... =(");
 		}
 	}
+}
+
+stock MG_OnPlayerDisconnect(playerid)
+{
+	minigamePlayers[playerid] = -1;
+}
+
+stock MG_OnPlayerDeath(playerid)
+{
+	switch (activeMinigame)
+	{
+		case 0:
+		{
+			MG_FALLOUT_PlayerLeftMinigame(playerid);
+		}
+		case 1:
+		{
+			MG_HAY_PlayerLeftMinigame(playerid);
+		}
+	}
+	if(minigamePlayers[playerid] != -1)
+	{
+		new msg[128];
+		format(msg, sizeof msg, "* You died and loses %s minigame", minigames[activeMinigame]);
+		SendClientMessage(playerid, COLOR_ERROR, msg);
+	}
+	minigamePlayers[playerid] = -1;
 }

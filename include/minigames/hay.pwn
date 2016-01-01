@@ -19,8 +19,6 @@
 #define SPEED_FACTOR 3000.0
 #define ID_HAY_OBJECT 3374
 
-//TODO add countdown
-
 forward MG_HAY_TimerMove();
 forward MG_HAY_FinishTimer(id, xq, yq, zq);
 forward MG_HAY_TDScore();
@@ -92,8 +90,10 @@ stock MG_HAY_PreparePlayer(playerid) // prepare player for MG
     {
         playersInHay[playerid] = 1;
         //set players virt world
+		if(IsPlayerInAnyVehicle(playerid)) RemovePlayerFromVehicle(playerid);
     	SetPlayerPos(playerid, 0, 6.5, 3.2);
 		SetPlayerFacingAngle(playerid, 135);
+		ShowPlayerDialog(playerid, 69, DIALOG_STYLE_MSGBOX, "Hay Minigame", "Hay Minigame by R@f and ScRaT", "OK", "");
     }
     else
     {
