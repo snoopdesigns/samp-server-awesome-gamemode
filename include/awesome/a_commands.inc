@@ -31,6 +31,12 @@ stock CMDS_checkCommandAccess(playerid, level)
 	}
 }
 
+dcmd_kill(playerid, params[])
+{
+	SetPlayerHealth(playerid, 0.0);
+	return 1;
+}
+
 dcmd_cprop(playerid, params[])
 {
 	new	propname[64];

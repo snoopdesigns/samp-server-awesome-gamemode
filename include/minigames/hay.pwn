@@ -267,7 +267,7 @@ public MG_HAY_TDScore()
 	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInHay[i] != -1) playersRemaining++;
 	if(playersRemaining == 0) 
 	{
-		SendClientMessageToAll(COLOR_MG, "* No winners of Hay minigame!");
+		SendClientMessageToAll(COLOR_MG, "* No winners this time in Hay minigame");
 		MG_OnCurrentMinigameFinish();
 	}
 	for (new i=0; i<MAX_PLAYERS; i++)

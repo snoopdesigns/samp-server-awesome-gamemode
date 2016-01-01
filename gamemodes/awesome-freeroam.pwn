@@ -12,15 +12,15 @@
 #include "include/awesome/a_minigames.inc"
 #include "include/awesome/a_randmsg.inc"
 
-//TODO add textdraw to players joim minigame
-//add simple description dialog to every minigame
 //TODO add a define to simplify format strings
-//TODO camera up when re-spawning vehicle
 //TODO auto-repair on-off
 //TODO auto-flip on-off
 //TODO fallout mg get winners fix
 
 #define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
+
+new gPlayerClass[MAX_PLAYERS];
+new Text: txtClassSelHelper;
 
 new DB:db_handle;
 
@@ -31,9 +31,17 @@ main()
 	print("----------------------------------\n");
 }
 
+PreloadAnimLib(playerid, animlib[]) 
+{
+	ApplyAnimation(playerid,animlib,"null",0.0,0,0,0,0,0);
+}
+
+
 public OnGameModeInit()
 {
 	SetGameModeText("Awesome Freeroam v0.1");
+	
+	UsePlayerPedAnims();
 	
 	db_handle = DBUTILS_initDatabase("test.db");
 	REG_initRegSystem(db_handle);
@@ -44,8 +52,27 @@ public OnGameModeInit()
 	RMSG_InitRandomMsg();
 	
 	//player classes
-	AddPlayerClass(0,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
-	AddPlayerClass(1,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	//MEDIC
+	AddPlayerClass(274,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(275,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(276,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	//PIMP
+	AddPlayerClass(249,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(296,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	txtClassSelHelper = TextDrawCreate(23.333354, 331.555511, "~w~class_~r~medic~n~~w~weapons~n~~r~sawn-off~n~tec9");
+	TextDrawLetterSize(txtClassSelHelper, 0.400000, 1.600000);
+	TextDrawTextSize(txtClassSelHelper, 162.000000, 0.000000);
+	TextDrawAlignment(txtClassSelHelper, 1);
+	TextDrawColor(txtClassSelHelper, -1);
+	TextDrawUseBox(txtClassSelHelper, 1);
+	TextDrawBoxColor(txtClassSelHelper, 13141);
+	TextDrawSetShadow(txtClassSelHelper, 1);
+	TextDrawSetOutline(txtClassSelHelper, 0);
+	TextDrawBackgroundColor(txtClassSelHelper, 1499227944);
+	TextDrawFont(txtClassSelHelper, 2);
+	TextDrawSetProportional(txtClassSelHelper, 1);
 	return 1;
 }
 
@@ -55,24 +82,96 @@ public OnGameModeExit()
 	return 1;
 }
 
-public OnPlayerRequestClass(playerid, classid)
+public OnPlayerConnect(playerid)
 {
-	SetPlayerPos(playerid, -2658.8489,627.7543,14.4531);
-	SetPlayerFacingAngle(playerid, 179.5835);
-	SetPlayerCameraPos(playerid, -2658.8489,622.7543,14.4531);
-	SetPlayerCameraLookAt(playerid, -2658.8489,627.7543,14.4531);
+    REG_authenticatePlayerOnConnect(playerid);
+	gPlayerClass[playerid] = -1;
+	PreloadAnimLib(playerid,"BOMBER");
+  	PreloadAnimLib(playerid,"RAPPING");
+  	PreloadAnimLib(playerid,"SHOP");
+  	PreloadAnimLib(playerid,"BEACH");
+  	PreloadAnimLib(playerid,"SMOKING");
+  	PreloadAnimLib(playerid,"FOOD");
+  	PreloadAnimLib(playerid,"ON_LOOKERS");
+  	PreloadAnimLib(playerid,"DEALER");
+	PreloadAnimLib(playerid,"CRACK");
+	PreloadAnimLib(playerid,"CARRY");
+	PreloadAnimLib(playerid,"COP_AMBIENT");
+	PreloadAnimLib(playerid,"PARK");
+	PreloadAnimLib(playerid,"INT_HOUSE");
+	PreloadAnimLib(playerid,"FOOD");
+	PreloadAnimLib(playerid,"PED");
+    ApplyAnimation(playerid,"DANCING","DNCE_M_B",4.0,1,0,0,0,-1);
 	return 1;
 }
 
-public OnPlayerConnect(playerid)
+public OnPlayerDisconnect(playerid, reason)
 {
-    //SendClientMessage(playerid, TEXT_COLOR_GREEN, "Welcome to our new server!");
-    REG_authenticatePlayerOnConnect(playerid);
+	MG_OnPlayerDisconnect(playerid);
+	return 1;
+}
+
+public OnPlayerRequestClass(playerid, classid)
+{
+	SetPlayerInterior(playerid,3);
+	SetPlayerPos(playerid,-2673.8381,1399.7424,918.3516);
+	SetPlayerFacingAngle(playerid,181.0);
+    SetPlayerCameraPos(playerid,-2673.2776,1394.3859,918.3516);
+	SetPlayerCameraLookAt(playerid,-2673.8381,1399.7424,918.3516);
+	ApplyAnimation(playerid,"DANCING","DNCE_M_B",4.0,1,0,0,0,-1);
+	
+	new tdmsg[128];
+	switch(classid)
+	{
+		case 0..2:
+		{
+			gPlayerClass[playerid] = 0; // medic
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~sawn-off~n~tec9", "MEDIC");
+		}
+		case 3..4:
+		{
+			gPlayerClass[playerid] = 1;
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "PIMP");
+		}
+		default:
+		{
+			
+		}
+	}
+	TextDrawHideForPlayer(playerid,txtClassSelHelper);
+	TextDrawSetString(txtClassSelHelper, tdmsg); 
+	TextDrawShowForPlayer(playerid,txtClassSelHelper);
+	return 1;
+}
+
+public OnPlayerSpawn(playerid)
+{
+	ClearAnimations(playerid);
+	SetPlayerInterior(playerid,0);
+	TextDrawHideForPlayer(playerid,txtClassSelHelper);
+	switch(gPlayerClass[playerid])
+	{
+		case 0:
+		{
+			SetPlayerPos(playerid, -2658.8489,627.7543,14.4531);
+			SetPlayerFacingAngle(playerid, 179.5835);
+		}
+		case 1:
+		{
+			SetPlayerPos(playerid, -2632.3511,1393.5183,7.1016);
+			SetPlayerFacingAngle(playerid, 189.5099);
+		}
+		default:
+		{
+		}
+	}
 	return 1;
 }
 
 public OnPlayerCommandText(playerid, cmdtext[])
 {
+	dcmd(kill, 4, cmdtext, 0);
+	
 	//help command
 	dcmd(help, 4, cmdtext, 0);
 
@@ -99,17 +198,6 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	dcmd(restart, 7, cmdtext, 2);
 	dcmd(setlevel, 8, cmdtext, 2);	
 	return 0;
-}
-
-public OnPlayerDisconnect(playerid, reason)
-{
-	MG_OnPlayerDisconnect(playerid);
-	return 1;
-}
-
-public OnPlayerSpawn(playerid)
-{
-	return 1;
 }
 
 public OnPlayerDeath(playerid, killerid, reason)

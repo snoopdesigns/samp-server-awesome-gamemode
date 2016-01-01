@@ -232,14 +232,29 @@ public MG_FALLOUT_SolarFall()
 {
 	new go;
 	new playersRemaining;
+	new string[256], PlayerN[MAX_PLAYER_NAME];
 	for(new i = 0; i < 100; i++) if(panel[i][panelState] == PANEL_STATE_ACTIVE) go++;
 	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInFallout[i] != -1) playersRemaining++;
 	
-	if(go == 3 || playersRemaining == 0)
+	if(go == 3)
 	{
 		KillTimer(game[timer]);
 		KillTimer(game[losetimer]);
-		SendClientMessageToAll(COLOR_MG, "* Fallout minigame ended");
+		if(playersRemaining > 0)
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++)
+			{
+				if(playersInFallout[i] != -1) {
+					GetPlayerName(i, PlayerN, sizeof(PlayerN));
+					format(string, sizeof(string),"* %s Wins The Fallout Minigame", PlayerN);
+					SendClientMessageToAll(COLOR_MG, string);
+				}
+			}
+		}
+		else 
+		{
+			SendClientMessageToAll(COLOR_MG, "* No winners this time in Fallout minigame");
+		}
 		MG_OnCurrentMinigameFinish();
 		return 1;
 		//decide winners

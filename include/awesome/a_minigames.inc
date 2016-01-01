@@ -49,7 +49,6 @@ stock MG_initMinigamesSystem(db_handle)
 	TextDrawBackgroundColor(minigameTD, 1499227944);
 	TextDrawFont(minigameTD, 2);
 	TextDrawSetProportional(minigameTD, 1);
-	TextDrawSetShadow(minigameTD, 1);
 }
 
 public MG_initNewMinigame()
@@ -253,9 +252,6 @@ stock MG_PlayerLeftMinigame(playerid)
 	}
 	if(minigamePlayers[playerid] != -1)
 	{
-		new msg[128];
-		format(msg, sizeof msg, "* You left %s minigame", minigames[activeMinigame]);
-		SendClientMessage(playerid, COLOR_MG, msg);
 		if(IsPlayerInAnyVehicle(playerid)) RemovePlayerFromVehicle(playerid);
 		SetPlayerPos(playerid, 0,0,0);
 		SpawnPlayer(playerid);
