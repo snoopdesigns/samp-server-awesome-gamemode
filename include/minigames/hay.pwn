@@ -324,7 +324,7 @@ public MG_HAY_CountDown()
 		{
 			if(playersInHay[i] != -1 && IsPlayerConnected(i))
 			{
-				GameTextForAll("GO", 1000, 3);
+				GameTextForPlayer(i, "GO", 1000, 3);
 				TogglePlayerControllable(i,1);
 			}
 		}

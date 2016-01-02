@@ -3,6 +3,7 @@
 #endif
 #define _vehutils_included
 
+#include "include/awesome/a_utils.inc"
 #include "include/awesome/colors.inc"
 
 #define VEH_CONTROL_TIMER_INTERVAL 3000
@@ -197,35 +198,4 @@ stock LoadStaticVehiclesFromFile(const filename[])
 	fclose(file_ptr);
 	printf("Loaded %d vehicles from: %s",vehicles_loaded,filename);
 	return vehicles_loaded;
-}
-
-stock strrest(const string[], &index)
-{
-	new length = strlen(string);
-	while ((index < length) && (string[index] <= ' '))
-	{
-		index++;
-	}
-	new offset = index;
-	new result[128];
-	while ((index < length) && ((index - offset) < (sizeof(result) - 1)))
-	{
-		result[index - offset] = string[index];
-		index++;
-	}
-	result[index - offset] = EOS;
-	return result;
-}
-
-stock token_by_delim(const string[], return_str[], delim, start_index)
-{
-	new x=0;
-	while(string[start_index] != EOS && string[start_index] != delim) {
-	    return_str[x] = string[start_index];
-	    x++;
-	    start_index++;
-	}
-	return_str[x] = EOS;
-	if(string[start_index] == EOS) start_index = (-1);
-	return start_index;
 }

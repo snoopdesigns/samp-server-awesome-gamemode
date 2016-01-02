@@ -344,7 +344,7 @@ public MG_FALLOUT_CountDown()
 		{
 			if(playersInFallout[i] != -1 && IsPlayerConnected(i))
 			{
-				GameTextForAll("GO", 1000, 3);
+				GameTextForPlayer(i, "GO", 1000, 3);
 				TogglePlayerControllable(i,1);
 			}
 		}

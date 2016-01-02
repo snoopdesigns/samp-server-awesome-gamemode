@@ -10,6 +10,7 @@
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_minigames.inc"
+#include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"
 
 //TODO add a define to simplify format strings
@@ -48,6 +49,7 @@ public OnGameModeInit()
 	VEH_initVehiclesSystem();
 	PROPS_initPropsSystem(db_handle);
 	MG_initMinigamesSystem(db_handle);
+	RACE_initRaceSystem(db_handle);
 	RMSG_InitRandomMsg();
 	
 	//player classes
@@ -268,6 +270,10 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	//minigames
 	dcmd(event, 5, cmdtext, 1);
 	dcmd(leave, 5, cmdtext, 1);
+	dcmd(join, 4, cmdtext, 1); //race
+	dcmd(cr, 2, cmdtext, 2);
+	dcmd(crcheck, 7, cmdtext, 2);
+	dcmd(crend, 5, cmdtext, 2);
 	
 	//admin commands
 	dcmd(setscore, 8, cmdtext, 2);
@@ -325,6 +331,7 @@ public OnPlayerLeaveCheckpoint(playerid)
 
 public OnPlayerEnterRaceCheckpoint(playerid)
 {
+	RACE_OnPlayerEnterRaceCheckpoint(playerid);
 	return 1;
 }
 

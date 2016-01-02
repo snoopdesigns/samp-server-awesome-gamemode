@@ -30,7 +30,7 @@ forward MG_updateTextdraw(textDrawShowCount);
 stock MG_initMinigamesSystem(db_handle)
 {
 	db_handle_mg = db_handle;
-	SetTimer("MG_initNewMinigame", 10000/*MINIGAMES_INTERVAL*/, false);
+	SetTimer("MG_initNewMinigame", MINIGAMES_INTERVAL, false);
 	mgStatus = MG_STATUS_INACTIVE;
 	for(new i; i < MAX_PLAYERS; i++)
 	{

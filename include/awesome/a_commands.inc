@@ -158,6 +158,46 @@ dcmd_leave(playerid, params[])
 	return 1;
 }
 
+dcmd_join(playerid, params[])
+{
+	RACE_join(playerid);
+	return 1;
+}
+
+dcmd_cr(playerid, params[])
+{
+	new	filename[64];
+	if (sscanf(params, "s", filename)) 
+	{
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cr <filename>\"");
+	}
+	else
+	{
+		RACE_createRace(playerid, filename);
+	}
+	return 1;
+}
+
+dcmd_crcheck(playerid, params[])
+{
+	RACE_createRaceCheck(playerid);
+	return 1;
+}
+
+dcmd_crend(playerid, params[])
+{
+	new	racename[64], filename[64];
+	if (sscanf(params, "s", racename)) 
+	{
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/crend <name>\"");
+	}
+	else
+	{
+		RACE_createRaceEnd(playerid, racename, filename);
+	}
+	return 1;
+}
+
 //=====================================================================
 //========================ADMIN COMMANDS===============================
 //=====================================================================
