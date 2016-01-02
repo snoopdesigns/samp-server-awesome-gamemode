@@ -61,7 +61,33 @@ public OnGameModeInit()
 	AddPlayerClass(249,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	AddPlayerClass(296,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	
-	txtClassSelHelper = TextDrawCreate(23.333354, 331.555511, "~w~class_~r~medic~n~~w~weapons~n~~r~sawn-off~n~tec9");
+	//POLICE
+	AddPlayerClass(280,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(282,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(283,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(284,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	//ARMY
+	
+	AddPlayerClass(287,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	//Fastfood
+	
+	AddPlayerClass(167,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(155,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(209,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	//GOLFERS
+	
+	AddPlayerClass(258,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(259,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	//Workers
+	AddPlayerClass(260,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(16,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	AddPlayerClass(27,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
+	
+	txtClassSelHelper = TextDrawCreate(23.333354, 331.555511, "");
 	TextDrawLetterSize(txtClassSelHelper, 0.400000, 1.600000);
 	TextDrawTextSize(txtClassSelHelper, 162.000000, 0.000000);
 	TextDrawAlignment(txtClassSelHelper, 1);
@@ -133,6 +159,31 @@ public OnPlayerRequestClass(playerid, classid)
 			gPlayerClass[playerid] = 1;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "PIMP");
 		}
+		case 5..8:
+		{
+			gPlayerClass[playerid] = 2;
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "POLICE");
+		}
+		case 9:
+		{
+			gPlayerClass[playerid] = 3;
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "ARMY");
+		}
+		case 10..12:
+		{
+			gPlayerClass[playerid] = 4;
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "FASTFOOD");
+		}
+		case 13..14:
+		{
+			gPlayerClass[playerid] = 5;
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "GOLFERS");
+		}
+		case 15..17:
+		{
+			gPlayerClass[playerid] = 6;
+			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "WORKERS");
+		}
 		default:
 		{
 			
@@ -161,10 +212,36 @@ public OnPlayerSpawn(playerid)
 			SetPlayerPos(playerid, -2632.3511,1393.5183,7.1016);
 			SetPlayerFacingAngle(playerid, 189.5099);
 		}
+		case 2:
+		{
+			SetPlayerPos(playerid, -1634.8334,664.4601,7.1875);
+			SetPlayerFacingAngle(playerid, 267.4529);
+		}
+		case 3:
+		{
+			SetPlayerPos(playerid, -1374.6626,457.9957,7.1875);
+			SetPlayerFacingAngle(playerid, 0.4291);
+		}
+		case 4:
+		{
+			SetPlayerPos(playerid, -2674.9612,271.9800,4.3359);
+			SetPlayerFacingAngle(playerid, 2.4552);
+		}
+		case 5:
+		{
+			SetPlayerPos(playerid, -2711.0923,-302.6165,7.1807);
+			SetPlayerFacingAngle(playerid, 47.6342);
+		}
+		case 6:
+		{
+			SetPlayerPos(playerid, -2102.5830,163.5523,35.0998);
+			SetPlayerFacingAngle(playerid, 359.6911);
+		}
 		default:
 		{
 		}
 	}
+	SetCameraBehindPlayer(playerid);
 	return 1;
 }
 
