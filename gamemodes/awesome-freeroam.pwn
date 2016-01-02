@@ -15,7 +15,6 @@
 //TODO add a define to simplify format strings
 //TODO auto-repair on-off
 //TODO auto-flip on-off
-//TODO fallout mg get winners fix
 
 #define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
@@ -264,6 +263,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	//properties commands
 	dcmd(cprop, 5, cmdtext, 2);
 	dcmd(buy, 3, cmdtext, 1);
+	dcmd(sell, 4, cmdtext, 1);
 	
 	//minigames
 	dcmd(event, 5, cmdtext, 1);

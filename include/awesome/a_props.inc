@@ -170,8 +170,10 @@ stock PROPS_buyPropertyForPlayer(playerid)
 					SendClientMessage(playerid, COLOR_ERROR, "* This property is already yours!");
 					return;
 				}
-				new purchaseTime = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropPurchaseTime"));
-				if((gettime() - purchaseTime) > PROP_UNBUYABLE_TIME_IN_MIN * 60)
+				new propTime[128];
+				propTime = DBUTILS_getFieldValueFromResultSet(db_result, "PropPurchaseTime");
+				new purchaseTime = strToInt(propTime);
+				if(strlen(propTime) == 0 || (gettime() - purchaseTime) > PROP_UNBUYABLE_TIME_IN_MIN * 60)
 				{
 					if(GetPlayerMoney(playerid) >= cost)
 					{
@@ -193,6 +195,57 @@ stock PROPS_buyPropertyForPlayer(playerid)
 				{
 					SendClientMessage(playerid, COLOR_ERROR, "* You are not allowed to buy this prop yet.");
 				}
+			}
+			else 
+			{
+				SendClientMessage(playerid, COLOR_ERROR, "* You must be standing within 5m of property marker to buy it");
+			}
+		} while(DBUTILS_nextItem(db_result));
+	}
+	DBUTILS_runSelectQueryClear(db_result);
+}
+
+stock PROPS_sellProperty(playerid)
+{
+	static DBResult: db_result;
+	db_result = DBUTILS_runSelectQuery(db_handle_reg, "SELECT * FROM `properties`");
+	if(DBUTILS_getResultsetSize(db_result) > 0)
+	{
+		do
+		{
+			new propname[128], propowner[128];
+			new Float:x = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocX"));
+			new Float:y = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocY"));
+			new Float:z = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocZ"));
+			new cost = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropCost"));
+			propname = DBUTILS_getFieldValueFromResultSet(db_result, "PropName");
+			propowner = DBUTILS_getFieldValueFromResultSet(db_result, "PropOwner");
+			new propid = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "ID"));
+			
+			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5)
+			{
+				new player_name[MAX_PLAYER_NAME];
+				GetPlayerName(playerid, player_name, sizeof(player_name));
+				if(strlen(propowner) != 0 && strcmp(player_name, propowner, false) == 0) 
+				{
+					GivePlayerMoney(playerid, cost);
+					static queryUpdate[128];
+					format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='',`PropPurchaseTime`=%d WHERE `ID`=%d", gettime(), propid);
+					DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
+					new msg[128];
+					format(msg, sizeof msg, "* You sold your property %s for %d$!", propname, cost);
+					SendClientMessage(playerid, COLOR_PROPS, msg);
+					format(msg, sizeof msg, "* %s sells property '%s' for %d$", player_name, propname, cost);
+					SendClientMessageToAll(COLOR_PROPS, msg);
+				}
+				else
+				{
+					SendClientMessage(playerid, COLOR_ERROR, "* This property is not yours!");
+				}
+			}
+			else 
+			{
+				SendClientMessage(playerid, COLOR_ERROR, "* You must be standing within 5m of property marker to sell it");
 			}
 		} while(DBUTILS_nextItem(db_result));
 	}

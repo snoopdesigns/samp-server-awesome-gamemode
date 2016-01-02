@@ -31,32 +31,13 @@ stock CMDS_checkCommandAccess(playerid, level)
 	}
 }
 
+//=====================================================================
+//========================COMMON COMMANDS==============================
+//=====================================================================
+
 dcmd_kill(playerid, params[])
 {
 	SetPlayerHealth(playerid, 0.0);
-	return 1;
-}
-
-dcmd_cprop(playerid, params[])
-{
-	new	propname[64];
-	new cost;
-	new earnings;
-	if (sscanf(params, "sii", propname, cost, earnings)) 
-	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cprop <prop_name> <cost> <earnings>\"");
-	}
-	else
-	{
-		//create property
-		PROPS_createProperty(playerid, propname, cost, earnings);
-	}
-	return 1;
-}
-
-dcmd_buy(playerid, params[])
-{
-	PROPS_buyPropertyForPlayer(playerid);
 	return 1;
 }
 
@@ -66,68 +47,41 @@ dcmd_help(playerid, params[])
 	return 1;
 }
 
-dcmd_event(playerid, params[])
-{
-	MG_registerPlayerForMinigame(playerid);
-	return 1;
-}
+//=====================================================================
+//========================REGISTER COMMANDS============================
+//=====================================================================
 
-dcmd_leave(playerid, params[])
+dcmd_register(playerid, params[])
 {
-	MG_PlayerLeftMinigame(playerid);
-	return 1;
-}
-
-dcmd_restart(playerid, params[])
-{
-	SendRconCommand("changemode awesome-freeroam");
-	return 1;
-}
-
-dcmd_setscore(playerid, params[])
-{
-	new	score;
-	if (sscanf(params, "i", score)) 
+	new	password[64];
+	if (sscanf(params, "s", password)) 
 	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setscore <score>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/register <password>\"");
 	}
 	else
 	{
-		SetPlayerScore(playerid, score);
+		REG_registerNewPlayer(playerid, password);
 	}
 	return 1;
 }
 
-dcmd_setmoney(playerid, params[])
+dcmd_login(playerid, params[])
 {
-	new	money;
-	if (sscanf(params, "i", money)) 
+	new	password[64];
+	if (sscanf(params, "s", password)) 
 	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setmoney <money>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/login <password>\"");
 	}
 	else
 	{
-		GivePlayerMoney(playerid, money);
+		REG_loginPlayer(playerid, password);
 	}
 	return 1;
 }
 
-dcmd_setlevel(playerid, params[])
-{
-	new	newlevel[16];
-	if (sscanf(params, "s", newlevel)) 
-	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setlevel <level>\"");
-	}
-	else
-	{
-		REG_updatePropertyOfPlayer(playerid, "PlayerLevel", newlevel);
-		new msg[128];
-		format(msg, sizeof msg, "* Your level has been set to %s", newlevel);
-		SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
-	}
-	return 1;
-}
+//=====================================================================
+//========================VEHICLE COMMANDS=============================
+//=====================================================================
 
 dcmd_car(playerid, params[])
 {
@@ -155,30 +109,154 @@ dcmd_repair(playerid, params[])
 	return 1;
 }
 
-dcmd_register(playerid, params[])
+//=====================================================================
+//========================PROPERTIES COMMANDS==========================
+//=====================================================================
+
+dcmd_buy(playerid, params[])
 {
-	new	password[64];
-	if (sscanf(params, "s", password)) 
+	PROPS_buyPropertyForPlayer(playerid);
+	return 1;
+}
+
+dcmd_sell(playerid, params[])
+{
+	PROPS_sellProperty(playerid);
+	return 1;
+}
+
+dcmd_cprop(playerid, params[])
+{
+	new	propname[64];
+	new cost;
+	new earnings;
+	if (sscanf(params, "sii", propname, cost, earnings)) 
 	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/register <password>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cprop <prop_name> <cost> <earnings>\"");
 	}
 	else
 	{
-		REG_registerNewPlayer(playerid, password);
+		//create property
+		PROPS_createProperty(playerid, propname, cost, earnings);
 	}
 	return 1;
 }
 
-dcmd_login(playerid, params[])
+//=====================================================================
+//========================EVENTS COMMANDS==============================
+//=====================================================================
+
+dcmd_event(playerid, params[])
 {
-	new	password[64];
-	if (sscanf(params, "s", password)) 
+	MG_registerPlayerForMinigame(playerid);
+	return 1;
+}
+
+dcmd_leave(playerid, params[])
+{
+	MG_PlayerLeftMinigame(playerid);
+	return 1;
+}
+
+//=====================================================================
+//========================ADMIN COMMANDS===============================
+//=====================================================================
+
+dcmd_restart(playerid, params[])
+{
+	SendRconCommand("changemode awesome-freeroam");
+	return 1;
+}
+
+dcmd_setscore(playerid, params[])
+{
+	new	id, score;
+	if (sscanf(params, "ii", id, score)) 
 	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/login <password>\"");
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setscore <id> <score>\"");
 	}
 	else
 	{
-		REG_loginPlayer(playerid, password);
+		if(IsPlayerConnected(id))
+		{
+			SetPlayerScore(id, score);
+			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
+			GetPlayerName(playerid, playername, sizeof playername);
+			GetPlayerName(id, targetname, sizeof targetname);
+			new msg[256];
+			format(msg, sizeof msg, "* Player '%s' score has been set to %d", targetname, score);
+			SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
+			format(msg, sizeof msg, "* Admin '%s' set your score to %d", playername, score);
+			SendClientMessage(id, COLOR_IMPROVEMENT, msg);
+		}
+		else 
+		{
+			new msg[256];
+			format(msg, sizeof msg, "* Player with ID = %d does not exists!", id);
+			SendClientMessage(playerid, COLOR_ERROR, msg);
+		}
+	}
+	return 1;
+}
+
+dcmd_setmoney(playerid, params[])
+{
+	new	id, money;
+	if (sscanf(params, "ii", id, money)) 
+	{
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setmoney <id> <money>\"");
+	}
+	else
+	{
+		if(IsPlayerConnected(id))
+		{
+			GivePlayerMoney(id, money);
+			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
+			GetPlayerName(playerid, playername, sizeof playername);
+			GetPlayerName(id, targetname, sizeof targetname);
+			new msg[256];
+			format(msg, sizeof msg, "* Player '%s' moneys has been increased to %d", targetname, money);
+			SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
+			format(msg, sizeof msg, "* Admin '%s' gave you money %d", playername, money);
+			SendClientMessage(id, COLOR_IMPROVEMENT, msg);
+		}
+		else 
+		{
+			new msg[256];
+			format(msg, sizeof msg, "* Player with ID = %d does not exists!", id);
+			SendClientMessage(playerid, COLOR_ERROR, msg);
+		}
+	}
+	return 1;
+}
+
+dcmd_setlevel(playerid, params[])
+{
+	new	id, newlevel;
+	if (sscanf(params, "ii", id, newlevel)) 
+	{
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setlevel <id> <level>\"");
+	}
+	else
+	{
+		if(IsPlayerConnected(id))
+		{
+			REG_updatePropertyOfPlayer(id, "PlayerLevel", intToStr(newlevel));
+			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
+			GetPlayerName(playerid, playername, sizeof playername);
+			GetPlayerName(id, targetname, sizeof targetname);
+			new msg[256];
+			format(msg, sizeof msg, "* Player '%s' now has level %d", targetname, newlevel);
+			SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
+			format(msg, sizeof msg, "* Admin '%s' sets you player level to %d", playername, newlevel);
+			SendClientMessage(id, COLOR_IMPROVEMENT, msg);
+		}
+		else 
+		{
+			new msg[256];
+			format(msg, sizeof msg, "* Player with ID = %d does not exists!", id);
+			SendClientMessage(playerid, COLOR_ERROR, msg);
+		}
 	}
 	return 1;
 }
