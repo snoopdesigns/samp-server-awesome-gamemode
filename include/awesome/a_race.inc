@@ -45,7 +45,7 @@ new File: raceCreationFile;
 new raceCreationFileName[64];
 
 //TODO check if active player dead or leave the game to finish race
-//TODO create player level race method
+//TODO create player leave race method
 //TODO race textdraw (position, time)
 //TODO race status (times and positions)
 
@@ -62,7 +62,7 @@ stock RACE_initRaceSystem(db_handle)
 		"'filename' VARCHAR(32) NOT NULL");
 	DBUTILS_runCreateQuery(db_handle_race, createTableRaceQuery);
 	
-	SetTimer("RACE_initNewRace", 10000, 0);
+	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 	raceStatus = RACE_STATUS_INACTIVE;
 }
 
@@ -74,9 +74,7 @@ RACE_createRace(playerid, filename[])
 		SendClientMessage(playerid, COLOR_IMPROVEMENT, "* Start creating new race");
 		new Float:xpos, Float:ypos, Float:zpos;
 		GetPlayerPos(playerid, xpos, ypos, zpos);
-		new str[64];
-		format(str, sizeof str, "%f, %f, %f ;\n", xpos, ypos, zpos);
-		SendClientMessage(playerid, COLOR_MG, str);
+		SendClientMessageFormatted(playerid, COLOR_MG, "%f, %f, %f ;\n", xpos, ypos, zpos);
 		format(raceCreationFileName, sizeof raceCreationFileName, "races/%s", filename);
 		raceCreationFile = fopen(raceCreationFileName, filemode:io_append);
 		if(!raceCreationFile) 
@@ -85,6 +83,8 @@ RACE_createRace(playerid, filename[])
 			raceCreationStatus = RACE_CREATION_STATUS_INACTIVE;
 			return 0;
 		}
+		new str[64];
+		format(str, sizeof str, "%f, %f, %f ;\n", xpos, ypos, zpos);
 		fwrite(raceCreationFile, str);
 	}
 	else 
@@ -102,7 +102,7 @@ RACE_createRaceCheck(playerid)
 		GetPlayerPos(playerid, xpos, ypos, zpos);
 		new str[64];
 		format(str, sizeof str, "%f, %f, %f ;\n", xpos, ypos, zpos);
-		SendClientMessage(playerid, COLOR_MG, str);
+		SendClientMessageFormatted(playerid, COLOR_MG, "%f, %f, %f ;\n", xpos, ypos, zpos);
 		fwrite(raceCreationFile, str);
 	}
 	else 
@@ -129,9 +129,7 @@ RACE_createRaceEnd(playerid, racename[])
 		DBUTILS_runInsertQuery(db_handle_props, query);
 		
 		SendClientMessage(playerid, COLOR_IMPROVEMENT, "* New race successfully created");
-		new msg[128];
-		format(msg, sizeof msg, "* Race name: '%s', filename: '%s'", racename, raceCreationFileName);
-		SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Race name: '%s', filename: '%s'", racename, raceCreationFileName);
 	}
 	else 
 	{
@@ -172,9 +170,7 @@ public RACE_initNewRace()
 	db_result = DBUTILS_runSelectQuery(db_handle_reg, query);
 	racename = DBUTILS_getFieldValueFromResultSet(db_result, "RaceName");
 	filename = DBUTILS_getFieldValueFromResultSet(db_result, "filename");
-	new msg[256];
-	format(msg, sizeof msg, "** Race '%s' is about to start... type /join if you wish to join", racename);
-	SendClientMessageToAll(COLOR_MG, msg);
+	SendClientMessageToAllFormatted(COLOR_MG, "** Race '%s' is about to start... type /join if you wish to join", racename);
 	SendClientMessageToAll(COLOR_MG, "* Total checkpoints: 19 | Length: 5.51km");//TODO
 	SendClientMessageToAll(COLOR_MG, "* Current race record holder is 'SnooP', time is '03m13s'"); //TODO
 	SendClientMessageToAll(COLOR_MG, "* Vehicle: ANY");//TODO

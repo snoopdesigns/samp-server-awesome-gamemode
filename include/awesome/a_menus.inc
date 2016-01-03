@@ -5,6 +5,7 @@
 
 #include "include/awesome/a_commands.inc"
 #include "include/awesome/colors.inc"
+#include "include/awesome/a_utils.inc"
 
 #define PLAYER_MENU_HELP 0
 #define PLAYER_MENU_VEHICLES 1

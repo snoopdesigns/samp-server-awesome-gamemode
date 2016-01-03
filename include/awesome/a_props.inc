@@ -66,10 +66,8 @@ public PROPS_PlayerEarningsTimer()
 		for(new i = 0; i < MAX_PLAYERS; i++)
 		{
 			if(earnCount[i] > 0)
-			{	
-				new msg[128];
-				format(msg, sizeof msg, "* You earned %d$ from your [%d] properties!", earns[i], earnCount[i]);
-				SendClientMessage(i, COLOR_PROPS, msg);
+			{
+				SendClientMessageFormatted(i, COLOR_PROPS, "* You earned %d$ from your [%d] properties!", earns[i], earnCount[i]);
 			}
 		}
 	}
@@ -181,11 +179,8 @@ stock PROPS_buyPropertyForPlayer(playerid)
 						static queryUpdate[128];
 						format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='%s',`PropPurchaseTime`=%d WHERE `ID`=%d", player_name, gettime(), propid);
 						DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
-						new msg[128];
-						format(msg, sizeof msg, "* Property %s successfully purchased!", propname);
-						SendClientMessage(playerid, COLOR_PROPS, msg);
-						format(msg, sizeof msg, "* %s purchased property '%s' for %d$", player_name, propname, cost);
-						SendClientMessageToAll(COLOR_PROPS, msg);
+						SendClientMessageFormatted(playerid, COLOR_PROPS, "* Property %s successfully purchased!", propname);
+						SendClientMessageToAllFormatted(COLOR_PROPS, "* %s purchased property '%s' for %d$", player_name, propname, cost);
 					}
 					else {
 						SendClientMessage(playerid, COLOR_ERROR, "* You have not enough money to buy this property!");
@@ -232,11 +227,8 @@ stock PROPS_sellProperty(playerid)
 					static queryUpdate[128];
 					format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='',`PropPurchaseTime`=%d WHERE `ID`=%d", gettime(), propid);
 					DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
-					new msg[128];
-					format(msg, sizeof msg, "* You sold your property %s for %d$!", propname, cost);
-					SendClientMessage(playerid, COLOR_PROPS, msg);
-					format(msg, sizeof msg, "* %s sells property '%s' for %d$", player_name, propname, cost);
-					SendClientMessageToAll(COLOR_PROPS, msg);
+					SendClientMessageFormatted(playerid, COLOR_PROPS, "* You sold your property %s for %d$!", propname, cost);
+					SendClientMessageToAllFormatted(COLOR_PROPS, "* %s sells property '%s' for %d$", player_name, propname, cost);
 				}
 				else
 				{

@@ -5,6 +5,11 @@
 
 #define valstr FIX_valstr
 
+#define SendClientMessageFormatted(%0,%1,%2,%3) format(clientFormattedMessage, sizeof clientFormattedMessage, %2, %3); SendClientMessage(%0, %1, clientFormattedMessage)
+#define SendClientMessageToAllFormatted(%0,%1,%2) format(clientFormattedMessage, sizeof clientFormattedMessage, %1, %2); SendClientMessageToAll(%0, clientFormattedMessage)
+
+new clientFormattedMessage[128];
+
 stock intToStr(int)
 {
 	new string[12];

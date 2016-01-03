@@ -6,6 +6,7 @@
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_menus.inc"
 #include "include/awesome/a_props.inc"
+#include "include/awesome/a_utils.inc"
 
 #include "include/awesome/colors.inc"
 
@@ -23,9 +24,7 @@ stock CMDS_checkCommandAccess(playerid, level)
 		else 
 		{
 			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you have not access to this command!");
-			new string[128];
-			format(string, sizeof string, "* Required player level: %d", level);
-			SendClientMessage(playerid, COLOR_ERROR, string);
+			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Required player level: %d", level);
 		}
 		return FALSE;
 	}
@@ -223,17 +222,12 @@ dcmd_setscore(playerid, params[])
 			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
 			GetPlayerName(playerid, playername, sizeof playername);
 			GetPlayerName(id, targetname, sizeof targetname);
-			new msg[256];
-			format(msg, sizeof msg, "* Player '%s' score has been set to %d", targetname, score);
-			SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
-			format(msg, sizeof msg, "* Admin '%s' set your score to %d", playername, score);
-			SendClientMessage(id, COLOR_IMPROVEMENT, msg);
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player '%s' score has been set to %d", targetname, score);
+			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin '%s' set your score to %d", playername, score);
 		}
 		else 
 		{
-			new msg[256];
-			format(msg, sizeof msg, "* Player with ID = %d does not exists!", id);
-			SendClientMessage(playerid, COLOR_ERROR, msg);
+			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Player with ID = %d does not exists!", id);
 		}
 	}
 	return 1;
@@ -254,17 +248,12 @@ dcmd_setmoney(playerid, params[])
 			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
 			GetPlayerName(playerid, playername, sizeof playername);
 			GetPlayerName(id, targetname, sizeof targetname);
-			new msg[256];
-			format(msg, sizeof msg, "* Player '%s' moneys has been increased to %d", targetname, money);
-			SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
-			format(msg, sizeof msg, "* Admin '%s' gave you money %d", playername, money);
-			SendClientMessage(id, COLOR_IMPROVEMENT, msg);
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player '%s' moneys has been increased to %d", targetname, money);
+			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin '%s' gave you money %d", playername, money);
 		}
 		else 
 		{
-			new msg[256];
-			format(msg, sizeof msg, "* Player with ID = %d does not exists!", id);
-			SendClientMessage(playerid, COLOR_ERROR, msg);
+			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Player with ID = %d does not exists!", id);
 		}
 	}
 	return 1;
@@ -285,17 +274,12 @@ dcmd_setlevel(playerid, params[])
 			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
 			GetPlayerName(playerid, playername, sizeof playername);
 			GetPlayerName(id, targetname, sizeof targetname);
-			new msg[256];
-			format(msg, sizeof msg, "* Player '%s' now has level %d", targetname, newlevel);
-			SendClientMessage(playerid, COLOR_IMPROVEMENT, msg);
-			format(msg, sizeof msg, "* Admin '%s' sets you player level to %d", playername, newlevel);
-			SendClientMessage(id, COLOR_IMPROVEMENT, msg);
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player '%s' now has level %d", targetname, newlevel);
+			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin '%s' sets you player level to %d", playername, newlevel);
 		}
 		else 
 		{
-			new msg[256];
-			format(msg, sizeof msg, "* Player with ID = %d does not exists!", id);
-			SendClientMessage(playerid, COLOR_ERROR, msg);
+			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Player with ID = %d does not exists!", id);
 		}
 	}
 	return 1;

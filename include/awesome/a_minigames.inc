@@ -5,6 +5,7 @@
 
 #include "include/minigames/fallout.pwn"
 #include "include/minigames/hay.pwn"
+#include "include/awesome/a_utils.inc"
 
 #define MINIGAMES_INTERVAL 4 * 60 * 1000 // 4 minutes
 #define MINIGAMES_START_DELAY 15000 // 15 secs
@@ -56,9 +57,7 @@ public MG_initNewMinigame()
 	if(mgStatus == MG_STATUS_INACTIVE)
 	{
 		new rand = random(sizeof(minigames));
-		new msg[128];
-		format(msg, sizeof msg, "** Minigame %s is about to start...", minigames[rand]);
-		SendClientMessageToAll(COLOR_MG, msg);
+		SendClientMessageToAllFormatted(COLOR_MG, "** Minigame %s is about to start...", minigames[rand]);
 		SendClientMessageToAll(COLOR_MG, "* Type /event if you wish to join this minigame");
 		
 		new tdmsg[128];
@@ -83,12 +82,12 @@ public MG_updateTextdraw(textDrawShowCount)
 {
 	new cc = textDrawShowCount;
 	cc--;
-	new tdmsg[128];
-	format(tdmsg, sizeof tdmsg, "~w~type_~y~event_~w~to_join_the_~g~%s~n~~w~starting_in_~r~%d_seconds", minigames[activeMinigame], 5*cc);
-	TextDrawSetString(minigameTD, tdmsg); 
-	TextDrawShowForAll(minigameTD);
 	if(cc > 0) 
 	{
+		new tdmsg[128];
+		format(tdmsg, sizeof tdmsg, "~w~type_~y~event_~w~to_join_the_~g~%s~n~~w~starting_in_~r~%d_seconds", minigames[activeMinigame], 5*cc);
+		TextDrawSetString(minigameTD, tdmsg); 
+		TextDrawShowForAll(minigameTD);
 		SetTimerEx("MG_updateTextdraw", 5000, false, "i", cc);
 	}
 	else 
@@ -103,9 +102,7 @@ public MG_startCurrentMinigame()
 	for(new i = 0; i < MAX_PLAYERS; i++) if(minigamePlayers[i] != -1) playerCount++;
 	if(playerCount == 0)
 	{
-		new msg[128];
-		format(msg, sizeof msg, "* Minigame %s does not started, because of nobody comes.", minigames[activeMinigame]); 
-		SendClientMessageToAll(COLOR_MG, msg);
+		SendClientMessageToAllFormatted(COLOR_MG, "* Minigame %s does not started, because of nobody comes.", minigames[activeMinigame]);
 		MG_OnCurrentMinigameFinish();		
 	}
 	else 
@@ -205,9 +202,7 @@ stock MG_registerPlayerForMinigame(playerid)
 				minigamePlayers[i] = playerid;
 			}
 		}
-		new msg[128];
-		format(msg, sizeof msg, "* You joined %s minigame", minigames[activeMinigame]);
-		SendClientMessage(playerid, COLOR_MG, msg);
+		SendClientMessageFormatted(playerid, COLOR_MG, "* You joined %s minigame", minigames[activeMinigame]);
 		
 		// prepare player for minigame
 		MG_minigamePreparationForPlayer(playerid);
@@ -220,9 +215,7 @@ stock MG_registerPlayerForMinigame(playerid)
 		} 
 		else 
 		{
-			new msg[128];
-			format(msg, sizeof msg, "* Minigame %s already started", minigames[activeMinigame]);
-			SendClientMessage(playerid, COLOR_MG, msg);
+			SendClientMessageFormatted(playerid, COLOR_MG, "* Minigame %s already started", minigames[activeMinigame]);
 		}
 	}
 }
@@ -298,9 +291,7 @@ stock MG_OnPlayerDeath(playerid)
 	}
 	if(minigamePlayers[playerid] != -1)
 	{
-		new msg[128];
-		format(msg, sizeof msg, "* You died and loses %s minigame", minigames[activeMinigame]);
-		SendClientMessage(playerid, COLOR_ERROR, msg);
+		SendClientMessageFormatted(playerid, COLOR_ERROR, "* You died and loses %s minigame", minigames[activeMinigame]);
 	}
 	minigamePlayers[playerid] = -1;
 }

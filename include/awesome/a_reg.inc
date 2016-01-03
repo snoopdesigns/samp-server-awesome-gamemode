@@ -95,9 +95,7 @@ stock REG_registerNewPlayer(playerid, password[])
 		{
 			// player successfully registered
 			SetPVarInt(playerid, PLAYER_VAR_LEVEL, 1);
-			new msg[128];
-			format(msg, sizeof msg, "* New account %s has been registerred successfully", name);
-			SendClientMessage(playerid, COLOR_REG, msg);
+			SendClientMessageFormatted(playerid, COLOR_REG, "* New account %s has been registerred successfully", name);
 		}
 	} 
 	else 
@@ -110,9 +108,7 @@ stock REG_registerNewPlayer(playerid, password[])
 		else 
 		{
 			// player is not autheticated and requests register under existing name - bad
-			new string[256];
-			format(string, sizeof string, "* This nickname: '%s' is registered already. If this is you nickname, please /login, otherwise please choose other nickname", name);
-			SendClientMessage(playerid, COLOR_REG, string);
+			SendClientMessageFormatted(playerid, COLOR_REG, "* This nickname: '%s' is registered already. If this is you nickname, please /login, otherwise please choose other nickname", name);
 		}
 	}
 }
@@ -141,9 +137,7 @@ stock REG_loginPlayer(playerid, password[])
 		else 
 		{
 			// players nickname is not registered in db
-			new string[256];
-			format(string, sizeof string, "* Your nickname: '%s' is not registered. Please use /register to register your nickname", name);
-			SendClientMessage(playerid, COLOR_REG, string);
+			SendClientMessageFormatted(playerid, COLOR_REG, "* Your nickname: '%s' is not registered. Please use /register to register your nickname", name);
 		}
 	}
 	else 
@@ -188,9 +182,7 @@ stock REG_authenticatePlayerOnConnect(playerid)
 		if(strcmp(ip_from_db, player_ip) == 0)
 		{
 			REG_restoreSinglePlayerData(playerid);
-			new msg[128];
-			format(msg, sizeof msg, "* IP auto-login successfull. Welcome back, %s!", player_name);
-			SendClientMessage(playerid, COLOR_REG, msg);
+			SendClientMessageFormatted(playerid, COLOR_REG, "* IP auto-login successfull. Welcome back, %s!", player_name);
 		} else {
 			SendClientMessage(playerid, COLOR_ERROR, "* IP auto-login failed. Please /login using your password.");
 		}
