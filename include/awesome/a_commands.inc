@@ -36,12 +36,14 @@ stock CMDS_checkCommandAccess(playerid, level)
 
 dcmd_kill(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	SetPlayerHealth(playerid, 0.0);
 	return 1;
 }
 
 dcmd_help(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	MENUS_showPlayerMenu(playerid, PLAYER_MENU_HELP);
 	return 1;
 }
@@ -84,6 +86,7 @@ dcmd_login(playerid, params[])
 
 dcmd_car(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	VEH_SpawnPlayerVehicle(playerid, 411);
 	return 1;
 }
@@ -104,6 +107,7 @@ dcmd_v(playerid, params[])
 
 dcmd_repair(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	VEH_RepairPlayerVehicle(playerid);
 	return 1;
 }
@@ -114,12 +118,14 @@ dcmd_repair(playerid, params[])
 
 dcmd_buy(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	PROPS_buyPropertyForPlayer(playerid);
 	return 1;
 }
 
 dcmd_sell(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	PROPS_sellProperty(playerid);
 	return 1;
 }
@@ -147,18 +153,21 @@ dcmd_cprop(playerid, params[])
 
 dcmd_event(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	MG_registerPlayerForMinigame(playerid);
 	return 1;
 }
 
 dcmd_leave(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	MG_PlayerLeftMinigame(playerid);
 	return 1;
 }
 
 dcmd_join(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	RACE_join(playerid);
 	return 1;
 }
@@ -179,20 +188,21 @@ dcmd_cr(playerid, params[])
 
 dcmd_crcheck(playerid, params[])
 {
+	strlen(params);//just to handle compile warning
 	RACE_createRaceCheck(playerid);
 	return 1;
 }
 
 dcmd_crend(playerid, params[])
 {
-	new	racename[64], filename[64];
+	new	racename[64];
 	if (sscanf(params, "s", racename)) 
 	{
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/crend <name>\"");
 	}
 	else
 	{
-		RACE_createRaceEnd(playerid, racename, filename);
+		RACE_createRaceEnd(playerid, racename);
 	}
 	return 1;
 }
@@ -203,6 +213,8 @@ dcmd_crend(playerid, params[])
 
 dcmd_restart(playerid, params[])
 {
+	intToStr(playerid);
+	strlen(params);//just to handle compile warning
 	SendRconCommand("changemode awesome-freeroam");
 	return 1;
 }

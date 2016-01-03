@@ -9,8 +9,9 @@
 forward RACE_initNewRace();
 forward RACE_startRace();
 forward RACE_finishRace();
+forward RACE_CountDown();
 
-#define RACES_INTERVAL 4 * 60 * 1000 // 3 minutes
+#define RACES_INTERVAL 2 * 60 * 1000 // 3 minutes
 #define RACES_START_DELAY 15000 // 15 secs
 
 #define RACE_STATUS_INACTIVE 0 
@@ -49,9 +50,9 @@ new raceCreationFileName[64];
 //TODO race textdraw (position, time)
 //TODO race status (times and positions)
 
-stock RACE_initRaceSystem(db_handle)
+stock RACE_initRaceSystem(DB:db_handle_for_race)
 {
-	db_handle_race = db_handle;
+	db_handle_race = db_handle_for_race;
 	new createTableRaceQuery[512];
 	format(createTableRaceQuery, sizeof createTableRaceQuery, "CREATE TABLE IF NOT EXISTS `race`(%s, %s, %s, %s, %s, %s)",
 		"`ID` INTEGER PRIMARY KEY NOT NULL",
@@ -66,7 +67,7 @@ stock RACE_initRaceSystem(db_handle)
 	raceStatus = RACE_STATUS_INACTIVE;
 }
 
-RACE_createRace(playerid, filename[])
+stock RACE_createRace(playerid, filename[])
 {
 	if(raceCreationStatus == RACE_CREATION_STATUS_INACTIVE)
 	{
@@ -81,7 +82,7 @@ RACE_createRace(playerid, filename[])
 		{
 			SendClientMessage(playerid, COLOR_ERROR, "* Error during creation checkpoints file!");
 			raceCreationStatus = RACE_CREATION_STATUS_INACTIVE;
-			return 0;
+			return;
 		}
 		new str[64];
 		format(str, sizeof str, "%f, %f, %f ;\n", xpos, ypos, zpos);
@@ -93,7 +94,7 @@ RACE_createRace(playerid, filename[])
 	}
 }
 
-RACE_createRaceCheck(playerid)
+stock RACE_createRaceCheck(playerid)
 {
 	if(raceCreationStatus == RACE_CREATION_STATUS_INPROGRESS)
 	{
@@ -111,7 +112,7 @@ RACE_createRaceCheck(playerid)
 	}
 }
 
-RACE_createRaceEnd(playerid, racename[])
+stock RACE_createRaceEnd(playerid, racename[])
 {
 	if(raceCreationStatus == RACE_CREATION_STATUS_INPROGRESS)
 	{
@@ -168,8 +169,8 @@ public RACE_initNewRace()
 	new racename[128], filename[128];
 	format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", rand);
 	db_result = DBUTILS_runSelectQuery(db_handle_reg, query);
-	racename = DBUTILS_getFieldValueFromResultSet(db_result, "RaceName");
-	filename = DBUTILS_getFieldValueFromResultSet(db_result, "filename");
+	racename = DBUTILS_getFieldFromResult(db_result, "RaceName");
+	filename = DBUTILS_getFieldFromResult(db_result, "filename");
 	SendClientMessageToAllFormatted(COLOR_MG, "** Race '%s' is about to start... type /join if you wish to join", racename);
 	SendClientMessageToAll(COLOR_MG, "* Total checkpoints: 19 | Length: 5.51km");//TODO
 	SendClientMessageToAll(COLOR_MG, "* Current race record holder is 'SnooP', time is '03m13s'"); //TODO
@@ -285,7 +286,7 @@ stock RACE_join(playerid)
 	}
 }
 
-stock RACE_OnPlayerEnterRaceCheckpoint(playerid)
+stock RACE_OnEnterCheckpoint(playerid)
 {
 	if(playersInRace[playerid] != -1 && raceStatus == RACE_STATUS_ACTIVE)
 	{

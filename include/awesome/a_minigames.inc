@@ -7,14 +7,13 @@
 #include "include/minigames/hay.pwn"
 #include "include/awesome/a_utils.inc"
 
-#define MINIGAMES_INTERVAL 4 * 60 * 1000 // 4 minutes
+#define MINIGAMES_INTERVAL 1 * 60 * 1000 // 4 minutes
 #define MINIGAMES_START_DELAY 15000 // 15 secs
 
 #define MG_STATUS_INACTIVE 0 
 #define MG_STATUS_WAITING_PLAYERS 1 
 #define MG_STATUS_ACTIVE 2 
 
-new DB:db_handle_mg;
 new minigames[2][] = {"Fallout", "Hay"};
 new activeMinigame = -1;
 new mgStatus;
@@ -28,9 +27,8 @@ forward MG_terminateCurrentMinigame();
 forward MG_startCurrentMinigame();
 forward MG_updateTextdraw(textDrawShowCount);
 
-stock MG_initMinigamesSystem(db_handle)
+stock MG_initMinigamesSystem()
 {
-	db_handle_mg = db_handle;
 	SetTimer("MG_initNewMinigame", MINIGAMES_INTERVAL, false);
 	mgStatus = MG_STATUS_INACTIVE;
 	for(new i; i < MAX_PLAYERS; i++)
@@ -113,7 +111,7 @@ public MG_startCurrentMinigame()
 	//TextDrawHideForAll(minigameTD);
 }
 
-public MG_OnCurrentMinigameFinish()
+stock MG_OnCurrentMinigameFinish()
 {
 	if(activeMinigame != -1)
 	{
@@ -235,12 +233,12 @@ stock MG_PlayerLeftMinigame(playerid)
 		case -1:
 		{
 			SendClientMessage(playerid, COLOR_ERROR, "* There is no active minigames for now!");
-			return 1;
+			return;
 		}
 		default:
 		{
 			SendClientMessage(playerid, COLOR_ERROR, "* Something goes wrong... =(");
-			return 1;
+			return;
 		}
 	}
 	if(minigamePlayers[playerid] != -1)

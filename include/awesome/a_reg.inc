@@ -26,9 +26,9 @@ forward REG_savePlayerDataTimerFunc();
 
 new DB:db_handle_reg;
 
-stock REG_initRegSystem(db_handle)
+stock REG_initRegSystem(DB:db_handle_to_reg)
 {
-	db_handle_reg = db_handle;
+	db_handle_reg = db_handle_to_reg;
 	//create player info table
 	//DBUTILS_runDropQuery(db_handle_reg, "players"); //uncomment this to drop table every server restart
 	new createTablePlayersQuery[512];
@@ -149,7 +149,7 @@ stock REG_loginPlayer(playerid, password[])
 
 stock REG_checkPlayerRegistered(playerid)
 {
-	new player_name[MAX_PLAYER_NAME], ip[128];
+	new player_name[MAX_PLAYER_NAME];
 	GetPlayerName(playerid, player_name, sizeof(player_name));
 	static query[256], DBResult: db_result;
 	format(query, sizeof query, "SELECT * FROM `players` WHERE `PlayerName`='%s';", player_name);
@@ -211,16 +211,16 @@ stock REG_getPropertyOfPlayer(playerid, property[])
 	static query[256], DBResult: db_result;
 	format(query, sizeof query, "SELECT * FROM `players` WHERE `PlayerName`='%s';", player_name);
 	db_result = DBUTILS_runSelectQuery(db_handle_reg, query);
-	result = DBUTILS_getFieldValueFromResultSet(db_result, property);
+	result = DBUTILS_getFieldFromResult(db_result, property);
 	DBUTILS_runSelectQueryClear(db_result); // clear db results
 	return result;
 }
 
 stock REG_updatePropertyOfPlayer(playerid, property[], property_value[])
 {
-	new player_name[MAX_PLAYER_NAME], result[128];
+	new player_name[MAX_PLAYER_NAME];
    	GetPlayerName(playerid, player_name, sizeof(player_name));
-	static query[256], DBResult: db_result;
+	static query[256];
 	format(query, sizeof query, "UPDATE `players` SET '%s'='%s' WHERE `PlayerName`='%s';", property, property_value, player_name);
 	DBUTILS_runUpdateQuery(db_handle_reg, query);
 }

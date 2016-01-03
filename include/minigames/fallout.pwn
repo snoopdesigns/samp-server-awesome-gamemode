@@ -13,7 +13,7 @@ forward MG_FALLOUT_SquareShake(id);
 
 enum panelInfo
 {
-	objectid,
+	panelObjectid,
 	timer,
 	panelState,
 	shaketimer,
@@ -38,111 +38,111 @@ new game[gameInfo];
 
 new playersInFallout[MAX_PLAYERS];
 
-public MG_FALLOUT_Init()
+stock MG_FALLOUT_Init()
 {	
 	countdownTimer[count] = 5;
 	new cc = 0;
 	
-	panel[cc][objectid] = CreateObject(1697, 2482.1921, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2482.1921, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2477.7395, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2473.2869, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2468.8343, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2464.3817, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2459.9291, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2455.4765, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2451.0239, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2446.5713, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
-	cc++;panel[cc][objectid] = CreateObject(1697, 2442.1187, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1660.4783, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1655.1112, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1649.7442, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1644.3772, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1639.0102, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1633.6432, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1628.2762, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1622.9092, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1617.5422, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2482.1921, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2477.7395, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2473.2869, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2468.8343, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2464.3817, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2459.9291, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2455.4765, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2451.0239, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2446.5713, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
+	cc++;panel[cc][panelObjectid] = CreateObject(1697, 2442.1187, -1612.1752, 160.0000, 31.8000, 0.0000, 0.0000);
 	
 	for(new i=0; i < 100; i++)
 	{
@@ -157,13 +157,13 @@ public MG_FALLOUT_Init()
 	}
 }
 
-public MG_FALLOUT_Destroy()
+stock MG_FALLOUT_Destroy()
 {
 	for(new i = 0; i < 100; i++) 
 	{
-		if(IsValidObject(panel[i][objectid])) 
+		if(IsValidObject(panel[i][panelObjectid])) 
 		{
-			DestroyObject(panel[i][objectid]);
+			DestroyObject(panel[i][panelObjectid]);
 		}
 		if(panel[i][shaketimer] != -1)
 		{
@@ -172,7 +172,7 @@ public MG_FALLOUT_Destroy()
 	}
 }
 
-public MG_FALLOUT_Start()
+stock MG_FALLOUT_Start()
 {
 	//set player pos random 2442-2482, -1660 = -1612
 	//controllable false
@@ -198,7 +198,7 @@ public MG_FALLOUT_Start()
 	
 }
 
-public MG_FALLOUT_PreparePlayer(playerid)
+stock MG_FALLOUT_PreparePlayer(playerid)
 {
 	if(playersInFallout[playerid] == -1)
     {
@@ -275,37 +275,37 @@ public MG_FALLOUT_SquareShake(id)
 	{
 		case 0, 5:
 		{
-			SetObjectRot(panel[id][objectid], 31.8, 2, 0);
+			SetObjectRot(panel[id][panelObjectid], 31.8, 2, 0);
 		}
 		case 1, 6:
 		{
-			SetObjectRot(panel[id][objectid], 33.8, 0, 0);
+			SetObjectRot(panel[id][panelObjectid], 33.8, 0, 0);
 		}
 		case 2, 7:
 		{
-			SetObjectRot(panel[id][objectid], 31.8, -2, 0);
+			SetObjectRot(panel[id][panelObjectid], 31.8, -2, 0);
 		}
 		case 3, 8:
 		{
-			SetObjectRot(panel[id][objectid], 29.8, 0, 0);
+			SetObjectRot(panel[id][panelObjectid], 29.8, 0, 0);
 		}
 		case 4, 9:
 		{
-			SetObjectRot(panel[id][objectid], 31.8, 0, 0);
+			SetObjectRot(panel[id][panelObjectid], 31.8, 0, 0);
 		}
 		case 10:
 		{
 			new Float:X, Float:Y, Float:Z;
-			GetObjectPos(panel[id][objectid], X, Y, Z);
-			MoveObject(panel[id][objectid], X, Y, Z - 100, 4);
+			GetObjectPos(panel[id][panelObjectid], X, Y, Z);
+			MoveObject(panel[id][panelObjectid], X, Y, Z - 100, 4);
 		}
 		case 11..99:
 		{
-		   SetObjectRot(panel[id][objectid], 31.8 - ((panel[id][shakecount] * 2) - 20), 0, 0);
+		   SetObjectRot(panel[id][panelObjectid], 31.8 - ((panel[id][shakecount] * 2) - 20), 0, 0);
 		}
 		case 100:
 		{
-			DestroyObject(panel[id][objectid]);
+			DestroyObject(panel[id][panelObjectid]);
 			KillTimer(panel[id][shaketimer]);
 			panel[id][shaketimer] = -1;
 		}

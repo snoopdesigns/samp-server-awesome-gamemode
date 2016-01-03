@@ -12,7 +12,7 @@
 #define PLAYER_VAR_CURVEHICLE "CURVEHICLE"
 
 forward VEH_VehicleControlTimer();
-public VEH_CreateVehicle(playerid, modelid);
+forward VEH_CreateVehicle(playerid, modelid);
 
 public VEH_VehicleControlTimer()
 {

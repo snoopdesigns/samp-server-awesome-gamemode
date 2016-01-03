@@ -70,6 +70,7 @@ stock MENUS_showPlayerMenu(playerid, menuid)
 
 stock MENUS_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
+	strlen(inputtext);//just to handle compilte warning
 	if(response)
     {
 		switch(dialogid) 

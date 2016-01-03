@@ -6,7 +6,6 @@
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/colors.inc"
 
-#define SHOW_3D_LABELS FALSE
 #define PROP_UNBUYABLE_TIME_IN_MIN 5
 #define PROP_EARNINGS_INTERVAL_IN_MIN 5
 
@@ -14,6 +13,8 @@
 
 forward PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z);
 forward PROPS_PlayerEarningsTimer();
+
+new SHOW_3D_LABELS=FALSE;
 
 new PlayerText:playerTDs[MAX_PLAYERS];
 new playerTDsTimer[MAX_PLAYERS];
@@ -24,14 +25,14 @@ public PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z)
 {
 	if(GetPlayerDistanceFromPoint(playerid, x, y, z) > 1)
 	{
-		if(playerTDs[playerid] != -1)
+		if(playerTDs[playerid] != PlayerText:-1)
 		{
 			PlayerTextDrawDestroy(playerid, playerTDs[playerid]);
-			playerTDs[playerid] = -1;
+			playerTDs[playerid] = PlayerText:-1;
 			if(playerTDsTimer[playerid] != -1)
 			{
 				KillTimer(playerTDsTimer[playerid]);
-				playerTDs[playerid] = -1;
+				playerTDs[playerid] = PlayerText:-1;
 			}
 		}
 	}
@@ -53,8 +54,8 @@ public PROPS_PlayerEarningsTimer()
 		do
 		{
 			new propowner[128];
-			new earnings = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropEarnings"));
-			propowner = DBUTILS_getFieldValueFromResultSet(db_result, "PropOwner");
+			new earnings = strToInt(DBUTILS_getFieldFromResult(db_result, "PropEarnings"));
+			propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
 			new playerid = GetPlayerIdByName(propowner);
 			if(playerid != -1) 
 			{
@@ -74,9 +75,9 @@ public PROPS_PlayerEarningsTimer()
 	DBUTILS_runSelectQueryClear(db_result);
 }
 
-stock PROPS_initPropsSystem(db_handle)
+stock PROPS_initPropsSystem(DB:db_handle_to_props)
 {
-	db_handle_props = db_handle;
+	db_handle_props = db_handle_to_props;
 	new createTablePropsQuery[512];
 	format(createTablePropsQuery, sizeof createTablePropsQuery, "CREATE TABLE IF NOT EXISTS `properties`(%s, %s, %s, %s, %s, %s, %s, %s, %s)",
 		"`ID` INTEGER PRIMARY KEY NOT NULL",
@@ -98,14 +99,14 @@ stock PROPS_initPropsSystem(db_handle)
 		do
 		{
 			new propname[128];
-			new Float:x = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocX"));
-			new Float:y = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocY"));
-			new Float:z = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocZ"));
-			propname = DBUTILS_getFieldValueFromResultSet(db_result, "PropName");
-			new oldid = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "ID"));
+			new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
+			new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
+			new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
+			propname = DBUTILS_getFieldFromResult(db_result, "PropName");
+			new oldid = strToInt(DBUTILS_getFieldFromResult(db_result, "ID"));
 			
 			new id = CreatePickup(1273, 1, x, y, z, -1);
-			if(SHOW_3D_LABELS) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
+			if(SHOW_3D_LABELS == 1) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
 			static queryUpdate[128];
 			format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `ID`=%d WHERE `ID`=%d", id, oldid);
 			DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
@@ -116,7 +117,7 @@ stock PROPS_initPropsSystem(db_handle)
 	//fill player td with nulls
 	for(new i = 0; i < MAX_PLAYERS; i++)
 	{
-		playerTDs[i] = -1;
+		playerTDs[i] = PlayerText:-1;
 		playerTDsTimer[i] = -1;
 	}
 	SetTimer("PROPS_PlayerEarningsTimer", PROP_EARNINGS_INTERVAL_IN_MIN * 60 * 1000, true);
@@ -151,13 +152,13 @@ stock PROPS_buyPropertyForPlayer(playerid)
 		do
 		{
 			new propname[128], propowner[128];
-			new Float:x = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocX"));
-			new Float:y = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocY"));
-			new Float:z = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocZ"));
-			new cost = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropCost"));
-			propname = DBUTILS_getFieldValueFromResultSet(db_result, "PropName");
-			propowner = DBUTILS_getFieldValueFromResultSet(db_result, "PropOwner");
-			new propid = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "ID"));
+			new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
+			new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
+			new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
+			new cost = strToInt(DBUTILS_getFieldFromResult(db_result, "PropCost"));
+			propname = DBUTILS_getFieldFromResult(db_result, "PropName");
+			propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
+			new propid = strToInt(DBUTILS_getFieldFromResult(db_result, "ID"));
 			
 			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5)
 			{
@@ -169,7 +170,7 @@ stock PROPS_buyPropertyForPlayer(playerid)
 					return;
 				}
 				new propTime[128];
-				propTime = DBUTILS_getFieldValueFromResultSet(db_result, "PropPurchaseTime");
+				propTime = DBUTILS_getFieldFromResult(db_result, "PropPurchaseTime");
 				new purchaseTime = strToInt(propTime);
 				if(strlen(propTime) == 0 || (gettime() - purchaseTime) > PROP_UNBUYABLE_TIME_IN_MIN * 60)
 				{
@@ -209,13 +210,13 @@ stock PROPS_sellProperty(playerid)
 		do
 		{
 			new propname[128], propowner[128];
-			new Float:x = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocX"));
-			new Float:y = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocY"));
-			new Float:z = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocZ"));
-			new cost = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropCost"));
-			propname = DBUTILS_getFieldValueFromResultSet(db_result, "PropName");
-			propowner = DBUTILS_getFieldValueFromResultSet(db_result, "PropOwner");
-			new propid = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "ID"));
+			new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
+			new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
+			new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
+			new cost = strToInt(DBUTILS_getFieldFromResult(db_result, "PropCost"));
+			propname = DBUTILS_getFieldFromResult(db_result, "PropName");
+			propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
+			new propid = strToInt(DBUTILS_getFieldFromResult(db_result, "ID"));
 			
 			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5)
 			{
@@ -252,14 +253,14 @@ stock PROPS_OnPlayerPickUpPickup(playerid, pickupid)
 	if(DBUTILS_getResultsetSize(db_result) > 0)
 	{
 		new propname[128], propowner[128];
-		propname = DBUTILS_getFieldValueFromResultSet(db_result, "PropName");
-		new cost = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropCost"));
-		new earnings = strToInt(DBUTILS_getFieldValueFromResultSet(db_result, "PropEarnings"));
-		propowner = DBUTILS_getFieldValueFromResultSet(db_result, "PropOwner");
+		propname = DBUTILS_getFieldFromResult(db_result, "PropName");
+		new cost = strToInt(DBUTILS_getFieldFromResult(db_result, "PropCost"));
+		new earnings = strToInt(DBUTILS_getFieldFromResult(db_result, "PropEarnings"));
+		propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
 		
-		new Float:x = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocX"));
-		new Float:y = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocY"));
-		new Float:z = floatstr(DBUTILS_getFieldValueFromResultSet(db_result, "PropLocZ"));
+		new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
+		new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
+		new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
 		
 		PROPS_ShowPropertyInfoToPlayer(playerid, x, y, z, propname, cost, earnings, propowner);
 	}
@@ -269,12 +270,12 @@ stock PROPS_OnPlayerPickUpPickup(playerid, pickupid)
 
 stock PROPS_ShowPropertyInfoToPlayer(playerid, Float:x, Float:y, Float:z, propname[], cost, earnings, owner[])
 {
-	if(playerTDs[playerid] == -1)
+	if(playerTDs[playerid] == PlayerText:-1)
 	{
 		new string[256];
 		if(strlen(owner) == 0)
 		{
-			strins(owner,"nobody",0);
+			strins(owner, "nobody", 0, 256);
 		}
 		format(string, sizeof string, "~y~%s~n~~r~Cost ~w~%d$~n~~r~Earninigs ~w~%d$~n~~r~Owner ~w~%s~n~~n~~y~/buy ~w~to purchase", propname, cost, earnings, owner);
 		new PlayerText:td;

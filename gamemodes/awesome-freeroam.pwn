@@ -13,7 +13,6 @@
 #include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"
 
-//TODO add a define to simplify format strings
 //TODO auto-repair on-off
 //TODO auto-flip on-off
 
@@ -48,7 +47,7 @@ public OnGameModeInit()
 	MENUS_initMenusSystem();
 	VEH_initVehiclesSystem();
 	PROPS_initPropsSystem(db_handle);
-	MG_initMinigamesSystem(db_handle);
+	MG_initMinigamesSystem();
 	RACE_initRaceSystem(db_handle);
 	RMSG_InitRandomMsg();
 	
@@ -331,7 +330,7 @@ public OnPlayerLeaveCheckpoint(playerid)
 
 public OnPlayerEnterRaceCheckpoint(playerid)
 {
-	RACE_OnPlayerEnterRaceCheckpoint(playerid);
+	RACE_OnEnterCheckpoint(playerid);
 	return 1;
 }
 

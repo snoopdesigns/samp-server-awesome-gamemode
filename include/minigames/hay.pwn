@@ -29,7 +29,7 @@ new hayObjects[HAY_B]; // array of hay objects
 
 new playersInHay[MAX_PLAYERS];
 new playerLevel[MAX_PLAYERS];
-new Text:hayTextdraw[MAX_PLAYERS];
+new PlayerText:hayTextdraw[MAX_PLAYERS];
 
 new speed_xy; // moving speed across x-y axis
 new speed_z; // moving speed across z axis
@@ -63,7 +63,7 @@ stock MG_HAY_Init()
 	{
 	    playerLevel[i] = 0;
 	    playersInHay[i] = -1;
-		hayTextdraw[i] = -1;
+		hayTextdraw[i] = PlayerText:-1;
 	}
 	
 	for (new i = 0; i < HAY_B; i++)
@@ -106,9 +106,9 @@ stock MG_HAY_PlayerLeftMinigame(playerid)
 	if(playersInHay[playerid] != -1)
     {
 		playersInHay[playerid] = -1;
-		TextDrawHideForPlayer(playerid, hayTextdraw[playerid]);
+		PlayerTextDrawHide(playerid, hayTextdraw[playerid]);
 		PlayerTextDrawDestroy(playerid, hayTextdraw[playerid]);
-		hayTextdraw[playerid] = -1;
+		hayTextdraw[playerid] = PlayerText:-1;
 	}
 }
 
@@ -120,18 +120,18 @@ stock MG_HAY_Start()
     	{
             SetPlayerPos(i, 0, 6.5, 3.2);
 			SetPlayerFacingAngle(i, 135);
-			hayTextdraw[i] = TextDrawCreate(549.000000,397.000000,"~h~~y~Hay Minigame~n~~r~Level: ~w~0/31 ~n~~r~Time: ~w~00:00:00");
-			TextDrawFont(hayTextdraw[i] , 1);
-			TextDrawSetProportional(hayTextdraw[i], 1);
-			TextDrawSetOutline(hayTextdraw[i], 0);
-			TextDrawColor(hayTextdraw[i],-65281);
-			TextDrawLetterSize(hayTextdraw[i] ,0.310000,1.400000);
-			TextDrawTextSize(hayTextdraw[i] , 640.000000,0.000000);
-			TextDrawAlignment(hayTextdraw[i],1);
-			TextDrawSetShadow(hayTextdraw[i], 0);
-			TextDrawUseBox(hayTextdraw[i], 1);
-			TextDrawBoxColor(hayTextdraw[i], 255);
-			TextDrawBackgroundColor(hayTextdraw[i], 255);
+			hayTextdraw[i] = CreatePlayerTextDraw(i, 549.000000,397.000000,"~h~~y~Hay Minigame~n~~r~Level: ~w~0/31 ~n~~r~Time: ~w~00:00:00");
+			PlayerTextDrawFont(i, hayTextdraw[i] , 1);
+			PlayerTextDrawSetProportional(i, hayTextdraw[i], 1);
+			PlayerTextDrawSetOutline(i, hayTextdraw[i], 0);
+			PlayerTextDrawColor(i, hayTextdraw[i],-65281);
+			PlayerTextDrawLetterSize(i, hayTextdraw[i] ,0.310000,1.400000);
+			PlayerTextDrawTextSize(i, hayTextdraw[i] , 640.000000,0.000000);
+			PlayerTextDrawAlignment(i, hayTextdraw[i],1);
+			PlayerTextDrawSetShadow(i, hayTextdraw[i], 0);
+			PlayerTextDrawUseBox(i, hayTextdraw[i], 1);
+			PlayerTextDrawBoxColor(i, hayTextdraw[i], 255);
+			PlayerTextDrawBackgroundColor(i, hayTextdraw[i], 255);
 			
 			TogglePlayerControllable(i,0);
     	}
@@ -160,9 +160,9 @@ stock MG_HAY_Destroy()
 	
 	for (new i = 0; i < MAX_PLAYERS; i++)
 	{
-		if(playersInHay[i] != -1 && hayTextdraw[i] != -1)
+		if(playersInHay[i] != -1 && hayTextdraw[i] != PlayerText:-1)
 		{
-			TextDrawHideForPlayer(i, hayTextdraw[i]);
+			PlayerTextDrawHide(i, hayTextdraw[i]);
 			PlayerTextDrawDestroy(i, hayTextdraw[i]);
 		}
 	}
@@ -280,8 +280,8 @@ public MG_HAY_TDScore()
 			ConvertTime(var, totalRaceTime, tH, tM, tS);
 			level = playerLevel[i];
 			format(string,sizeof(string),"Hay Minigame~n~Level: %d/31 ~n~Time: %02d:%02d",level,tH,tM,tS);
-			TextDrawSetString(hayTextdraw[i], string);
-	      	TextDrawShowForPlayer(i, hayTextdraw[i]);
+			PlayerTextDrawSetString(i, hayTextdraw[i], string);
+	      	PlayerTextDrawShow(i, hayTextdraw[i]);
    			if(playerLevel[i] == 31)
 			{
 				GetPlayerName(i, PlayerN, sizeof(PlayerN));
