@@ -7,7 +7,7 @@
 #include "include/minigames/hay.pwn"
 #include "include/awesome/a_utils.inc"
 
-#define MINIGAMES_INTERVAL 1 * 60 * 1000 // 4 minutes
+#define MINIGAMES_INTERVAL 5 * 60 * 1000 // 4 minutes
 #define MINIGAMES_START_DELAY 15000 // 15 secs
 
 #define MG_STATUS_INACTIVE 0 

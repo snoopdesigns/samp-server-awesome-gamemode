@@ -10,8 +10,9 @@ forward RACE_initNewRace();
 forward RACE_startRace();
 forward RACE_finishRace();
 forward RACE_CountDown();
+forward RACE_playerTdTimer();
 
-#define RACES_INTERVAL 2 * 60 * 1000 // 3 minutes
+#define RACES_INTERVAL 1 * 60 * 1000 // 3 minutes
 #define RACES_START_DELAY 15000 // 15 secs
 
 #define RACE_STATUS_INACTIVE 0 
@@ -28,13 +29,21 @@ enum raceCheckpointInfo
 
 new raceCheckpoints[100][raceCheckpointInfo];
 new totalRaceCheckpoints = -1;
+new currentRaceIdentifier = -1;
+
+new currentRaceStartTime;
 
 new playersInRace[MAX_PLAYERS];
 new playerInRaceProgress[MAX_PLAYERS];
+new playersInRaceFinished = 0;
+
+new PlayerText: playersInRaceTextdraw[MAX_PLAYERS];
+new playersInRaceTextdrawTimer = -1;
 
 new raceStatus;
 new raceCountdownTimer = -1;
 new raceCountdownTimerCount;
+
 new DB:db_handle_race;
 
 //race creation
@@ -47,8 +56,6 @@ new raceCreationFileName[64];
 
 //TODO check if active player dead or leave the game to finish race
 //TODO create player leave race method
-//TODO race textdraw (position, time)
-//TODO race status (times and positions)
 
 stock RACE_initRaceSystem(DB:db_handle_for_race)
 {
@@ -75,7 +82,7 @@ stock RACE_createRace(playerid, filename[])
 		SendClientMessage(playerid, COLOR_IMPROVEMENT, "* Start creating new race");
 		new Float:xpos, Float:ypos, Float:zpos;
 		GetPlayerPos(playerid, xpos, ypos, zpos);
-		SendClientMessageFormatted(playerid, COLOR_MG, "%f, %f, %f ;\n", xpos, ypos, zpos);
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "%f, %f, %f ;\n", xpos, ypos, zpos);
 		format(raceCreationFileName, sizeof raceCreationFileName, "races/%s", filename);
 		raceCreationFile = fopen(raceCreationFileName, filemode:io_append);
 		if(!raceCreationFile) 
@@ -103,7 +110,7 @@ stock RACE_createRaceCheck(playerid)
 		GetPlayerPos(playerid, xpos, ypos, zpos);
 		new str[64];
 		format(str, sizeof str, "%f, %f, %f ;\n", xpos, ypos, zpos);
-		SendClientMessageFormatted(playerid, COLOR_MG, "%f, %f, %f ;\n", xpos, ypos, zpos);
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "%f, %f, %f ;\n", xpos, ypos, zpos);
 		fwrite(raceCreationFile, str);
 	}
 	else 
@@ -127,7 +134,7 @@ stock RACE_createRaceEnd(playerid, racename[])
 			racename,
 			player_name,
 			raceCreationFileName);
-		DBUTILS_runInsertQuery(db_handle_props, query);
+		DBUTILS_runInsertQuery(db_handle_race, query);
 		
 		SendClientMessage(playerid, COLOR_IMPROVEMENT, "* New race successfully created");
 		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Race name: '%s', filename: '%s'", racename, raceCreationFileName);
@@ -140,10 +147,14 @@ stock RACE_createRaceEnd(playerid, racename[])
 
 public RACE_initNewRace()
 {
+	currentRaceStartTime = 0;
+	playersInRaceFinished = 0;
+	currentRaceIdentifier = -1;
 	for(new i = 0; i < MAX_PLAYERS; i++)
 	{
 		playersInRace[i] = -1;
 		playerInRaceProgress[i] = -1;
+		playersInRaceTextdraw[i] = PlayerText: -1;
 	}
 	
 	for(new i = 0; i < 100; i++)
@@ -156,7 +167,7 @@ public RACE_initNewRace()
 	totalRaceCheckpoints = -1;
 	
 	static DBResult: db_result;
-	db_result = DBUTILS_runSelectQuery(db_handle_reg, "SELECT * FROM `race`");
+	db_result = DBUTILS_runSelectQuery(db_handle_race, "SELECT * FROM `race`");
 	new racesCounts = DBUTILS_getResultsetSize(db_result);
 	if(racesCounts == 0) 
 	{
@@ -164,19 +175,33 @@ public RACE_initNewRace()
 		SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 		return;
 	}
-	new rand = random(racesCounts) + 1;
+	currentRaceIdentifier = random(racesCounts) + 1;
 	static query[256];
-	new racename[128], filename[128];
-	format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", rand);
-	db_result = DBUTILS_runSelectQuery(db_handle_reg, query);
+	new racename[128], filename[128], recordHolder[128], creatorName[128];
+	new recordTime;
+	format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", currentRaceIdentifier);
+	db_result = DBUTILS_runSelectQuery(db_handle_race, query);
 	racename = DBUTILS_getFieldFromResult(db_result, "RaceName");
+	creatorName = DBUTILS_getFieldFromResult(db_result, "CreatorName");
 	filename = DBUTILS_getFieldFromResult(db_result, "filename");
-	SendClientMessageToAllFormatted(COLOR_MG, "** Race '%s' is about to start... type /join if you wish to join", racename);
-	SendClientMessageToAll(COLOR_MG, "* Total checkpoints: 19 | Length: 5.51km");//TODO
-	SendClientMessageToAll(COLOR_MG, "* Current race record holder is 'SnooP', time is '03m13s'"); //TODO
+	recordHolder = DBUTILS_getFieldFromResult(db_result, "RecordHolder");
+	recordTime = strToInt(DBUTILS_getFieldFromResult(db_result, "RecordTime"));
+	totalRaceCheckpoints = RACE_loadRaceFromFile(filename);
+	
+	SendClientMessageToAllFormatted(COLOR_MG, "** Race '%s' by '%s' is about to start... type /join if you wish to join", racename, creatorName);
+	SendClientMessageToAllFormatted(COLOR_MG, "* Total checkpoints: %d | Length: 5.51km", totalRaceCheckpoints);
+	if(recordTime != 0) 
+	{
+		new tH,tM,tS;
+		ConvertTime(var, recordTime, tH, tM, tS);
+		SendClientMessageToAllFormatted(COLOR_MG, "* Current race record holder is '%s', time is %02d Min %02d Sec", recordHolder, tH, tM, tS);
+	}
+	else 
+	{
+		SendClientMessageToAll(COLOR_MG, "* There is no current record holder for this race.");
+	}
 	SendClientMessageToAll(COLOR_MG, "* Vehicle: ANY");//TODO
 	
-	totalRaceCheckpoints = RACE_loadRaceFromFile(filename);
 	raceStatus = RACE_STATUS_WAITING_PLAYERS;
 	SetTimer("RACE_startRace", RACES_START_DELAY, 0);
 	
@@ -195,10 +220,35 @@ public RACE_startRace()
 	}
 	if(playerInRaceRemaining > 0)
 	{
-		//SendClientMessageToAll(COLOR_MG, "* Race starting..."); // TODO send only to participants
+		new playerTdMsg[128];
+		format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~-/%d~n~~r~Position_~w~-/%d~n~~r~Time_~w~---", totalRaceCheckpoints, playerInRaceRemaining); 
 		raceStatus = RACE_STATUS_ACTIVE;
 		raceCountdownTimerCount = 5;
 		raceCountdownTimer = SetTimer("RACE_CountDown", 1000, 1);
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+			if(playersInRace[i] != -1)
+			{
+				SendClientMessage(i, COLOR_MG, "* Race starting...");
+				//create player textdraw
+				playersInRaceTextdraw[i] = CreatePlayerTextDraw(i, 485.554931, 405.037750, playerTdMsg);
+				PlayerTextDrawLetterSize(i, playersInRaceTextdraw[i], 0.400000, 1.600000);
+				PlayerTextDrawTextSize(i, playersInRaceTextdraw[i], 640.000000, 0.000000);
+				PlayerTextDrawAlignment(i, playersInRaceTextdraw[i], 1);
+				PlayerTextDrawColor(i, playersInRaceTextdraw[i], -1);
+				PlayerTextDrawUseBox(i, playersInRaceTextdraw[i], 1);
+				PlayerTextDrawBoxColor(i, playersInRaceTextdraw[i], 13141);
+				PlayerTextDrawSetShadow(i, playersInRaceTextdraw[i], 1);
+				PlayerTextDrawSetOutline(i, playersInRaceTextdraw[i], 0);
+				PlayerTextDrawBackgroundColor(i, playersInRaceTextdraw[i], 1499227944);
+				PlayerTextDrawFont(i, playersInRaceTextdraw[i], 2);
+				PlayerTextDrawSetProportional(i, playersInRaceTextdraw[i], 1);
+				PlayerTextDrawSetShadow(i, playersInRaceTextdraw[i], 0);
+				PlayerTextDrawSetSelectable(i, playersInRaceTextdraw[i], true);
+				
+				PlayerTextDrawShow(i, playersInRaceTextdraw[i]);
+			}
+		}
 	}
 	else 
 	{
@@ -211,6 +261,9 @@ public RACE_startRace()
 public RACE_finishRace()
 {
 	raceStatus = RACE_STATUS_INACTIVE;
+	currentRaceIdentifier = -1;
+	KillTimer(playersInRaceTextdrawTimer);
+	playersInRaceTextdrawTimer = -1;
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 	for(new i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -218,6 +271,66 @@ public RACE_finishRace()
 		{
 			DisablePlayerRaceCheckpoint(i);
 		}
+	}
+}
+
+stock RACE_playerFinishRace(playerid, status)
+{
+	if(status == 0) //player finished
+	{
+		new player_name[MAX_PLAYER_NAME];
+		GetPlayerName(playerid, player_name, sizeof(player_name));
+		playersInRaceFinished++;
+		new tH,tM,tS;
+		new timeStamp = GetTickCount();
+		new totalRaceTime = timeStamp - currentRaceStartTime;
+		ConvertTime(var, totalRaceTime, tH, tM, tS);
+		SendClientMessageFormatted(playerid, COLOR_MG, "* You finished the race in %d position. Time: %02d Min %02d Sec", playersInRaceFinished, tH, tM, tS);
+		if(playersInRaceFinished == 1) SendClientMessageToAllFormatted(COLOR_MG, "* '%s' finished the race in %d position. Time: %02d Min %02d Sec", player_name, playersInRaceFinished, tH, tM, tS);
+		playersInRace[playerid] = -1;
+		DisablePlayerRaceCheckpoint(playerid);
+		PlayerTextDrawHide(playerid, playersInRaceTextdraw[playerid]);
+		PlayerTextDrawDestroy(playerid, playersInRaceTextdraw[playerid]);
+		playersInRaceTextdraw[playerid] = PlayerText: -1;
+		
+		//check is new time record occured
+		static query[256], DBResult: db_result;
+		new recordHolder[128], racename[128];
+		new recordTime;
+		format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", currentRaceIdentifier);
+		db_result = DBUTILS_runSelectQuery(db_handle_race, query);
+		racename = DBUTILS_getFieldFromResult(db_result, "RaceName");
+		recordHolder = DBUTILS_getFieldFromResult(db_result, "RecordHolder");
+		recordTime = strToInt(DBUTILS_getFieldFromResult(db_result, "RecordTime"));
+		if(recordTime > 0)
+		{
+			if(totalRaceTime < recordTime)
+			{
+				SendClientMessageFormatted(playerid, COLOR_MG, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
+				SendClientMessageToAllFormatted(COLOR_MG, "* '%s' set up new record of '%s' race, time: %02d Min %02d Sec", player_name, racename, tH, tM, tS);
+				static queryUpdate[128];
+				format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordHolder`='%s' WHERE `ID`=%d", player_name, currentRaceIdentifier);
+				DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+				format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordTime`=%d WHERE `ID`=%d", totalRaceTime, currentRaceIdentifier);
+				DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+				//gave player something cool
+			}
+		}
+		else //no current record
+		{
+			SendClientMessageFormatted(playerid, COLOR_MG, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
+			SendClientMessageToAllFormatted(COLOR_MG, "* '%s' set up new record of '%s' race, time: %02d Min %02d Sec", player_name, racename, tH, tM, tS);
+			static queryUpdate[128];
+			format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordHolder`='%s' WHERE `ID`=%d", player_name, currentRaceIdentifier);
+			DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+			format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordTime`=%d WHERE `ID`=%d", totalRaceTime, currentRaceIdentifier);
+			DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+			//gave player something cool
+		}
+	}
+	else//player existed 
+	{
+		
 	}
 }
 
@@ -238,6 +351,8 @@ public RACE_CountDown()
                          raceCheckpoints[1][x], raceCheckpoints[1][y], raceCheckpoints[1][z], 10);
 			}
 		}
+		playersInRaceTextdrawTimer = SetTimer("RACE_playerTdTimer", 1000, 1);
+		currentRaceStartTime = GetTickCount();
 		return 1;
 	}
 
@@ -254,6 +369,38 @@ public RACE_CountDown()
 
 	raceCountdownTimerCount--;
 	return 1;
+}
+
+public RACE_playerTdTimer()
+{
+	new playerInRaceRemaining = 0;
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+		if(playersInRace[i] != -1)
+		{
+			playerInRaceRemaining ++;
+		}
+	}
+	for (new i=0; i<MAX_PLAYERS; i++)
+	{
+		if(playersInRace[i] != -1 && IsPlayerConnected(i))
+		{
+			new tH,tM,tS;
+			new timeStamp = GetTickCount();
+			new totalRaceTime = timeStamp - currentRaceStartTime;
+			ConvertTime(var, totalRaceTime, tH, tM, tS);
+			new playerTdMsg[128];
+			format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~%d/%d~n~~r~Position_~w~%d/%d~n~~r~Time_~w~%02d:%02d", 
+				playerInRaceProgress, 
+				totalRaceCheckpoints, 
+				0,
+				playerInRaceRemaining,
+				tH,
+				tM,
+				tS);
+			PlayerTextDrawSetString(i, playersInRaceTextdraw[i], playerTdMsg);
+		}
+	}
 }
 
 stock RACE_join(playerid)
@@ -293,9 +440,7 @@ stock RACE_OnEnterCheckpoint(playerid)
 		DisablePlayerRaceCheckpoint(playerid);
 		if(playerInRaceProgress[playerid] == totalRaceCheckpoints - 1)
 		{
-			SendClientMessage(playerid, COLOR_MG, "* You finished the race!"); //TODO get position
-			playersInRace[playerid] = -1;
-			DisablePlayerRaceCheckpoint(playerid);
+			RACE_playerFinishRace(playerid, 0);
 			new playerInRaceRemaining = 0;
 			for(new i = 0; i < MAX_PLAYERS; i++)
 			{

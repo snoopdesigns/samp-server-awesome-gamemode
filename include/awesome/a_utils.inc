@@ -8,6 +8,16 @@
 #define SendClientMessageFormatted(%0,%1,%2,%3) format(clientFormattedMessage, sizeof clientFormattedMessage, %2, %3); SendClientMessage(%0, %1, clientFormattedMessage)
 #define SendClientMessageToAllFormatted(%0,%1,%2) format(clientFormattedMessage, sizeof clientFormattedMessage, %1, %2); SendClientMessageToAll(%0, clientFormattedMessage)
 
+
+//0 - var, 1 - unix time, 2 - hours, 3 - minutes, 4 - seconds
+#define ConvertTime(%0,%1,%2,%3,%4) \
+	new \
+	    Float: %0 = floatdiv(%1, 60000) \
+	;\
+	%2 = floatround(%0, floatround_tozero); \
+	%3 = floatround(floatmul(%0 - %2, 60), floatround_tozero); \
+	%4 = floatround(floatmul(floatmul(%0 - %2, 60) - %3, 1000), floatround_tozero)
+
 new clientFormattedMessage[128];
 
 stock intToStr(int)
