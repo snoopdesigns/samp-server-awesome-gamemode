@@ -3,6 +3,7 @@
 #include <sccanf>
 
 #include "include/awesome/a_dbutils.inc"
+#include "include/awesome/a_utils.inc"
 #include "include/awesome/a_reg.inc"
 #include "include/awesome/a_consts.inc"
 #include "include/awesome/a_commands.inc"
@@ -16,7 +17,7 @@
 //TODO auto-repair on-off
 //TODO auto-flip on-off
 
-#define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
+#define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
 new gPlayerClass[MAX_PLAYERS];
 new Text: txtClassSelHelper;
@@ -269,7 +270,10 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	//minigames
 	dcmd(event, 5, cmdtext, 1);
 	dcmd(leave, 5, cmdtext, 1);
-	dcmd(join, 4, cmdtext, 1); //race
+	
+	//races
+	dcmd(join, 4, cmdtext, 1);
+	dcmd(lcp, 3, cmdtext, 1);
 	dcmd(cr, 2, cmdtext, 2);
 	dcmd(crcheck, 7, cmdtext, 2);
 	dcmd(crend, 5, cmdtext, 2);
@@ -279,7 +283,8 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	dcmd(setmoney, 8, cmdtext, 2);
 	dcmd(restart, 7, cmdtext, 2);
 	dcmd(setlevel, 8, cmdtext, 2);	
-	return 0;
+	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
+	return 1;
 }
 
 public OnPlayerDeath(playerid, killerid, reason)

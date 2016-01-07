@@ -148,7 +148,7 @@ dcmd_cprop(playerid, params[])
 }
 
 //=====================================================================
-//========================EVENTS COMMANDS==============================
+//========================MINIGAMES COMMANDS===========================
 //=====================================================================
 
 dcmd_event(playerid, params[])
@@ -165,10 +165,21 @@ dcmd_leave(playerid, params[])
 	return 1;
 }
 
+//=====================================================================
+//========================RACES COMMANDS===============================
+//=====================================================================
+
 dcmd_join(playerid, params[])
 {
 	strlen(params);//just to handle compile warning
 	RACE_join(playerid);
+	return 1;
+}
+
+dcmd_lcp(playerid, params[])
+{
+	strlen(params);//just to handle compile warning
+	RACE_movePlayerToLcp(playerid);
 	return 1;
 }
 

@@ -72,6 +72,14 @@ stock RACE_initRaceSystem(DB:db_handle_for_race)
 	
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 	raceStatus = RACE_STATUS_INACTIVE;
+	
+	//init player vars
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+		playersInRace[i] = -1;
+		playerInRaceProgress[i] = -1;
+		playersInRaceTextdraw[i] = PlayerText: -1;
+	}
 }
 
 stock RACE_createRace(playerid, filename[])
@@ -431,6 +439,48 @@ stock RACE_join(playerid)
 			SendClientMessage(playerid, COLOR_ERROR, "* There is no active race for now");
 		}
 	}
+}
+
+stock RACE_movePlayerToLcp(playerid)
+{
+	if(playersInRace[playerid] != -1)
+	{
+		//move player to lcp (including player vehicle)
+		if(IsPlayerInAnyVehicle(playerid))
+		{
+			if(playerInRaceProgress[playerid] > 0)
+			{
+				new vehicleid = GetPlayerVehicleID(playerid);
+				SetVehiclePos(vehicleid, 
+					raceCheckpoints[playerInRaceProgress[playerid]-1][x], 
+					raceCheckpoints[playerInRaceProgress[playerid]-1][y], 
+					raceCheckpoints[playerInRaceProgress[playerid]-1][z]);
+				SendClientMessage(playerid, COLOR_MG, "* Teleported to last race checkpoint.");
+			}
+		}
+	}
+}
+
+stock RACE_checkCommandAccess(playerid, cmd[])
+{
+	if(IsPlayerAdmin(playerid)) return TRUE;
+	if(playersInRace[playerid] != -1)
+	{
+		if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "lcp") != 0) 
+		{
+			SendClientMessage(playerid, COLOR_ERROR, "* This command is unavailable while you are in the race.");
+			return FALSE;
+		}
+	}
+	else
+	{
+		if(strcmp(cmd, "lcp") == 0) 
+		{
+			SendClientMessageFormatted(playerid, COLOR_ERROR, "* /%s command available only if you are in the race.", cmd);
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 stock RACE_OnEnterCheckpoint(playerid)

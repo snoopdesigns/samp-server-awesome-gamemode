@@ -184,6 +184,43 @@ stock MG_Start()
 	}
 }
 
+stock MG_checkCommandAccess(playerid, cmd[])
+{
+	if(IsPlayerAdmin(playerid)) return TRUE;
+	if(minigamePlayers[playerid] != -1)
+	{
+		switch (activeMinigame)
+		{
+			case 0:
+			{
+				if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "leave") != 0) 
+				{
+					SendClientMessage(playerid, COLOR_ERROR, "* Type /leave or /kill to leave minigame.");
+					return FALSE;
+				}
+			}
+			case 1:
+			{
+				if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "leave") != 0) 
+				{
+					SendClientMessage(playerid, COLOR_ERROR, "* Type /leave or /kill to leave minigame.");
+					return FALSE;
+				}
+			}
+			default:
+			{
+				SendClientMessage(playerid, COLOR_ERROR, "* Something goes wrong!");
+				return TRUE;
+			}
+		}
+	}
+	else
+	{
+		//minigame specific commands should not be accessible not from minigame
+	}
+	return TRUE;
+}
+
 stock MG_registerPlayerForMinigame(playerid)
 {
 	if(minigamePlayers[playerid] != -1)
