@@ -48,6 +48,11 @@ stock FIX_valstr(dest[], value, bool:pack = false)
         format(dest, 12, "%d", value), pack && strpack(dest, dest, 12);
 }
 
+stock Float:GetDistanceBetweenPoints(Float:x1,Float:y1,Float:x2,Float:y2)
+{
+	return floatsqroot(((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2)));
+}
+
 stock GetPlayerIdByName(name[])
 {
 	for(new i = 0; i < MAX_PLAYERS; i++)

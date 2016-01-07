@@ -12,7 +12,7 @@ forward RACE_finishRace();
 forward RACE_CountDown();
 forward RACE_playerTdTimer();
 
-#define RACES_INTERVAL 1 * 60 * 1000 // 3 minutes
+#define RACES_INTERVAL 1 * 20 * 1000 // 3 minutes
 #define RACES_START_DELAY 15000 // 15 secs
 
 #define RACE_STATUS_INACTIVE 0 
@@ -28,7 +28,9 @@ enum raceCheckpointInfo
 }
 
 new raceCheckpoints[100][raceCheckpointInfo];
+new raceEntryPoint[1][raceCheckpointInfo];
 new totalRaceCheckpoints = -1;
+new raceVehicleModel = -1;
 new currentRaceIdentifier = -1;
 
 new currentRaceStartTime;
@@ -61,12 +63,13 @@ stock RACE_initRaceSystem(DB:db_handle_for_race)
 {
 	db_handle_race = db_handle_for_race;
 	new createTableRaceQuery[512];
-	format(createTableRaceQuery, sizeof createTableRaceQuery, "CREATE TABLE IF NOT EXISTS `race`(%s, %s, %s, %s, %s, %s)",
+	format(createTableRaceQuery, sizeof createTableRaceQuery, "CREATE TABLE IF NOT EXISTS `race`(%s, %s, %s, %s, %s, %s, %s)",
 		"`ID` INTEGER PRIMARY KEY NOT NULL",
 		"'RaceName' VARCHAR(32) NOT NULL",
 		"'CreatorName' VARCHAR(32) NOT NULL",
 		"'RecordTime' INTEGER NOT NULL",
 		"'RecordHolder' VARCHAR(32) NOT NULL",
+		"'VehicleModel' INTEGER NOT NULL",
 		"'filename' VARCHAR(32) NOT NULL");
 	DBUTILS_runCreateQuery(db_handle_race, createTableRaceQuery);
 	
@@ -138,7 +141,7 @@ stock RACE_createRaceEnd(playerid, racename[])
 		GetPlayerName(playerid, player_name, sizeof player_name);
 		
 		static query[256];
-		format(query, sizeof query, "INSERT INTO `race` (`RaceName`, `CreatorName`, `RecordTime`, `RecordHolder`, `filename`) VALUES ('%s','%s',0,'','%s')",
+		format(query, sizeof query, "INSERT INTO `race` (`RaceName`, `CreatorName`, `RecordTime`, `RecordHolder`, 'VehicleModel', `filename`) VALUES ('%s','%s',0,'',411,'%s')",
 			racename,
 			player_name,
 			raceCreationFileName);
@@ -158,6 +161,7 @@ public RACE_initNewRace()
 	currentRaceStartTime = 0;
 	playersInRaceFinished = 0;
 	currentRaceIdentifier = -1;
+	raceVehicleModel = -1;
 	for(new i = 0; i < MAX_PLAYERS; i++)
 	{
 		playersInRace[i] = -1;
@@ -172,6 +176,10 @@ public RACE_initNewRace()
 		raceCheckpoints[i][y] = -1;
 		raceCheckpoints[i][z] = -1;
 	}
+	raceEntryPoint[0][num] = -1;
+	raceEntryPoint[0][x] = -1;
+	raceEntryPoint[0][y] = -1;
+	raceEntryPoint[0][z] = -1;
 	totalRaceCheckpoints = -1;
 	
 	static DBResult: db_result;
@@ -186,7 +194,7 @@ public RACE_initNewRace()
 	currentRaceIdentifier = random(racesCounts) + 1;
 	static query[256];
 	new racename[128], filename[128], recordHolder[128], creatorName[128];
-	new recordTime;
+	new recordTime, vehicleModel;
 	format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", currentRaceIdentifier);
 	db_result = DBUTILS_runSelectQuery(db_handle_race, query);
 	racename = DBUTILS_getFieldFromResult(db_result, "RaceName");
@@ -194,10 +202,18 @@ public RACE_initNewRace()
 	filename = DBUTILS_getFieldFromResult(db_result, "filename");
 	recordHolder = DBUTILS_getFieldFromResult(db_result, "RecordHolder");
 	recordTime = strToInt(DBUTILS_getFieldFromResult(db_result, "RecordTime"));
+	vehicleModel = strToInt(DBUTILS_getFieldFromResult(db_result, "VehicleModel"));
 	totalRaceCheckpoints = RACE_loadRaceFromFile(filename);
+	raceVehicleModel = vehicleModel;
+	
+	new Float:totalRaceDistance = 0.0;
+	for(new i = 0; i< totalRaceCheckpoints - 1; i++)
+	{
+		totalRaceDistance += GetDistanceBetweenPoints(raceCheckpoints[i][x], raceCheckpoints[i][y], raceCheckpoints[i+1][x], raceCheckpoints[i+1][y]);
+	}
 	
 	SendClientMessageToAllFormatted(COLOR_MG, "** Race '%s' by '%s' is about to start... type /join if you wish to join", racename, creatorName);
-	SendClientMessageToAllFormatted(COLOR_MG, "* Total checkpoints: %d | Length: 5.51km", totalRaceCheckpoints);
+	SendClientMessageToAllFormatted(COLOR_MG, "* Total checkpoints: %d | Length: %.2fkm", totalRaceCheckpoints, totalRaceDistance/1000);
 	if(recordTime != 0) 
 	{
 		new tH,tM,tS;
@@ -208,7 +224,16 @@ public RACE_initNewRace()
 	{
 		SendClientMessageToAll(COLOR_MG, "* There is no current record holder for this race.");
 	}
-	SendClientMessageToAll(COLOR_MG, "* Vehicle: ANY");//TODO
+	new vehicleModelName[64];
+	if(vehicleModel == 0)
+	{
+		SendClientMessageToAll(COLOR_MG, "* Vehicle: ANY");
+	}
+	else
+	{
+		VEH_getVehicleNameByModelId(vehicleModel, vehicleModelName)
+		SendClientMessageToAllFormatted(COLOR_MG, "* Vehicle: %s (ID=%d)", vehicleModelName, vehicleModel);
+	}
 	
 	raceStatus = RACE_STATUS_WAITING_PLAYERS;
 	SetTimer("RACE_startRace", RACES_START_DELAY, 0);
@@ -336,10 +361,44 @@ stock RACE_playerFinishRace(playerid, status)
 			//gave player something cool
 		}
 	}
-	else//player existed 
+	else//player exited 
 	{
-		
+		if(playersInRace[playerid] != -1)
+		{
+			if(IsPlayerConnected(playerid))
+			{
+				DisablePlayerRaceCheckpoint(playerid);
+				PlayerTextDrawHide(playerid, playersInRaceTextdraw[playerid]);
+				PlayerTextDrawDestroy(playerid, playersInRaceTextdraw[playerid]);
+			}
+			playersInRace[playerid] = -1;
+			playersInRaceTextdraw[playerid] = PlayerText: -1;
+		}
 	}
+	
+	new playerInRaceRemaining = 0;
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+		if(playersInRace[i] != -1)
+		{
+			playerInRaceRemaining ++;
+		}
+	}
+	if(playerInRaceRemaining == 0)
+	{
+		RACE_finishRace();
+	}
+}
+
+stock RACE_OnPlayerDisconnect(playerid)
+{
+	RACE_playerFinishRace(playerid, 1);
+}
+
+stock RACE_OnPlayerDeath(playerid)
+{
+	SendClientMessage(playerid, COLOR_MG, "* You died and cannot finish the race.");
+	RACE_playerFinishRace(playerid, 1);
 }
 
 public RACE_CountDown()
@@ -419,9 +478,20 @@ stock RACE_join(playerid)
 		{
 			SendClientMessage(playerid, COLOR_MG, "* You joined race, it is starting soon.");
 			playersInRace[playerid] = 1;
-			SetPlayerPos(playerid, raceCheckpoints[0][x], raceCheckpoints[0][y], raceCheckpoints[0][z]);
+			SetPlayerPos(playerid, raceEntryPoint[0][x], raceEntryPoint[0][y], raceEntryPoint[0][z]);
+			//additionaly set player angle to first checkpoint
+			new Float: angle, Float: facingAngle;
+			angle = atan2(raceCheckpoints[0][y] - raceEntryPoint[0][y], raceCheckpoints[0][x] - raceEntryPoint[0][x]);
+			facingAngle = 90 - angle;
+			SetPlayerFacingAngle(playerid, facingAngle);
+			GameTextForPlayer(playerid, "Proceed to starting point", 1000, 3);
+			
 			SetPlayerRaceCheckpoint(playerid,0,raceCheckpoints[0][x], raceCheckpoints[0][y], raceCheckpoints[0][z],
                          raceCheckpoints[1][x], raceCheckpoints[1][y], raceCheckpoints[1][z], 10);
+            if(raceVehicleModel != 0)
+            {
+				VEH_SpawnPlayerVehicle(playerid, raceVehicleModel);
+			}
 		}
 		else 
 		{
@@ -491,18 +561,6 @@ stock RACE_OnEnterCheckpoint(playerid)
 		if(playerInRaceProgress[playerid] == totalRaceCheckpoints - 1)
 		{
 			RACE_playerFinishRace(playerid, 0);
-			new playerInRaceRemaining = 0;
-			for(new i = 0; i < MAX_PLAYERS; i++)
-			{
-				if(playersInRace[i] != -1)
-				{
-					playerInRaceRemaining ++;
-				}
-			}
-			if(playerInRaceRemaining == 0)
-			{
-				RACE_finishRace();
-			}
 		}
 		else 
 		{
@@ -537,6 +595,20 @@ stock RACE_loadRaceFromFile(const filename[])
 	if(!file_ptr) return 0;
 
 	checkpoints_loaded = 0;
+	
+	//read race entry point
+	fread(file_ptr,line,256);
+	index = 0;
+  	index = token_by_delim(line,var_from_line,',',index);
+  	X = floatstr(var_from_line);
+	index = token_by_delim(line,var_from_line,',',index+1);
+  	Y = floatstr(var_from_line);
+  	index = token_by_delim(line,var_from_line,',',index+1);
+  	Z = floatstr(var_from_line);
+	raceEntryPoint[0][num] = 0;
+	raceEntryPoint[0][x] = X;
+	raceEntryPoint[0][y] = Y;
+	raceEntryPoint[0][z] = Z;
 
 	while(fread(file_ptr,line,256) > 0)
 	{

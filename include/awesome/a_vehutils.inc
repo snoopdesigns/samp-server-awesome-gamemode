@@ -137,6 +137,21 @@ stock VEH_IsPlayerInInvalidNosVehicle(playerid,vehicleid)
     return false;
 }
 
+stock VEH_getVehicleNameByModelId(modelid, vehicle_name[])
+{
+	switch(modelid)
+	{
+		case 411: 
+		{
+			strins(vehicle_name, "Infernus", 0, 64);
+		}
+		default:
+		{
+			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
+		}
+	}
+}
+
 stock LoadStaticVehiclesFromFile(const filename[])
 {
 	new File:file_ptr;

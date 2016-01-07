@@ -135,6 +135,7 @@ public OnPlayerConnect(playerid)
 public OnPlayerDisconnect(playerid, reason)
 {
 	MG_OnPlayerDisconnect(playerid);
+	RACE_OnPlayerDisconnect(playerid);
 	return 1;
 }
 
@@ -290,6 +291,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 public OnPlayerDeath(playerid, killerid, reason)
 {
 	MG_OnPlayerDeath(playerid);
+	RACE_OnPlayerDeath(playerid);
 	return 1;
 }
 
