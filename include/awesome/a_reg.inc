@@ -87,7 +87,7 @@ stock REG_registerNewPlayer(playerid, password[])
 			name,
 			password,
 			ip,
-			"0",
+			"1",
 			intToStr(GetPlayerScore(playerid)),
 			intToStr(GetPlayerMoney(playerid)));
 		DBUTILS_runInsertQuery(db_handle_reg, query);

@@ -191,7 +191,7 @@ public RACE_initNewRace()
 		SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 		return;
 	}
-	currentRaceIdentifier = random(racesCounts) + 1;
+	currentRaceIdentifier = 2;//random(racesCounts) + 1;
 	static query[256];
 	new racename[128], filename[128], recordHolder[128], creatorName[128];
 	new recordTime, vehicleModel;
@@ -254,7 +254,7 @@ public RACE_startRace()
 	if(playerInRaceRemaining > 0)
 	{
 		new playerTdMsg[128];
-		format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~-/%d~n~~r~Position_~w~-/%d~n~~r~Time_~w~---", totalRaceCheckpoints, playerInRaceRemaining); 
+		format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~-/%d~n~~r~Position_~w~-/%d~n~~r~Time_~w~---", totalRaceCheckpoints, playerInRaceRemaining + playersInRaceFinished); 
 		raceStatus = RACE_STATUS_ACTIVE;
 		raceCountdownTimerCount = 5;
 		raceCountdownTimer = SetTimer("RACE_CountDown", 1000, 1);
@@ -319,7 +319,10 @@ stock RACE_playerFinishRace(playerid, status)
 		new totalRaceTime = timeStamp - currentRaceStartTime;
 		ConvertTime(var, totalRaceTime, tH, tM, tS);
 		SendClientMessageFormatted(playerid, COLOR_MG, "* You finished the race in %d position. Time: %02d Min %02d Sec", playersInRaceFinished, tH, tM, tS);
-		if(playersInRaceFinished == 1) SendClientMessageToAllFormatted(COLOR_MG, "* '%s' finished the race in %d position. Time: %02d Min %02d Sec", player_name, playersInRaceFinished, tH, tM, tS);
+		if(playersInRaceFinished == 1) 
+		{
+			SendClientMessageToAllFormatted(COLOR_MG, "* '%s' finished the race in %d position. Time: %02d Min %02d Sec", player_name, playersInRaceFinished, tH, tM, tS);
+		}
 		playersInRace[playerid] = -1;
 		DisablePlayerRaceCheckpoint(playerid);
 		PlayerTextDrawHide(playerid, playersInRaceTextdraw[playerid]);
@@ -457,17 +460,46 @@ public RACE_playerTdTimer()
 			new totalRaceTime = timeStamp - currentRaceStartTime;
 			ConvertTime(var, totalRaceTime, tH, tM, tS);
 			new playerTdMsg[128];
+			new playerProgress = playerInRaceProgress[i];
+			if(playerProgress < 0) playerProgress = 0;
 			format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~%d/%d~n~~r~Position_~w~%d/%d~n~~r~Time_~w~%02d:%02d", 
-				playerInRaceProgress, 
+				playerInRaceProgress[i], 
 				totalRaceCheckpoints, 
-				0,
-				playerInRaceRemaining,
+				RACE_getPlayerPosition(i),//player position
+				playerInRaceRemaining + playersInRaceFinished,
 				tH,
 				tM,
 				tS);
 			PlayerTextDrawSetString(i, playersInRaceTextdraw[i], playerTdMsg);
 		}
 	}
+}
+
+stock RACE_getPlayerPosition(playerid)
+{
+	new playerInRaceRemaining = 0;
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+		if(playersInRace[i] != -1)
+		{
+			playerInRaceRemaining ++;
+		}
+	}
+	new position = playerInRaceRemaining + playersInRaceFinished; // last
+	if(playersInRace[playerid] == -1) return -69;
+	for (new i=0; i<MAX_PLAYERS; i++)
+	{
+		if(playersInRace[i] != -1 && IsPlayerConnected(i))
+		{
+			if(playerInRaceProgress[i] < playerInRaceProgress[playerid]) position--;
+			if(playerInRaceProgress[i] == playerInRaceProgress[playerid])
+			{
+				if(GetPlayerDistanceFromPoint(i, raceCheckpoints[playerInRaceProgress[i]][x], raceCheckpoints[playerInRaceProgress[i]][y], raceCheckpoints[playerInRaceProgress[i]][z]) 
+					> GetPlayerDistanceFromPoint(playerid, raceCheckpoints[playerInRaceProgress[i]][x], raceCheckpoints[playerInRaceProgress[i]][y], raceCheckpoints[playerInRaceProgress[i]][z])) position--;
+			}
+		}
+	}
+	return position;
 }
 
 stock RACE_join(playerid)
