@@ -181,7 +181,7 @@ stock PROPS_buyPropertyForPlayer(playerid)
 						format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='%s',`PropPurchaseTime`=%d WHERE `ID`=%d", player_name, gettime(), propid);
 						DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
 						SendClientMessageFormatted(playerid, COLOR_PROPS, "* Property %s successfully purchased!", propname);
-						SendClientMessageToAllFormatted(COLOR_PROPS, "* %s purchased property '%s' for %d$", player_name, propname, cost);
+						SendClientMessageToAllFormatted(COLOR_PROPS, "* %s purchased property '%s' for %d$", GetPlayerFormattedName(playerid), propname, cost);
 					}
 					else {
 						SendClientMessage(playerid, COLOR_ERROR, "* You have not enough money to buy this property!");
@@ -229,7 +229,7 @@ stock PROPS_sellProperty(playerid)
 					format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='',`PropPurchaseTime`=%d WHERE `ID`=%d", gettime(), propid);
 					DBUTILS_runUpdateQuery(db_handle_props, queryUpdate);
 					SendClientMessageFormatted(playerid, COLOR_PROPS, "* You sold your property %s for %d$!", propname, cost);
-					SendClientMessageToAllFormatted(COLOR_PROPS, "* %s sells property '%s' for %d$", player_name, propname, cost);
+					SendClientMessageToAllFormatted(COLOR_PROPS, "* %s sells property '%s' for %d$", GetPlayerFormattedName(playerid), propname, cost);
 				}
 				else
 				{

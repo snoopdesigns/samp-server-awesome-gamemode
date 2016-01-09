@@ -105,7 +105,7 @@ dcmd_v(playerid, params[])
 	return 1;
 }
 
-dcmd_repair(playerid, params[])
+dcmd_fix(playerid, params[])
 {
 	strlen(params);//just to handle compile warning
 	VEH_RepairPlayerVehicle(playerid);
@@ -245,7 +245,7 @@ dcmd_sethealth(playerid, params[])
 		{
 			SetVehicleHealth(vehicle, health);
 		}
-		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Your health has been set to %d", health);
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Your vehicle health has been set to %d", health);
 	}
 	return 1;
 }
@@ -262,11 +262,8 @@ dcmd_setscore(playerid, params[])
 		if(IsPlayerConnected(id))
 		{
 			SetPlayerScore(id, score);
-			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
-			GetPlayerName(playerid, playername, sizeof playername);
-			GetPlayerName(id, targetname, sizeof targetname);
-			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player '%s' score has been set to %d", targetname, score);
-			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin '%s' set your score to %d", playername, score);
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player %s score has been set to %d", GetPlayerFormattedName(id), score);
+			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin %s set your score to %d", GetPlayerFormattedName(playerid), score);
 		}
 		else 
 		{
@@ -288,11 +285,8 @@ dcmd_setmoney(playerid, params[])
 		if(IsPlayerConnected(id))
 		{
 			GivePlayerMoney(id, money);
-			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
-			GetPlayerName(playerid, playername, sizeof playername);
-			GetPlayerName(id, targetname, sizeof targetname);
-			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player '%s' moneys has been increased to %d", targetname, money);
-			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin '%s' gave you money %d", playername, money);
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player %s moneys has been increased to %d", GetPlayerFormattedName(id), money);
+			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin %s gave you money %d", GetPlayerFormattedName(playerid), money);
 		}
 		else 
 		{
@@ -317,8 +311,8 @@ dcmd_setlevel(playerid, params[])
 			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
 			GetPlayerName(playerid, playername, sizeof playername);
 			GetPlayerName(id, targetname, sizeof targetname);
-			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player '%s' now has level %d", targetname, newlevel);
-			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin '%s' sets you player level to %d", playername, newlevel);
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player %s now has level %d", GetPlayerFormattedName(id), newlevel);
+			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin %s sets you player level to %d", GetPlayerFormattedName(playerid), newlevel);
 		}
 		else 
 		{

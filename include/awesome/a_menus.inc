@@ -38,7 +38,7 @@ stock MENUS_initMenusSystem()
 	//vehicle commands
 	format(dialog, sizeof dialog, "%s\n%s", 
 		"Spawn Infernus: /car",
-		"Repair vehicle: /repair");
+		"Repair vehicle: /fix");
 	heading = "Vehicle commands";
 	menus[PLAYER_MENU_VEHICLES][playerMenuHeading] = heading;
 	menus[PLAYER_MENU_VEHICLES][playerMenuText] = dialog;
@@ -102,7 +102,7 @@ stock MENUS_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]
 					}
 					case 1:
 					{
-						dcmd_repair(playerid, "");
+						dcmd_fix(playerid, "");
 					}
 				}
 		}

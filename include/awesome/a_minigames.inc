@@ -3,7 +3,7 @@
 #endif
 #define _minigames_included
 
-#define MINIGAMES_INTERVAL 7 * 60 * 1000 // 7 minutes
+#define MINIGAMES_INTERVAL 1 * 20 * 1000 // 7 minutes
 #define MINIGAMES_START_DELAY 20000 // 20 secs
 
 #define MG_STATUS_INACTIVE 0 
@@ -75,7 +75,7 @@ public MG_initNewMinigame()
 	}
 	else
 	{
-		SendClientMessageToAll(COLOR_ERROR, "There is still active MG!");
+		SendClientMessageToAll(COLOR_ERROR, "There is still active minigame!");
 	}
 }
 
@@ -108,6 +108,7 @@ public MG_startCurrentMinigame()
 	}
 	else 
 	{
+		SendClientMessageToAllFormatted(COLOR_MG, "* Minigame %s has started with %d players", playerCount);
 		mgStatus = MG_STATUS_ACTIVE;
 		MG_Start();
 	}

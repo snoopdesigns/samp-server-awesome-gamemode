@@ -265,11 +265,11 @@ public MG_HAY_FinishTimer(id, xq, yq, zq) // set empty place in hay
 public MG_HAY_TDScore()
 {
     MG_HAY_updatePlayersLevel();
-	new level, string[256], PlayerN[MAX_PLAYER_NAME], playersRemaining;
+	new level, string[256], playersRemaining;
 	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInHay[i] != -1) playersRemaining++;
 	if(playersRemaining == 0) 
 	{
-		SendClientMessageToAll(COLOR_MG, "* No winners this time in Hay minigame");
+		SendClientMessageToAll(COLOR_MG_RES, "* No winners this time in Hay minigame");
 		MG_OnCurrentMinigameFinish();
 	}
 	for (new i=0; i<MAX_PLAYERS; i++)
@@ -286,9 +286,8 @@ public MG_HAY_TDScore()
 	      	PlayerTextDrawShow(i, hayTextdraw[i]);
    			if(playerLevel[i] == 31)
 			{
-				GetPlayerName(i, PlayerN, sizeof(PlayerN));
-				format(string, sizeof(string),"* %s Finished The Hay Minigame In %02d Min %02d Sec", PlayerN,tH,tM,tS);
-				SendClientMessageToAll(COLOR_MG, string);
+				format(string, sizeof(string),"* %s finished Hay minigame in %02d min %02d sec", GetPlayerFormattedName(i),tH,tM,tS);
+				SendClientMessageToAll(COLOR_MG_RES, string);
 				MG_OnCurrentMinigameFinish();
    			}
 		}
@@ -326,6 +325,7 @@ public MG_HAY_CountDown()
 		{
 			if(playersInHay[i] != -1 && IsPlayerConnected(i))
 			{
+				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
 				GameTextForPlayer(i, "GO", 1000, 3);
 				TogglePlayerControllable(i,1);
 				
@@ -345,6 +345,7 @@ public MG_HAY_CountDown()
 	{
 	    if(playersInHay[i] != -1 && IsPlayerConnected(i))
     	{
+			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
 			GameTextForPlayer(i, string, 1000, 3);
 		}
 	}

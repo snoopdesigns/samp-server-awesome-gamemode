@@ -240,7 +240,7 @@ public MG_FALLOUT_SolarFall()
 {
 	new go;
 	new playersRemaining;
-	new string[256], PlayerN[MAX_PLAYER_NAME];
+	new string[256];
 	for(new i = 0; i < 100; i++) if(panel[i][panelState] == PANEL_STATE_ACTIVE) go++;
 	for(new i = 0; i < MAX_PLAYERS; i++) if(playersInFallout[i] != -1) playersRemaining++;
 	
@@ -253,15 +253,14 @@ public MG_FALLOUT_SolarFall()
 			for(new i = 0; i < MAX_PLAYERS; i++)
 			{
 				if(playersInFallout[i] != -1) {
-					GetPlayerName(i, PlayerN, sizeof(PlayerN));
-					format(string, sizeof(string),"* %s Wins The Fallout Minigame", PlayerN);
-					SendClientMessageToAll(COLOR_MG, string);
+					format(string, sizeof(string),"* %s wins Fallout minigame", GetPlayerFormattedName(i));
+					SendClientMessageToAll(COLOR_MG_RES, string);
 				}
 			}
 		}
 		else 
 		{
-			SendClientMessageToAll(COLOR_MG, "* No winners this time in Fallout minigame");
+			SendClientMessageToAll(COLOR_MG_RES, "* No winners this time in Fallout minigame");
 		}
 		MG_OnCurrentMinigameFinish();
 		return 1;
@@ -352,6 +351,7 @@ public MG_FALLOUT_CountDown()
 		{
 			if(playersInFallout[i] != -1 && IsPlayerConnected(i))
 			{
+				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
 				GameTextForPlayer(i, "GO", 1000, 3);
 				TogglePlayerControllable(i,1);
 			}
@@ -368,6 +368,7 @@ public MG_FALLOUT_CountDown()
 	{
 	    if(playersInFallout[i] != -1 && IsPlayerConnected(i))
     	{
+			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
 			GameTextForPlayer(i, string, 1000, 3);
 		}
 	}

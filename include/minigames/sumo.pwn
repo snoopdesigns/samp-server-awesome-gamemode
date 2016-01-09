@@ -150,18 +150,16 @@ public MG_SUMO_FinishSumo()
 	{
 		if(topSumoPlayers[i] != -1)
 		{
-			new name[MAX_PLAYER_NAME];
-			GetPlayerName(topSumoPlayers[i], name, sizeof(name));
 			if(i == 0)
 			{
-				SendClientMessageToAllFormatted(COLOR_MG, "* '%s' finished Sumo minigame at 1st position with time: %d sec", name, (GetTickCount()-playersInSumoTime[i])/1000);
+				SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s finished Sumo minigame at 1st position with time: %d sec", GetPlayerFormattedName(i), (GetTickCount()-playersInSumoTime[i])/1000);
 			}
-			SendClientMessageFormatted(i, COLOR_MG, "* You finished Sumo minigame at %d position. Your time is %d sec", i+1, (GetTickCount()-playersInSumoTime[i])/1000);
+			SendClientMessageFormatted(i, COLOR_MG_RES, "* You finished Sumo minigame at %d position. Your time is %d sec", i+1, (GetTickCount()-playersInSumoTime[i])/1000);
 		}
 	}
 	if(topSumoPlayers[0] == -1)
 	{
-		SendClientMessageToAll(COLOR_MG, "* No winners this time in Sumo minigame");
+		SendClientMessageToAll(COLOR_MG_RES, "* No winners this time in Sumo minigame");
 	}
 	MG_OnCurrentMinigameFinish();
 }
@@ -202,7 +200,7 @@ public MG_SUMO_TDScore()
 				//check player vehicle health
 				if(health < 300)
 				{
-					SendClientMessage(i, COLOR_MG, "* You SUMO timer is restarted.");
+					SendClientMessage(i, COLOR_MG_PROGRESS, "* You SUMO timer is restarted.");
 					if(IsPlayerInAnyVehicle(i)) RemovePlayerFromVehicle(i);
 					new rand = random(sizeof(sumoRandomSpawn));
 					SetPlayerPos(i, sumoRandomSpawn[rand][0], sumoRandomSpawn[rand][1], sumoRandomSpawn[rand][2]);
@@ -259,6 +257,7 @@ public MG_SUMO_CountDown()
 		{
 			if(playersInSumo[i] != -1 && IsPlayerConnected(i))
 			{
+				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
 				GameTextForPlayer(i, "GO", 1000, 3);
 				TogglePlayerControllable(i,1);
 				
@@ -282,6 +281,7 @@ public MG_SUMO_CountDown()
 	{
 	    if(playersInSumo[i] != -1 && IsPlayerConnected(i))
     	{
+			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
 			GameTextForPlayer(i, string, 1000, 3);
 		}
 	}

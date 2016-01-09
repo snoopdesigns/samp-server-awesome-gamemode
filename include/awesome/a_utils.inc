@@ -67,6 +67,18 @@ stock GetPlayerIdByName(name[])
 	return -1;
 }
 
+stock GetPlayerFormattedName(playerid)
+{
+	new playerMsg[MAX_PLAYER_NAME];
+	if(IsPlayerConnected(playerid))
+	{
+		new player_name[MAX_PLAYER_NAME];
+		GetPlayerName(playerid, player_name, sizeof(player_name));
+		format(playerMsg, sizeof playerMsg, "%s(ID:%d)", player_name, playerid);
+	}
+	return playerMsg;
+}
+
 stock strrest(const string[], &index)
 {
 	new length = strlen(string);

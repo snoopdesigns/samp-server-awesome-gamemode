@@ -261,7 +261,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	//vehicle commands
 	dcmd(v, 1, cmdtext, 1);
 	dcmd(car, 3, cmdtext, 1);
-	dcmd(repair, 6, cmdtext, 1);
+	dcmd(fix, 6, cmdtext, 1);
 	
 	//properties commands
 	dcmd(cprop, 5, cmdtext, 2);

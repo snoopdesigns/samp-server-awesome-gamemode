@@ -12,7 +12,7 @@ forward RACE_finishRace();
 forward RACE_CountDown();
 forward RACE_playerTdTimer();
 
-#define RACES_INTERVAL 4 * 60 * 1000 // 4 minutes
+#define RACES_INTERVAL 1 * 10 * 1000 // 4 minutes
 #define RACES_START_DELAY 20000 // 20 secs
 
 #define RACE_STATUS_INACTIVE 0 
@@ -262,7 +262,8 @@ public RACE_startRace()
 		{
 			if(playersInRace[i] != -1)
 			{
-				SendClientMessage(i, COLOR_MG, "* Race starting...");
+				SendClientMessageFormatted(i, COLOR_MG_PROGRESS, "* Race is about to start [%d racers, including you]", playerInRaceRemaining);
+				GameTextForPlayer(i, "~r~RACE STARTING NOW", 1000, 3)
 				//create player textdraw
 				playersInRaceTextdraw[i] = CreatePlayerTextDraw(i, 485.554931, 405.037750, playerTdMsg);
 				PlayerTextDrawLetterSize(i, playersInRaceTextdraw[i], 0.400000, 1.600000);
@@ -285,7 +286,7 @@ public RACE_startRace()
 	}
 	else 
 	{
-		SendClientMessageToAll(COLOR_MG, "* Race not started beacause nobody comes");
+		SendClientMessageToAll(COLOR_MG_RES, "* Race not started beacause nobody comes");
 		raceStatus = RACE_STATUS_INACTIVE;
 		SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 	}
@@ -318,10 +319,10 @@ stock RACE_playerFinishRace(playerid, status)
 		new timeStamp = GetTickCount();
 		new totalRaceTime = timeStamp - currentRaceStartTime;
 		ConvertTime(var, totalRaceTime, tH, tM, tS);
-		SendClientMessageFormatted(playerid, COLOR_MG, "* You finished the race in %d position. Time: %02d Min %02d Sec", playersInRaceFinished, tH, tM, tS);
+		SendClientMessageFormatted(playerid, COLOR_MG_RES, "* You finished the race in %d position. Time: %02d Min %02d Sec", playersInRaceFinished, tH, tM, tS);
 		if(playersInRaceFinished == 1) 
 		{
-			SendClientMessageToAllFormatted(COLOR_MG, "* '%s' finished the race in %d position. Time: %02d Min %02d Sec", player_name, playersInRaceFinished, tH, tM, tS);
+			SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s finished the race in %d position. Time: %02d Min %02d Sec", GetPlayerFormattedName(playerid), playersInRaceFinished, tH, tM, tS);
 		}
 		playersInRace[playerid] = -1;
 		DisablePlayerRaceCheckpoint(playerid);
@@ -342,8 +343,8 @@ stock RACE_playerFinishRace(playerid, status)
 		{
 			if(totalRaceTime < recordTime)
 			{
-				SendClientMessageFormatted(playerid, COLOR_MG, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
-				SendClientMessageToAllFormatted(COLOR_MG, "* '%s' set up new record of '%s' race, time: %02d Min %02d Sec", player_name, racename, tH, tM, tS);
+				SendClientMessageFormatted(playerid, COLOR_MG_RES, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
+				SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s set up new record of '%s' race, time: %02d Min %02d Sec", GetPlayerFormattedName(playerid), racename, tH, tM, tS);
 				static queryUpdate[128];
 				format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordHolder`='%s' WHERE `ID`=%d", player_name, currentRaceIdentifier);
 				DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
@@ -354,8 +355,8 @@ stock RACE_playerFinishRace(playerid, status)
 		}
 		else //no current record
 		{
-			SendClientMessageFormatted(playerid, COLOR_MG, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
-			SendClientMessageToAllFormatted(COLOR_MG, "* '%s' set up new record of '%s' race, time: %02d Min %02d Sec", player_name, racename, tH, tM, tS);
+			SendClientMessageFormatted(playerid, COLOR_MG_RES, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
+			SendClientMessageToAllFormatted(COLOR_MG_RES, "* '%s' set up new record of '%s' race, time: %02d Min %02d Sec", player_name, racename, tH, tM, tS);
 			static queryUpdate[128];
 			format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordHolder`='%s' WHERE `ID`=%d", player_name, currentRaceIdentifier);
 			DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
@@ -414,6 +415,7 @@ public RACE_CountDown()
 			if(playersInRace[i] != -1 && IsPlayerConnected(i))
 			{
 				GameTextForPlayer(i, "GO", 1000, 3);
+				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
 				TogglePlayerControllable(i,1);
 				DisablePlayerRaceCheckpoint(i);
 				playerInRaceProgress[i] = 0;
@@ -433,6 +435,7 @@ public RACE_CountDown()
 	    if(playersInRace[i] != -1 && IsPlayerConnected(i))
     	{
 			GameTextForPlayer(i, string, 1000, 3);
+			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
 			TogglePlayerControllable(i,0);
 		}
 	}
@@ -602,6 +605,15 @@ stock RACE_OnEnterCheckpoint(playerid)
 				GameTextForPlayer(playerid, "~r~LAST CHECKPOINT...", 1000, 3);
 				SetPlayerRaceCheckpoint(playerid,1,raceCheckpoints[playerInRaceProgress[playerid]][x], raceCheckpoints[playerInRaceProgress[playerid]][y], raceCheckpoints[playerInRaceProgress[playerid]][z],
 					raceCheckpoints[playerInRaceProgress[playerid]+1][x], raceCheckpoints[playerInRaceProgress[playerid]+1][y], raceCheckpoints[playerInRaceProgress[playerid]+1][z], 10);
+				for(new i = 0; i < MAX_PLAYERS; i++)
+				{
+					if(playersInRace[i] != -1)
+					{
+						new msgFinish[128];
+						format(msgFinish, sizeof msgFinish, "~r~%s ~n~~y~is about to cross ~n~the finish line", GetPlayerFormattedName(i));
+						GameTextForPlayer(i, msgFinish, 1000, 3); 
+					}
+				}
 			}
 			else 
 			{
