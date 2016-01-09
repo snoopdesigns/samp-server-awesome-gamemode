@@ -3,18 +3,21 @@
 #endif
 #define _minigames_included
 
-#include "include/minigames/fallout.pwn"
-#include "include/minigames/hay.pwn"
-#include "include/awesome/a_utils.inc"
-
-#define MINIGAMES_INTERVAL 5 * 60 * 1000 // 4 minutes
-#define MINIGAMES_START_DELAY 15000 // 15 secs
+#define MINIGAMES_INTERVAL 7 * 60 * 1000 // 7 minutes
+#define MINIGAMES_START_DELAY 20000 // 20 secs
 
 #define MG_STATUS_INACTIVE 0 
 #define MG_STATUS_WAITING_PLAYERS 1 
 #define MG_STATUS_ACTIVE 2 
 
-new minigames[2][] = {"Fallout", "Hay"};
+#define MG_JOIN_DIALOG 69
+
+#include "include/minigames/fallout.pwn"
+#include "include/minigames/hay.pwn"
+#include "include/minigames/sumo.pwn"
+#include "include/awesome/a_utils.inc"
+
+new minigames[3][] = {"Fallout", "Hay", "Sumo"};
 new activeMinigame = -1;
 new mgStatus;
 new minigamePlayers[MAX_PLAYERS];
@@ -59,7 +62,7 @@ public MG_initNewMinigame()
 		SendClientMessageToAll(COLOR_MG, "* Type /event if you wish to join this minigame");
 		
 		new tdmsg[128];
-		format(tdmsg, sizeof tdmsg, "~w~type_~y~event_~w~to_join_the_~g~%s~n~~w~starting_in_~r~%d_seconds", minigames[rand], MINIGAMES_START_DELAY/1000);
+		format(tdmsg, sizeof tdmsg, "~w~type_~y~/event_~w~to_join_the_~g~%s~n~~w~starting_in_~r~%d_seconds", minigames[rand], MINIGAMES_START_DELAY/1000);
 		TextDrawSetString(minigameTD, tdmsg); 
 		TextDrawShowForAll(minigameTD);
 		new ccount = MINIGAMES_START_DELAY / 5000;
@@ -139,6 +142,10 @@ stock MG_InitMinigameEnv()
 		{
 			MG_HAY_Init();
 		}
+		case 2:
+		{
+			MG_SUMO_Init();
+		}
 		default:
 		{
 			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
@@ -158,6 +165,10 @@ stock MG_DestroyMinigameEnv()
 		{
 			MG_HAY_Destroy();
 		}
+		case 2:
+		{
+			MG_SUMO_Destroy();
+		}
 		default:
 		{
 			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
@@ -176,6 +187,10 @@ stock MG_Start()
 		case 1:
 		{
 			MG_HAY_Start();
+		}
+		case 2:
+		{
+			MG_SUMO_Start();
 		}
 		default:
 		{
@@ -200,6 +215,14 @@ stock MG_checkCommandAccess(playerid, cmd[])
 				}
 			}
 			case 1:
+			{
+				if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "leave") != 0) 
+				{
+					SendClientMessage(playerid, COLOR_ERROR, "* Type /leave or /kill to leave minigame.");
+					return FALSE;
+				}
+			}
+			case 2:
 			{
 				if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "leave") != 0) 
 				{
@@ -267,6 +290,10 @@ stock MG_PlayerLeftMinigame(playerid)
 		{
 			MG_HAY_PlayerLeftMinigame(playerid);
 		}
+		case 2:
+		{
+			MG_SUMO_PlayerLeftMinigame(playerid);
+		}
 		case -1:
 		{
 			SendClientMessage(playerid, COLOR_ERROR, "* There is no active minigames for now!");
@@ -299,6 +326,10 @@ stock MG_minigamePreparationForPlayer(playerid)
 		{
 			MG_HAY_PreparePlayer(playerid);
 		}
+		case 2:
+		{
+			MG_SUMO_PreparePlayer(playerid);
+		}
 		default:
 		{
 			SendClientMessage(playerid, COLOR_ERROR, "Something goes wrong... =(");
@@ -323,10 +354,31 @@ stock MG_OnPlayerDeath(playerid)
 		{
 			MG_HAY_PlayerLeftMinigame(playerid);
 		}
+		case 2:
+		{
+			MG_SUMO_PlayerLeftMinigame(playerid);
+		}
 	}
 	if(minigamePlayers[playerid] != -1)
 	{
 		SendClientMessageFormatted(playerid, COLOR_ERROR, "* You died and loses %s minigame", minigames[activeMinigame]);
 	}
 	minigamePlayers[playerid] = -1;
+}
+
+stock MG_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
+{
+	strlen(inputtext); // just to handle compile warnings
+	if(listitem == 0) strlen(inputtext);
+	if(dialogid == MG_JOIN_DIALOG && response == 1)
+	{
+		switch (activeMinigame)
+		{
+			case 2:
+			{
+				MG_SUMO_OnDialogResp(playerid);
+			}
+		}
+		SetCameraBehindPlayer(playerid);
+	}
 }

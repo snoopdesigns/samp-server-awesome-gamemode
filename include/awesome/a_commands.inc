@@ -230,6 +230,26 @@ dcmd_restart(playerid, params[])
 	return 1;
 }
 
+dcmd_sethealth(playerid, params[])
+{
+	new	health;
+	if (sscanf(params, "i", health)) 
+	{
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/sethealth <health>\"");
+	}
+	else
+	{
+		new vehicle;
+		vehicle = GetPlayerVehicleID(playerid);
+		if(vehicle > 0)
+		{
+			SetVehicleHealth(vehicle, health);
+		}
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Your health has been set to %d", health);
+	}
+	return 1;
+}
+
 dcmd_setscore(playerid, params[])
 {
 	new	id, score;

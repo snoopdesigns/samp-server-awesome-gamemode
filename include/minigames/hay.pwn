@@ -2,15 +2,6 @@
 
 #include "include/awesome/a_minigames.inc"
 
-#define ConvertTime(%0,%1,%2,%3,%4) \
-	new \
-	    Float: %0 = floatdiv(%1, 60000) \
-	;\
-	%2 = floatround(%0, floatround_tozero); \
-	%3 = floatround(floatmul(%0 - %2, 60), floatround_tozero); \
-	%4 = floatround(floatmul(floatmul(%0 - %2, 60) - %3, 1000), floatround_tozero)
-
-#define ORANGE 0xDB881AAA
 #define HAY_X 4 // count of hays in X
 #define HAY_Y 4 // count of hays in Y
 #define HAY_Z 30 // count of hays in Z (hay height)
@@ -40,6 +31,15 @@ new hayStartTime;
 new gameTimer = -1;
 
 new hayCountdownTimer[countdownTimerInfo];
+
+new Float:hayRandomSpawn[][3] =
+{
+    {7.4116,-3.7491,3.1172},
+    {1.3451,-16.2426,3.1172},
+    {-10.7744,-19.3668,3.1172},
+    {-20.4327,-12.6451,3.1172},
+    {0.3451,6.5426,3.2172}
+};
 
 stock MG_HAY_Init()
 {
@@ -91,9 +91,11 @@ stock MG_HAY_PreparePlayer(playerid) // prepare player for MG
         playersInHay[playerid] = 1;
         //set players virt world
 		if(IsPlayerInAnyVehicle(playerid)) RemovePlayerFromVehicle(playerid);
-    	SetPlayerPos(playerid, 0, 6.5, 3.2);
-		SetPlayerFacingAngle(playerid, 135);
-		ShowPlayerDialog(playerid, 69, DIALOG_STYLE_MSGBOX, "Hay Minigame", "Hay Minigame by R@f and ScRaT", "OK", "");
+		new rand = random(sizeof(hayRandomSpawn));
+    	SetPlayerPos(playerid, hayRandomSpawn[rand][0], hayRandomSpawn[rand][1], hayRandomSpawn[rand][2]);
+		ShowPlayerDialog(playerid, MG_JOIN_DIALOG, DIALOG_STYLE_MSGBOX, "Hay Minigame", "Hay Minigame by R@f and ScRaT", "OK", "");
+		SetPlayerCameraPos(playerid, -27.894733, 25.938961, 34.944526);
+		SetPlayerCameraLookAt(playerid, -25.195003, 22.448459, 32.593387);
     }
     else
     {
@@ -118,20 +120,22 @@ stock MG_HAY_Start()
 	{
 	    if(playersInHay[i] != -1 && IsPlayerConnected(i))
     	{
-            SetPlayerPos(i, 0, 6.5, 3.2);
+            new rand = random(sizeof(hayRandomSpawn));
+			SetPlayerPos(i, hayRandomSpawn[rand][0], hayRandomSpawn[rand][1], hayRandomSpawn[rand][2]);
 			SetPlayerFacingAngle(i, 135);
-			hayTextdraw[i] = CreatePlayerTextDraw(i, 549.000000,397.000000,"~h~~y~Hay Minigame~n~~r~Level: ~w~0/31 ~n~~r~Time: ~w~00:00:00");
-			PlayerTextDrawFont(i, hayTextdraw[i] , 1);
-			PlayerTextDrawSetProportional(i, hayTextdraw[i], 1);
-			PlayerTextDrawSetOutline(i, hayTextdraw[i], 0);
-			PlayerTextDrawColor(i, hayTextdraw[i],-65281);
-			PlayerTextDrawLetterSize(i, hayTextdraw[i] ,0.310000,1.400000);
-			PlayerTextDrawTextSize(i, hayTextdraw[i] , 640.000000,0.000000);
-			PlayerTextDrawAlignment(i, hayTextdraw[i],1);
-			PlayerTextDrawSetShadow(i, hayTextdraw[i], 0);
+			hayTextdraw[i] = CreatePlayerTextDraw(i, 473.333435, 334.148162,"~h~~y~Hay Minigame~n~~r~Level: ~y~0/31 ~n~~r~Time: ~y~00:00:00");
+			PlayerTextDrawLetterSize(i, hayTextdraw[i], 0.400000, 1.600000);
+			PlayerTextDrawTextSize(i, hayTextdraw[i], 638.000000, 0.000000);
+			PlayerTextDrawAlignment(i, hayTextdraw[i], 1);
+			PlayerTextDrawColor(i, hayTextdraw[i], -1);
 			PlayerTextDrawUseBox(i, hayTextdraw[i], 1);
-			PlayerTextDrawBoxColor(i, hayTextdraw[i], 255);
-			PlayerTextDrawBackgroundColor(i, hayTextdraw[i], 255);
+			PlayerTextDrawBoxColor(i, hayTextdraw[i], 13141);
+			PlayerTextDrawSetShadow(i, hayTextdraw[i], 1);
+			PlayerTextDrawSetOutline(i, hayTextdraw[i], 0);
+			PlayerTextDrawBackgroundColor(i, hayTextdraw[i], 1499227944);
+			PlayerTextDrawFont(i, hayTextdraw[i], 2);
+			PlayerTextDrawSetProportional(i, hayTextdraw[i], 1);
+			PlayerTextDrawSetShadow(i, hayTextdraw[i], 0);
 			
 			TogglePlayerControllable(i,0);
     	}
@@ -139,9 +143,7 @@ stock MG_HAY_Start()
 	hayCountdownTimer[count] = 5;
 	hayCountdownTimer[timer] = SetTimer("MG_HAY_CountDown", 1000, 1);
 	
-	hayStartTime = GetTickCount(); // set game start time
     SetTimer("MG_HAY_TimerMove", 100, 0); // move hays
-	gameTimer = SetTimer("MG_HAY_TDScore", 1000, 1);
 }
 
 stock MG_HAY_Destroy()
@@ -279,7 +281,7 @@ public MG_HAY_TDScore()
 			new totalRaceTime = timeStamp - hayStartTime;
 			ConvertTime(var, totalRaceTime, tH, tM, tS);
 			level = playerLevel[i];
-			format(string,sizeof(string),"Hay Minigame~n~Level: %d/31 ~n~Time: %02d:%02d",level,tH,tM,tS);
+			format(string,sizeof(string),"~y~Hay Minigame~n~~r~Level: ~y~%d/31 ~n~~r~Time: ~y~%02d:%02d",level,tH,tM,tS);
 			PlayerTextDrawSetString(i, hayTextdraw[i], string);
 	      	PlayerTextDrawShow(i, hayTextdraw[i]);
    			if(playerLevel[i] == 31)
@@ -326,6 +328,9 @@ public MG_HAY_CountDown()
 			{
 				GameTextForPlayer(i, "GO", 1000, 3);
 				TogglePlayerControllable(i,1);
+				
+				hayStartTime = GetTickCount(); // set game start time
+				gameTimer = SetTimer("MG_HAY_TDScore", 1000, 1);
 			}
 		}
 		return 1;

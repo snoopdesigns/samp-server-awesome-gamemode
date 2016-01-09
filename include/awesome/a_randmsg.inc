@@ -2,7 +2,7 @@
 
 #include "include/awesome/colors.inc"
 
-#define MSG_INTERVAL 60000
+#define MSG_INTERVAL 8 * 60 * 1000 // 8 mins
 
 forward SendRandMSG();
 

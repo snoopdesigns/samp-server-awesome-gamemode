@@ -7,7 +7,7 @@
 #include "include/awesome/colors.inc"
 
 #define PROP_UNBUYABLE_TIME_IN_MIN 5
-#define PROP_EARNINGS_INTERVAL_IN_MIN 5
+#define PROP_EARNINGS_INTERVAL_IN_MIN 5 //5 mins
 
 //TODO add map markers on properties
 

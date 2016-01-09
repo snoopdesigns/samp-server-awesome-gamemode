@@ -12,8 +12,8 @@ forward RACE_finishRace();
 forward RACE_CountDown();
 forward RACE_playerTdTimer();
 
-#define RACES_INTERVAL 1 * 20 * 1000 // 3 minutes
-#define RACES_START_DELAY 15000 // 15 secs
+#define RACES_INTERVAL 4 * 60 * 1000 // 4 minutes
+#define RACES_START_DELAY 20000 // 20 secs
 
 #define RACE_STATUS_INACTIVE 0 
 #define RACE_STATUS_WAITING_PLAYERS 1 

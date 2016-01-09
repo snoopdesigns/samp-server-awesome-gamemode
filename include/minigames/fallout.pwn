@@ -36,7 +36,19 @@ new panel[100][panelInfo];
 new countdownTimer[countdownTimerInfo];
 new game[gameInfo];
 
-new playersInFallout[MAX_PLAYERS];
+new playersInFallout[MAX_PLAYERS]; 
+
+new Float:falloutRandomSpawn[][3] =
+{
+    {2463.7478,-1615.4982,161.1798},
+    {2446.7686,-1614.2196,161.1799},
+    {2443.9641,-1633.8066,161.1797},
+    {2443.4895,-1655.2618,161.1797},
+    {2457.7830,-1657.8823,161.1799},
+    {2476.6672,-1658.3934,161.1798},
+    {2479.9626,-1641.0983,161.1799},
+    {2481.2632,-1616.6920,161.1798}
+};
 
 stock MG_FALLOUT_Init()
 {	
@@ -181,15 +193,8 @@ stock MG_FALLOUT_Start()
 	    if(playersInFallout[i] != -1 && IsPlayerConnected(i))
     	{
 			//rand position
-			new distx = random(15);
-			new distxdirection = random(10);
-			new disty = random(15)
-			new distydirection = random(10);
-			new x = 2442;
-			new y = -1612;
-			if(distxdirection <= 4) x -= distx; else x += distx;
-			if(distydirection <= 4) y -= disty; else y += disty;
-			SetPlayerPos(i, float(x), float(y), 162.0000);
+			new rand = random(sizeof(falloutRandomSpawn));
+			SetPlayerPos(i, falloutRandomSpawn[rand][0], falloutRandomSpawn[rand][1], falloutRandomSpawn[rand][2]);
 			TogglePlayerControllable(i,0);
 		}
 	}
@@ -204,8 +209,11 @@ stock MG_FALLOUT_PreparePlayer(playerid)
     {
 		playersInFallout[playerid] = 1;
 		if(IsPlayerInAnyVehicle(playerid)) RemovePlayerFromVehicle(playerid);
-		SetPlayerPos(playerid, 2473.2869, -1617.5422, 162.0000);
-		ShowPlayerDialog(playerid, 69, DIALOG_STYLE_MSGBOX, "Fallout Minigame", "Fallout Minigame by Lazarus", "OK", "");
+		new rand = random(sizeof(falloutRandomSpawn));
+		SetPlayerPos(playerid, falloutRandomSpawn[rand][0], falloutRandomSpawn[rand][1], falloutRandomSpawn[rand][2]);
+		ShowPlayerDialog(playerid, MG_JOIN_DIALOG, DIALOG_STYLE_MSGBOX, "Fallout Minigame", "Fallout Minigame by Lazarus", "OK", "");
+		SetPlayerCameraPos(playerid, 2437.918701, -1594.741943, 169.611572);
+		SetPlayerCameraLookAt(playerid, 2440.740966, -1598.728393, 168.542053);
 	}
 	else
 	{

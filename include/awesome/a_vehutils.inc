@@ -22,7 +22,7 @@ public VEH_VehicleControlTimer()
 		{
 			new Float:health;
 			new veh = GetPlayerVehicleID(i);
-			if(veh != 0) 
+			if(veh != 0 && GetVehicleModel(veh) != 430/*sumo boat*/) 
 			{
 				GetVehicleHealth(veh, health);
 				if(health < 500) 
