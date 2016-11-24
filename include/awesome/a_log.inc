@@ -15,7 +15,7 @@ stock LOG_write(const message[]) {
 	new File:handle = fopen(LOG_FILENAME, io_append);
 	if(handle)
 	{
-		new logWithDatetime[128];
+		new logWithDatetime[1024];
 		new datetime[32];
 		get_datetime_string(sizeof datetime, datetime);
 		format(logWithDatetime, sizeof logWithDatetime, "[%s] * %s", datetime, message);

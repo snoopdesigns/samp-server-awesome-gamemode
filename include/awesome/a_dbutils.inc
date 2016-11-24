@@ -30,7 +30,6 @@ stock DBUTILS_shutdown(DB:db_handle_to_close)
 
 stock DBResult:DBUTILS_runSelectQuery(DB:dbhandle, query[])
 {
-	DBUTILS_logQuery(query);
 	return db_query(dbhandle, query);
 }
 
@@ -82,8 +81,8 @@ stock DBUTILS_getFieldFromResult(DBResult:db_result, field_name[])
 
 DBUTILS_logQuery(query[]) 
 {
-	new string[256];
+	new string[1024];
 	format(string,sizeof(string),"[DB_QUERY]: %s",query);
-	print(string);
+	LOG_write(string);
 
 }

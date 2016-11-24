@@ -4,6 +4,7 @@
 #define _vehutils_included
 
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/a_log.inc"
 #include "include/awesome/colors.inc"
 
 #define VEH_CONTROL_TIMER_INTERVAL 3000
@@ -212,6 +213,6 @@ stock LoadStaticVehiclesFromFile(const filename[])
 	}
 
 	fclose(file_ptr);
-	printf("Loaded %d vehicles from: %s",vehicles_loaded,filename);
+	LOG_writeFormatted("Loaded %d vehicles from: %s",vehicles_loaded,filename);
 	return vehicles_loaded;
 }
