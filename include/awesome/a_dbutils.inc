@@ -5,17 +5,21 @@
 
 #include <a_sampdb>
 #include <a_samp>
+#include "include/awesome/a_log.inc"
 
-stock DB:DBUTILS_initDatabase(dbname[])
+#define DB_FILENAME "awesome-freeroam.db"
+
+stock DB:DBUTILS_initDatabase()
 {
+	LOG_write("Database Subsystem initializing");
 	new DB:res;
-	if((res = db_open(dbname)) == DB:0)
+	if((res = db_open(DB_FILENAME)) == DB:0)
 	{
-		print("Failed to open a connection to \"test.db\".");
+		LOG_write("Failed to open a connection to Awesome DB");
 		SendRconCommand("exit");
 		return DB:-1;
 	}
-	print("Successfully created a connection to \"test.db\".");
+	LOG_write("Successfully created a connection to Awesome DB");
 	return res;
 }
 

@@ -61,6 +61,7 @@ new raceCreationFileName[64];
 
 stock RACE_initRaceSystem(DB:db_handle_for_race)
 {
+	LOG_write("Race Subsystem initializing");
 	db_handle_race = db_handle_for_race;
 	new createTableRaceQuery[512];
 	format(createTableRaceQuery, sizeof createTableRaceQuery, "CREATE TABLE IF NOT EXISTS `race`(%s, %s, %s, %s, %s, %s, %s)",

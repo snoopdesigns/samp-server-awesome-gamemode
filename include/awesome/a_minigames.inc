@@ -32,6 +32,7 @@ forward MG_updateTextdraw(textDrawShowCount);
 
 stock MG_initMinigamesSystem()
 {
+	LOG_write("Minigames Subsystem initializing");
 	SetTimer("MG_initNewMinigame", MINIGAMES_INTERVAL, false);
 	mgStatus = MG_STATUS_INACTIVE;
 	for(new i; i < MAX_PLAYERS; i++)

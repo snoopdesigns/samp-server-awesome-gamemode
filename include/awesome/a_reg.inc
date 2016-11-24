@@ -28,6 +28,7 @@ new DB:db_handle_reg;
 
 stock REG_initRegSystem(DB:db_handle_to_reg)
 {
+	LOG_write("Registration Subsystem initializing");
 	db_handle_reg = db_handle_to_reg;
 	//create player info table
 	//DBUTILS_runDropQuery(db_handle_reg, "players"); //uncomment this to drop table every server restart

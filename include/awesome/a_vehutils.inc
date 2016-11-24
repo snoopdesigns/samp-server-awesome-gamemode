@@ -53,6 +53,7 @@ public VEH_CreateVehicle(playerid, modelid)
 
 stock VEH_initVehiclesSystem()
 {
+	LOG_write("Vehicles Subsystem initializing");
 	//vehicles
 	AddStaticVehicle(411,-2653.6113,600.3569,14.1353,179.8569,0,0);
 	

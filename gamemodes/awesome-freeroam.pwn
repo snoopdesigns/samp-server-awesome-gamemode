@@ -13,9 +13,12 @@
 #include "include/awesome/a_minigames.inc"
 #include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"
+#include "include/awesome/a_log.inc"
 
 //TODO auto-repair on-off
 //TODO auto-flip on-off
+
+#define GAMEMODE_VERSION "0.1.001"
 
 #define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
@@ -39,11 +42,12 @@ PreloadAnimLib(playerid, animlib[])
 
 public OnGameModeInit()
 {
+	LOG_writeFormatted("Awesome Freeroam starting, version: %s", GAMEMODE_VERSION);
 	SetGameModeText("Awesome Freeroam v0.1");
 	
 	UsePlayerPedAnims();
 	
-	db_handle = DBUTILS_initDatabase("test.db");
+	db_handle = DBUTILS_initDatabase();
 	REG_initRegSystem(db_handle);
 	MENUS_initMenusSystem();
 	VEH_initVehiclesSystem();
@@ -100,6 +104,7 @@ public OnGameModeInit()
 	TextDrawBackgroundColor(txtClassSelHelper, 1499227944);
 	TextDrawFont(txtClassSelHelper, 2);
 	TextDrawSetProportional(txtClassSelHelper, 1);
+	LOG_write("Awesome Freeroam successfully started!");
 	return 1;
 }
 

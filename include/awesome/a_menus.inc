@@ -23,6 +23,7 @@ new menus[3][playerMenuInfo];
 
 stock MENUS_initMenusSystem()
 {
+	LOG_write("Menus Subsystem initializing");
 	//help menu
 	static dialog[256];
 	static heading[128];

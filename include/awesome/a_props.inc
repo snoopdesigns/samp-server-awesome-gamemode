@@ -77,6 +77,7 @@ public PROPS_PlayerEarningsTimer()
 
 stock PROPS_initPropsSystem(DB:db_handle_to_props)
 {
+	LOG_write("Properties Subsystem initializing");
 	db_handle_props = db_handle_to_props;
 	new createTablePropsQuery[512];
 	format(createTablePropsQuery, sizeof createTablePropsQuery, "CREATE TABLE IF NOT EXISTS `properties`(%s, %s, %s, %s, %s, %s, %s, %s, %s)",

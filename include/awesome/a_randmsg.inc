@@ -15,6 +15,7 @@ new RandomMSG[][] =
 
 stock RMSG_InitRandomMsg()
 {
+	LOG_write("RandomMSG Subsystem initializing");
 	SetTimer("SendRandMSG", MSG_INTERVAL, true);
 }
 

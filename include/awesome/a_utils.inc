@@ -109,3 +109,30 @@ stock token_by_delim(const string[], return_str[], delim, start_index)
 	if(string[start_index] == EOS) start_index = (-1);
 	return start_index;
 }
+
+stock get_datetime_string(const size, result[]) {
+	new y,m,d,h,mi,s; 
+	getdate(y,m,d);
+	gettime(h,mi,s);
+	new y_str[5];
+	new m_str[3];
+	new d_str[3];
+	new h_str[3];
+	new mi_str[3];
+	new s_str[3];
+	convert_int_to_2char_str(y, sizeof y_str, y_str);
+	convert_int_to_2char_str(m, sizeof m_str, m_str);
+	convert_int_to_2char_str(d, sizeof d_str, d_str);
+	convert_int_to_2char_str(h, sizeof h_str, h_str);
+	convert_int_to_2char_str(mi, sizeof mi_str, mi_str);
+	convert_int_to_2char_str(s, sizeof s_str, s_str);
+	format(result, size, "%s.%s.%s %s:%s:%s", y_str, m_str, d_str, h_str, mi_str, s_str);
+}
+
+stock convert_int_to_2char_str(const i, const size, result[]) {
+	if (i < 10) {
+	    format(result, size, "0%d", i);
+	} else {
+		format(result, size, "%d", i);
+	}
+}
