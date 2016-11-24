@@ -1,32 +1,14 @@
+#if defined _classselect_included
+	#endinput
+#endif
+#define _classselect_included
+
 #include <a_samp>
+#include "include/awesome/a_utils.inc"
 
-#include "include/awesome/colors.inc"
+#define MODULE_FUNCTION(%1) forward CS_%1; public CS_%1
 
-#define MODULE_FUNCTION(%1) forward RMSG_%1; public RMSG_%1
-
-#define MSG_INTERVAL 8 * 60 * 1000 // 8 mins
-
-forward SendRandMSG();
-
-new RandomMSG[][] =
-{
-    "* Use /help to view server commands and teleports",
-    "* Visit our website: http://snoopdesigns.co.nr/",
-    "* Cheats are forbidden on this server and will results a ban"
-};
-
-MODULE_FUNCTION(OnGameModeInit())
-{
-	LOG_write("RandomMSG Subsystem initializing");
-	SetTimer("SendRandMSG", MSG_INTERVAL, true);
-}
-
-public SendRandMSG()
-{
-    new randMSG = random(sizeof(RandomMSG));
-    SendClientMessageToAll(COLOR_RAND_MSG, RandomMSG[randMSG]);
-}
-
+MODULE_FUNCTION(OnGameModeInit()) {}
 MODULE_FUNCTION(OnGameModeExit()) {}
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {}
 MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {}

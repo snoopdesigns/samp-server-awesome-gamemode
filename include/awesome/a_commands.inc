@@ -7,8 +7,11 @@
 #include "include/awesome/a_menus.inc"
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_utils.inc"
-
 #include "include/awesome/colors.inc"
+
+#define MODULE_FUNCTION(%1) forward CMDS_%1; public CMDS_%1
+
+#define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
 stock CMDS_checkCommandAccess(playerid, level)
 {
@@ -28,6 +31,47 @@ stock CMDS_checkCommandAccess(playerid, level)
 		}
 		return FALSE;
 	}
+}
+
+MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
+	dcmd(kill, 4, cmdtext, 0);
+	
+	//help command
+	dcmd(help, 4, cmdtext, 0);
+
+	// register commands
+	dcmd(login, 5, cmdtext, 0);
+	dcmd(register, 8, cmdtext, 0);
+	
+	//vehicle commands
+	dcmd(v, 1, cmdtext, 1);
+	dcmd(car, 3, cmdtext, 1);
+	dcmd(fix, 6, cmdtext, 1);
+	
+	//properties commands
+	dcmd(cprop, 5, cmdtext, 2);
+	dcmd(buy, 3, cmdtext, 1);
+	dcmd(sell, 4, cmdtext, 1);
+	
+	//minigames
+	dcmd(event, 5, cmdtext, 1);
+	dcmd(leave, 5, cmdtext, 1);
+	
+	//races
+	dcmd(join, 4, cmdtext, 1);
+	dcmd(lcp, 3, cmdtext, 1);
+	dcmd(cr, 2, cmdtext, 2);
+	dcmd(crcheck, 7, cmdtext, 2);
+	dcmd(crend, 5, cmdtext, 2);
+	
+	//admin commands
+	dcmd(sethealth, 9, cmdtext, 2);
+	dcmd(setscore, 8, cmdtext, 2);
+	dcmd(setmoney, 8, cmdtext, 2);
+	dcmd(restart, 7, cmdtext, 2);
+	dcmd(setlevel, 8, cmdtext, 2);	
+	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
+	return 1;
 }
 
 //=====================================================================
@@ -321,3 +365,42 @@ dcmd_setlevel(playerid, params[])
 	}
 	return 1;
 }
+
+MODULE_FUNCTION(OnGameModeInit()) {}
+MODULE_FUNCTION(OnGameModeExit()) {}
+MODULE_FUNCTION(OnPlayerConnect(playerid)) {}
+MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {}
+MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {}
+MODULE_FUNCTION(OnPlayerSpawn(playerid)) {}
+MODULE_FUNCTION(OnPlayerDeath(playerid, killerid, reason)) {}
+MODULE_FUNCTION(OnVehicleSpawn(vehicleid)) {}
+MODULE_FUNCTION(OnVehicleDeath(vehicleid, killerid)) {}
+MODULE_FUNCTION(OnPlayerText(playerid, text[])) {}
+MODULE_FUNCTION(OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)) {}
+MODULE_FUNCTION(OnPlayerExitVehicle(playerid, vehicleid)) {}
+MODULE_FUNCTION(OnPlayerStateChange(playerid, newstate, oldstate)) {}
+MODULE_FUNCTION(OnPlayerEnterCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnRconCommand(cmd[])) {}
+MODULE_FUNCTION(OnPlayerRequestSpawn(playerid)) {}
+MODULE_FUNCTION(OnObjectMoved(objectid)) {}
+MODULE_FUNCTION(OnPlayerObjectMoved(playerid, objectid)) {}
+MODULE_FUNCTION(OnPlayerPickUpPickup(playerid, pickupid)) {}
+MODULE_FUNCTION(OnVehicleMod(playerid, vehicleid, componentid)) {}
+MODULE_FUNCTION(OnVehiclePaintjob(playerid, vehicleid, paintjobid)) {}
+MODULE_FUNCTION(OnVehicleRespray(playerid, vehicleid, color1, color2)) {}
+MODULE_FUNCTION(OnPlayerSelectedMenuRow(playerid, row)) {}
+MODULE_FUNCTION(OnPlayerExitedMenu(playerid)) {}
+MODULE_FUNCTION(OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)) {}
+MODULE_FUNCTION(OnPlayerKeyStateChange(playerid, newkeys, oldkeys)) {}
+MODULE_FUNCTION(OnRconLoginAttempt(ip[], password[], success)) {}
+MODULE_FUNCTION(OnPlayerUpdate(playerid)) {}
+MODULE_FUNCTION(OnPlayerStreamIn(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnPlayerStreamOut(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamIn(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamOut(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])) {}
+MODULE_FUNCTION(OnPlayerClickPlayer(playerid, clickedplayerid, source)) {}
+#undef MODULE_FUNCTION

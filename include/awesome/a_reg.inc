@@ -10,6 +10,8 @@
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/colors.inc"
 
+#define MODULE_FUNCTION(%1) forward REG_%1; public REG_%1
+
 //player vars
 #define PLAYER_VAR_LEVEL "LEVEL"
 
@@ -22,16 +24,14 @@
 #define PLAYER_PROP_SCORE "PlayerScore"
 #define PLAYER_PROP_MONEY "PlayerMoney"
 
+/* public timer callbacks */
 forward REG_savePlayerDataTimerFunc();
 
-new DB:db_handle_reg;
-
-stock REG_initRegSystem(DB:db_handle_to_reg)
+MODULE_FUNCTION(OnGameModeInit())
 {
 	LOG_write("Registration Subsystem initializing");
-	db_handle_reg = db_handle_to_reg;
 	//create player info table
-	//DBUTILS_runDropQuery(db_handle_reg, "players"); //uncomment this to drop table every server restart
+	//DBUTILS_runDropQuery("players"); //uncomment this to drop table every server restart
 	new createTablePlayersQuery[512];
 	format(createTablePlayersQuery, sizeof createTablePlayersQuery, "CREATE TABLE IF NOT EXISTS `players`(%s, %s, %s, %s, %s, %s)",
 		"`PlayerName` VARCHAR(24) PRIMARY KEY NOT NULL",
@@ -41,8 +41,35 @@ stock REG_initRegSystem(DB:db_handle_to_reg)
 		"'PlayerScore' VARCHAR(32) NOT NULL",
 		"'PlayerMoney' VARCHAR(32) NOT NULL");
 	//"CREATE TABLE IF NOT EXISTS `players`(`PlayerName` PRIMARY KEY VARCHAR(24) NOT NULL, 'PlayerPassword' VARCHAR(32) NOT NULL, 'PlayerIP' VARCHAR(32) NOT NULL, 'PlayerScore' VARCHAR(32) NOT NULL)";
-	DBUTILS_runCreateQuery(db_handle_reg, createTablePlayersQuery);
+	DBUTILS_runCreateQuery(createTablePlayersQuery);
 	SetTimer("REG_savePlayerDataTimerFunc", DB_SAVE_INTERVAL, true);
+}
+
+MODULE_FUNCTION(OnPlayerConnect(playerid))
+{
+	SetPVarInt(playerid, PLAYER_VAR_LEVEL, 0); // set default level to 0
+	
+	new player_ip[128], player_name[256];
+   	GetPlayerIp(playerid, player_ip, sizeof(player_ip));
+	GetPlayerName(playerid, player_name, sizeof(player_name));
+	
+	if(REG_checkPlayerRegistered(playerid) == TRUE)
+	{
+		//player with this name is registered
+		new ip_from_db[128];
+		ip_from_db = REG_getPropertyOfPlayer(playerid, PLAYER_PROP_IP);
+		if(strcmp(ip_from_db, player_ip) == 0)
+		{
+			REG_restoreSinglePlayerData(playerid);
+			SendClientMessageFormatted(playerid, COLOR_REG, "* IP auto-login successfull. Welcome back, %s!", player_name);
+		} else {
+			SendClientMessage(playerid, COLOR_ERROR, "* IP auto-login failed. Please /login using your password.");
+		}
+	}
+	else 
+	{
+		SendClientMessage(playerid, COLOR_REG, "* Your name is not registered. Please register using /register <password>");
+	}
 }
 
 public REG_savePlayerDataTimerFunc()
@@ -91,7 +118,7 @@ stock REG_registerNewPlayer(playerid, password[])
 			"1",
 			intToStr(GetPlayerScore(playerid)),
 			intToStr(GetPlayerMoney(playerid)));
-		DBUTILS_runInsertQuery(db_handle_reg, query);
+		DBUTILS_runInsertQuery(query);
 		if(REG_checkPlayerRegistered(playerid) == TRUE)
 		{
 			// player successfully registered
@@ -154,7 +181,7 @@ stock REG_checkPlayerRegistered(playerid)
 	GetPlayerName(playerid, player_name, sizeof(player_name));
 	static query[256], DBResult: db_result;
 	format(query, sizeof query, "SELECT * FROM `players` WHERE `PlayerName`='%s';", player_name);
-	db_result = DBUTILS_runSelectQuery(db_handle_reg, query);
+	db_result = DBUTILS_runSelectQuery(query);
 	if(DBUTILS_getResultsetSize(db_result) > 0)
 	{
 		DBUTILS_runSelectQueryClear(db_result);
@@ -164,33 +191,6 @@ stock REG_checkPlayerRegistered(playerid)
 	{
 		DBUTILS_runSelectQueryClear(db_result);
 		return FALSE;
-	}
-}
-
-stock REG_authenticatePlayerOnConnect(playerid)
-{
-	SetPVarInt(playerid, PLAYER_VAR_LEVEL, 0); // set default level to 0
-	
-	new player_ip[128], player_name[256];
-   	GetPlayerIp(playerid, player_ip, sizeof(player_ip));
-	GetPlayerName(playerid, player_name, sizeof(player_name));
-	
-	if(REG_checkPlayerRegistered(playerid) == TRUE)
-	{
-		//player with this name is registered
-		new ip_from_db[128];
-		ip_from_db = REG_getPropertyOfPlayer(playerid, PLAYER_PROP_IP);
-		if(strcmp(ip_from_db, player_ip) == 0)
-		{
-			REG_restoreSinglePlayerData(playerid);
-			SendClientMessageFormatted(playerid, COLOR_REG, "* IP auto-login successfull. Welcome back, %s!", player_name);
-		} else {
-			SendClientMessage(playerid, COLOR_ERROR, "* IP auto-login failed. Please /login using your password.");
-		}
-	}
-	else 
-	{
-		SendClientMessage(playerid, COLOR_REG, "* Your name is not registered. Please register using /register <password>");
 	}
 }
 
@@ -211,7 +211,7 @@ stock REG_getPropertyOfPlayer(playerid, property[])
    	GetPlayerName(playerid, player_name, sizeof(player_name));
 	static query[256], DBResult: db_result;
 	format(query, sizeof query, "SELECT * FROM `players` WHERE `PlayerName`='%s';", player_name);
-	db_result = DBUTILS_runSelectQuery(db_handle_reg, query);
+	db_result = DBUTILS_runSelectQuery(query);
 	result = DBUTILS_getFieldFromResult(db_result, property);
 	DBUTILS_runSelectQueryClear(db_result); // clear db results
 	return result;
@@ -223,5 +223,43 @@ stock REG_updatePropertyOfPlayer(playerid, property[], property_value[])
    	GetPlayerName(playerid, player_name, sizeof(player_name));
 	static query[256];
 	format(query, sizeof query, "UPDATE `players` SET '%s'='%s' WHERE `PlayerName`='%s';", property, property_value, player_name);
-	DBUTILS_runUpdateQuery(db_handle_reg, query);
+	DBUTILS_runUpdateQuery(query);
 }
+
+MODULE_FUNCTION(OnGameModeExit()) {}
+MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {}
+MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {}
+MODULE_FUNCTION(OnPlayerSpawn(playerid)) {}
+MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {}
+MODULE_FUNCTION(OnPlayerDeath(playerid, killerid, reason)) {}
+MODULE_FUNCTION(OnVehicleSpawn(vehicleid)) {}
+MODULE_FUNCTION(OnVehicleDeath(vehicleid, killerid)) {}
+MODULE_FUNCTION(OnPlayerText(playerid, text[])) {}
+MODULE_FUNCTION(OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)) {}
+MODULE_FUNCTION(OnPlayerExitVehicle(playerid, vehicleid)) {}
+MODULE_FUNCTION(OnPlayerStateChange(playerid, newstate, oldstate)) {}
+MODULE_FUNCTION(OnPlayerEnterCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnRconCommand(cmd[])) {}
+MODULE_FUNCTION(OnPlayerRequestSpawn(playerid)) {}
+MODULE_FUNCTION(OnObjectMoved(objectid)) {}
+MODULE_FUNCTION(OnPlayerObjectMoved(playerid, objectid)) {}
+MODULE_FUNCTION(OnPlayerPickUpPickup(playerid, pickupid)) {}
+MODULE_FUNCTION(OnVehicleMod(playerid, vehicleid, componentid)) {}
+MODULE_FUNCTION(OnVehiclePaintjob(playerid, vehicleid, paintjobid)) {}
+MODULE_FUNCTION(OnVehicleRespray(playerid, vehicleid, color1, color2)) {}
+MODULE_FUNCTION(OnPlayerSelectedMenuRow(playerid, row)) {}
+MODULE_FUNCTION(OnPlayerExitedMenu(playerid)) {}
+MODULE_FUNCTION(OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)) {}
+MODULE_FUNCTION(OnPlayerKeyStateChange(playerid, newkeys, oldkeys)) {}
+MODULE_FUNCTION(OnRconLoginAttempt(ip[], password[], success)) {}
+MODULE_FUNCTION(OnPlayerUpdate(playerid)) {}
+MODULE_FUNCTION(OnPlayerStreamIn(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnPlayerStreamOut(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamIn(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamOut(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])) {}
+MODULE_FUNCTION(OnPlayerClickPlayer(playerid, clickedplayerid, source)) {}
+#undef MODULE_FUNCTION

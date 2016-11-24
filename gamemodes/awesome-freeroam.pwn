@@ -13,19 +13,30 @@
 #include "include/awesome/a_minigames.inc"
 #include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"
+#include "include/awesome/a_classselect.inc"
 #include "include/awesome/a_log.inc"
 
+//TODO create stored queries in each module
 //TODO auto-repair on-off
 //TODO auto-flip on-off
+//TODO reorder forwards, constants, etc in all files
+
+#define MODULES(%1); DB_%1; \
+	REG_%1; \
+	MENUS_%1; \
+	VEH_%1; \
+	PROPS_%1; \
+	RACE_%1; \
+	MG_%1; \
+	RMSG_%1; \
+	CMDS_%1; \
+	LOG_%1; \
+	/*CS_%1;*/
 
 #define GAMEMODE_VERSION "0.1.001"
 
-#define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
-
 new gPlayerClass[MAX_PLAYERS];
 new Text: txtClassSelHelper;
-
-new DB:db_handle;
 
 main()
 {
@@ -42,19 +53,12 @@ PreloadAnimLib(playerid, animlib[])
 
 public OnGameModeInit()
 {
+	MODULES(OnGameModeInit());
+
 	LOG_writeFormatted("Awesome Freeroam starting, version: %s", GAMEMODE_VERSION);
 	SetGameModeText("Awesome Freeroam v0.1");
 	
 	UsePlayerPedAnims();
-	
-	db_handle = DBUTILS_initDatabase();
-	REG_initRegSystem(db_handle);
-	MENUS_initMenusSystem();
-	VEH_initVehiclesSystem();
-	PROPS_initPropsSystem(db_handle);
-	MG_initMinigamesSystem();
-	RACE_initRaceSystem(db_handle);
-	RMSG_InitRandomMsg();
 	
 	//player classes
 	//MEDIC
@@ -110,13 +114,13 @@ public OnGameModeInit()
 
 public OnGameModeExit()
 {
-    DBUTILS_shutdown(db_handle);
+    MODULES(OnGameModeExit());
 	return 1;
 }
 
 public OnPlayerConnect(playerid)
 {
-    REG_authenticatePlayerOnConnect(playerid);
+	MODULES(OnPlayerConnect(playerid));
 	gPlayerClass[playerid] = -1;
 	PreloadAnimLib(playerid,"BOMBER");
   	PreloadAnimLib(playerid,"RAPPING");
@@ -139,8 +143,7 @@ public OnPlayerConnect(playerid)
 
 public OnPlayerDisconnect(playerid, reason)
 {
-	MG_OnPlayerDisconnect(playerid);
-	RACE_OnPlayerDisconnect(playerid);
+	MODULES(OnPlayerDisconnect(playerid, reason));
 	return 1;
 }
 
@@ -254,50 +257,13 @@ public OnPlayerSpawn(playerid)
 
 public OnPlayerCommandText(playerid, cmdtext[])
 {
-	dcmd(kill, 4, cmdtext, 0);
-	
-	//help command
-	dcmd(help, 4, cmdtext, 0);
-
-	// register commands
-	dcmd(login, 5, cmdtext, 0);
-	dcmd(register, 8, cmdtext, 0);
-	
-	//vehicle commands
-	dcmd(v, 1, cmdtext, 1);
-	dcmd(car, 3, cmdtext, 1);
-	dcmd(fix, 6, cmdtext, 1);
-	
-	//properties commands
-	dcmd(cprop, 5, cmdtext, 2);
-	dcmd(buy, 3, cmdtext, 1);
-	dcmd(sell, 4, cmdtext, 1);
-	
-	//minigames
-	dcmd(event, 5, cmdtext, 1);
-	dcmd(leave, 5, cmdtext, 1);
-	
-	//races
-	dcmd(join, 4, cmdtext, 1);
-	dcmd(lcp, 3, cmdtext, 1);
-	dcmd(cr, 2, cmdtext, 2);
-	dcmd(crcheck, 7, cmdtext, 2);
-	dcmd(crend, 5, cmdtext, 2);
-	
-	//admin commands
-	dcmd(sethealth, 9, cmdtext, 2);
-	dcmd(setscore, 8, cmdtext, 2);
-	dcmd(setmoney, 8, cmdtext, 2);
-	dcmd(restart, 7, cmdtext, 2);
-	dcmd(setlevel, 8, cmdtext, 2);	
-	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
+	MODULES(OnPlayerCommandText(playerid, cmdtext));
 	return 1;
 }
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
-	MG_OnPlayerDeath(playerid);
-	RACE_OnPlayerDeath(playerid);
+	MODULES(OnPlayerDeath(playerid, killerid, reason));
 	return 1;
 }
 
@@ -343,7 +309,7 @@ public OnPlayerLeaveCheckpoint(playerid)
 
 public OnPlayerEnterRaceCheckpoint(playerid)
 {
-	RACE_OnEnterCheckpoint(playerid);
+	MODULES(OnPlayerEnterRaceCheckpoint(playerid));
 	return 1;
 }
 
@@ -374,7 +340,7 @@ public OnPlayerObjectMoved(playerid, objectid)
 
 public OnPlayerPickUpPickup(playerid, pickupid)
 {
-	PROPS_OnPlayerPickUpPickup(playerid, pickupid);
+	MODULES(OnPlayerPickUpPickup(playerid, pickupid));
 	return 1;
 }
 

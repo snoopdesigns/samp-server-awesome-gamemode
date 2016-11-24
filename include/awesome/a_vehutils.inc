@@ -7,13 +7,47 @@
 #include "include/awesome/a_log.inc"
 #include "include/awesome/colors.inc"
 
+#define MODULE_FUNCTION(%1) forward VEH_%1; public VEH_%1
+
 #define VEH_CONTROL_TIMER_INTERVAL 3000
 
 //player vars
 #define PLAYER_VAR_CURVEHICLE "CURVEHICLE"
 
+/* public timer callbacks */
 forward VEH_VehicleControlTimer();
 forward VEH_CreateVehicle(playerid, modelid);
+
+MODULE_FUNCTION(OnGameModeInit())
+{
+	LOG_write("Vehicles Subsystem initializing");
+	//vehicles
+	AddStaticVehicle(411,-2653.6113,600.3569,14.1353,179.8569,0,0);
+	
+	new total_vehicles_from_files = LoadStaticVehiclesFromFile("vehicles/sf_law.txt");
+    total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_airport.txt");
+    total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_gen.txt");
+	
+	SetTimer("VEH_VehicleControlTimer", VEH_CONTROL_TIMER_INTERVAL, true);
+} 
+
+MODULE_FUNCTION(OnPlayerKeyStateChange(playerid, newkeys, oldkeys))
+{
+	if(((newkeys & (KEY_FIRE)) == (KEY_FIRE)) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER )
+    {
+		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid)))
+		{
+			AddVehicleComponent(GetPlayerVehicleID(playerid), 1010);
+		}
+    }
+    if((((newkeys & (KEY_FIRE)) != (KEY_FIRE)) && ((oldkeys & (KEY_FIRE)) == (KEY_FIRE))) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER )
+    {
+		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid)))
+		{
+			RemoveVehicleComponent(GetPlayerVehicleID(playerid), 1010);
+		}
+    }
+}
 
 public VEH_VehicleControlTimer()
 {
@@ -50,37 +84,6 @@ public VEH_CreateVehicle(playerid, modelid)
 	TogglePlayerControllable(playerid,1);
 	SetCameraBehindPlayer(playerid);
 	SetPVarInt(playerid, PLAYER_VAR_CURVEHICLE, vehicleid);
-}
-
-stock VEH_initVehiclesSystem()
-{
-	LOG_write("Vehicles Subsystem initializing");
-	//vehicles
-	AddStaticVehicle(411,-2653.6113,600.3569,14.1353,179.8569,0,0);
-	
-	new total_vehicles_from_files = LoadStaticVehiclesFromFile("vehicles/sf_law.txt");
-    total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_airport.txt");
-    total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_gen.txt");
-	
-	SetTimer("VEH_VehicleControlTimer", VEH_CONTROL_TIMER_INTERVAL, true);
-} 
-
-stock VEH_OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
-{
-	if(((newkeys & (KEY_FIRE)) == (KEY_FIRE)) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER )
-    {
-		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid)))
-		{
-			AddVehicleComponent(GetPlayerVehicleID(playerid), 1010);
-		}
-    }
-    if((((newkeys & (KEY_FIRE)) != (KEY_FIRE)) && ((oldkeys & (KEY_FIRE)) == (KEY_FIRE))) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER )
-    {
-		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid)))
-		{
-			RemoveVehicleComponent(GetPlayerVehicleID(playerid), 1010);
-		}
-    }
 }
 
 stock VEH_RepairPlayerVehicle(playerid)
@@ -216,3 +219,41 @@ stock LoadStaticVehiclesFromFile(const filename[])
 	LOG_writeFormatted("Loaded %d vehicles from: %s",vehicles_loaded,filename);
 	return vehicles_loaded;
 }
+
+MODULE_FUNCTION(OnGameModeExit()) {}
+MODULE_FUNCTION(OnPlayerConnect(playerid)) {}
+MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {}
+MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {}
+MODULE_FUNCTION(OnPlayerSpawn(playerid)) {}
+MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {}
+MODULE_FUNCTION(OnPlayerDeath(playerid, killerid, reason)) {}
+MODULE_FUNCTION(OnVehicleSpawn(vehicleid)) {}
+MODULE_FUNCTION(OnVehicleDeath(vehicleid, killerid)) {}
+MODULE_FUNCTION(OnPlayerText(playerid, text[])) {}
+MODULE_FUNCTION(OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)) {}
+MODULE_FUNCTION(OnPlayerExitVehicle(playerid, vehicleid)) {}
+MODULE_FUNCTION(OnPlayerStateChange(playerid, newstate, oldstate)) {}
+MODULE_FUNCTION(OnPlayerEnterCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnRconCommand(cmd[])) {}
+MODULE_FUNCTION(OnPlayerRequestSpawn(playerid)) {}
+MODULE_FUNCTION(OnObjectMoved(objectid)) {}
+MODULE_FUNCTION(OnPlayerObjectMoved(playerid, objectid)) {}
+MODULE_FUNCTION(OnPlayerPickUpPickup(playerid, pickupid)) {}
+MODULE_FUNCTION(OnVehicleMod(playerid, vehicleid, componentid)) {}
+MODULE_FUNCTION(OnVehiclePaintjob(playerid, vehicleid, paintjobid)) {}
+MODULE_FUNCTION(OnVehicleRespray(playerid, vehicleid, color1, color2)) {}
+MODULE_FUNCTION(OnPlayerSelectedMenuRow(playerid, row)) {}
+MODULE_FUNCTION(OnPlayerExitedMenu(playerid)) {}
+MODULE_FUNCTION(OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)) {}
+MODULE_FUNCTION(OnRconLoginAttempt(ip[], password[], success)) {}
+MODULE_FUNCTION(OnPlayerUpdate(playerid)) {}
+MODULE_FUNCTION(OnPlayerStreamIn(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnPlayerStreamOut(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamIn(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamOut(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])) {}
+MODULE_FUNCTION(OnPlayerClickPlayer(playerid, clickedplayerid, source)) {}
+#undef MODULE_FUNCTION

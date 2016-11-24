@@ -6,6 +6,8 @@
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/colors.inc"
 
+#define MODULE_FUNCTION(%1) forward RACE_%1; public RACE_%1
+
 forward RACE_initNewRace();
 forward RACE_startRace();
 forward RACE_finishRace();
@@ -46,8 +48,6 @@ new raceStatus;
 new raceCountdownTimer = -1;
 new raceCountdownTimerCount;
 
-new DB:db_handle_race;
-
 //race creation
 #define RACE_CREATION_STATUS_INACTIVE 0
 #define RACE_CREATION_STATUS_INPROGRESS 1
@@ -59,10 +59,9 @@ new raceCreationFileName[64];
 //TODO check if active player dead or leave the game to finish race
 //TODO create player leave race method
 
-stock RACE_initRaceSystem(DB:db_handle_for_race)
+MODULE_FUNCTION(OnGameModeInit())
 {
 	LOG_write("Race Subsystem initializing");
-	db_handle_race = db_handle_for_race;
 	new createTableRaceQuery[512];
 	format(createTableRaceQuery, sizeof createTableRaceQuery, "CREATE TABLE IF NOT EXISTS `race`(%s, %s, %s, %s, %s, %s, %s)",
 		"`ID` INTEGER PRIMARY KEY NOT NULL",
@@ -72,7 +71,7 @@ stock RACE_initRaceSystem(DB:db_handle_for_race)
 		"'RecordHolder' VARCHAR(32) NOT NULL",
 		"'VehicleModel' INTEGER NOT NULL",
 		"'filename' VARCHAR(32) NOT NULL");
-	DBUTILS_runCreateQuery(db_handle_race, createTableRaceQuery);
+	DBUTILS_runCreateQuery(createTableRaceQuery);
 	
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 	raceStatus = RACE_STATUS_INACTIVE;
@@ -84,6 +83,53 @@ stock RACE_initRaceSystem(DB:db_handle_for_race)
 		playerInRaceProgress[i] = -1;
 		playersInRaceTextdraw[i] = PlayerText: -1;
 	}
+}
+
+MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid))
+{
+	if(playersInRace[playerid] != -1 && raceStatus == RACE_STATUS_ACTIVE)
+	{
+		DisablePlayerRaceCheckpoint(playerid);
+		if(playerInRaceProgress[playerid] == totalRaceCheckpoints - 1)
+		{
+			RACE_playerFinishRace(playerid, 0);
+		}
+		else 
+		{
+			playerInRaceProgress[playerid] ++;
+			if(totalRaceCheckpoints - 1 == playerInRaceProgress[playerid])
+			{
+				GameTextForPlayer(playerid, "~r~LAST CHECKPOINT...", 1000, 3);
+				SetPlayerRaceCheckpoint(playerid,1,raceCheckpoints[playerInRaceProgress[playerid]][x], raceCheckpoints[playerInRaceProgress[playerid]][y], raceCheckpoints[playerInRaceProgress[playerid]][z],
+					raceCheckpoints[playerInRaceProgress[playerid]+1][x], raceCheckpoints[playerInRaceProgress[playerid]+1][y], raceCheckpoints[playerInRaceProgress[playerid]+1][z], 10);
+				for(new i = 0; i < MAX_PLAYERS; i++)
+				{
+					if(playersInRace[i] != -1)
+					{
+						new msgFinish[128];
+						format(msgFinish, sizeof msgFinish, "~r~%s ~n~~y~is about to cross ~n~the finish line", GetPlayerFormattedName(i));
+						GameTextForPlayer(i, msgFinish, 1000, 3); 
+					}
+				}
+			}
+			else 
+			{
+				SetPlayerRaceCheckpoint(playerid,0,raceCheckpoints[playerInRaceProgress[playerid]][x], raceCheckpoints[playerInRaceProgress[playerid]][y], raceCheckpoints[playerInRaceProgress[playerid]][z],
+					raceCheckpoints[playerInRaceProgress[playerid]+1][x], raceCheckpoints[playerInRaceProgress[playerid]+1][y], raceCheckpoints[playerInRaceProgress[playerid]+1][z], 10);
+			}
+		}
+	}
+}
+
+MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason))
+{
+	RACE_playerFinishRace(playerid, 1);
+}
+
+MODULE_FUNCTION(OnPlayerDeath(playerid, killerid, reason))
+{
+	SendClientMessage(playerid, COLOR_MG, "* You died and cannot finish the race.");
+	RACE_playerFinishRace(playerid, 1);
 }
 
 stock RACE_createRace(playerid, filename[])
@@ -146,7 +192,7 @@ stock RACE_createRaceEnd(playerid, racename[])
 			racename,
 			player_name,
 			raceCreationFileName);
-		DBUTILS_runInsertQuery(db_handle_race, query);
+		DBUTILS_runInsertQuery(query);
 		
 		SendClientMessage(playerid, COLOR_IMPROVEMENT, "* New race successfully created");
 		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Race name: '%s', filename: '%s'", racename, raceCreationFileName);
@@ -184,7 +230,7 @@ public RACE_initNewRace()
 	totalRaceCheckpoints = -1;
 	
 	static DBResult: db_result;
-	db_result = DBUTILS_runSelectQuery(db_handle_race, "SELECT * FROM `race`");
+	db_result = DBUTILS_runSelectQuery("SELECT * FROM `race`");
 	new racesCounts = DBUTILS_getResultsetSize(db_result);
 	if(racesCounts == 0) 
 	{
@@ -197,7 +243,7 @@ public RACE_initNewRace()
 	new racename[128], filename[128], recordHolder[128], creatorName[128];
 	new recordTime, vehicleModel;
 	format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", currentRaceIdentifier);
-	db_result = DBUTILS_runSelectQuery(db_handle_race, query);
+	db_result = DBUTILS_runSelectQuery(query);
 	racename = DBUTILS_getFieldFromResult(db_result, "RaceName");
 	creatorName = DBUTILS_getFieldFromResult(db_result, "CreatorName");
 	filename = DBUTILS_getFieldFromResult(db_result, "filename");
@@ -336,7 +382,7 @@ stock RACE_playerFinishRace(playerid, status)
 		new recordHolder[128], racename[128];
 		new recordTime;
 		format(query, sizeof query, "SELECT * FROM `race` WHERE `ID`='%d';", currentRaceIdentifier);
-		db_result = DBUTILS_runSelectQuery(db_handle_race, query);
+		db_result = DBUTILS_runSelectQuery(query);
 		racename = DBUTILS_getFieldFromResult(db_result, "RaceName");
 		recordHolder = DBUTILS_getFieldFromResult(db_result, "RecordHolder");
 		recordTime = strToInt(DBUTILS_getFieldFromResult(db_result, "RecordTime"));
@@ -348,9 +394,9 @@ stock RACE_playerFinishRace(playerid, status)
 				SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s set up new record of '%s' race, time: %02d Min %02d Sec", GetPlayerFormattedName(playerid), racename, tH, tM, tS);
 				static queryUpdate[128];
 				format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordHolder`='%s' WHERE `ID`=%d", player_name, currentRaceIdentifier);
-				DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+				DBUTILS_runUpdateQuery(queryUpdate);
 				format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordTime`=%d WHERE `ID`=%d", totalRaceTime, currentRaceIdentifier);
-				DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+				DBUTILS_runUpdateQuery(queryUpdate);
 				//gave player something cool
 			}
 		}
@@ -360,9 +406,9 @@ stock RACE_playerFinishRace(playerid, status)
 			SendClientMessageToAllFormatted(COLOR_MG_RES, "* '%s' set up new record of '%s' race, time: %02d Min %02d Sec", player_name, racename, tH, tM, tS);
 			static queryUpdate[128];
 			format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordHolder`='%s' WHERE `ID`=%d", player_name, currentRaceIdentifier);
-			DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+			DBUTILS_runUpdateQuery(queryUpdate);
 			format(queryUpdate, sizeof queryUpdate, "UPDATE `race` SET `RecordTime`=%d WHERE `ID`=%d", totalRaceTime, currentRaceIdentifier);
-			DBUTILS_runUpdateQuery(db_handle_race, queryUpdate);
+			DBUTILS_runUpdateQuery(queryUpdate);
 			//gave player something cool
 		}
 	}
@@ -393,17 +439,6 @@ stock RACE_playerFinishRace(playerid, status)
 	{
 		RACE_finishRace();
 	}
-}
-
-stock RACE_OnPlayerDisconnect(playerid)
-{
-	RACE_playerFinishRace(playerid, 1);
-}
-
-stock RACE_OnPlayerDeath(playerid)
-{
-	SendClientMessage(playerid, COLOR_MG, "* You died and cannot finish the race.");
-	RACE_playerFinishRace(playerid, 1);
 }
 
 public RACE_CountDown()
@@ -680,3 +715,39 @@ stock RACE_loadRaceFromFile(const filename[])
 	fclose(file_ptr);
 	return checkpoints_loaded;
 }
+
+MODULE_FUNCTION(OnGameModeExit()) {}
+MODULE_FUNCTION(OnPlayerConnect(playerid)) {}
+MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {}
+MODULE_FUNCTION(OnPlayerSpawn(playerid)) {}
+MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {}
+MODULE_FUNCTION(OnVehicleSpawn(vehicleid)) {}
+MODULE_FUNCTION(OnVehicleDeath(vehicleid, killerid)) {}
+MODULE_FUNCTION(OnPlayerText(playerid, text[])) {}
+MODULE_FUNCTION(OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)) {}
+MODULE_FUNCTION(OnPlayerExitVehicle(playerid, vehicleid)) {}
+MODULE_FUNCTION(OnPlayerStateChange(playerid, newstate, oldstate)) {}
+MODULE_FUNCTION(OnPlayerEnterCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnPlayerLeaveRaceCheckpoint(playerid)) {}
+MODULE_FUNCTION(OnRconCommand(cmd[])) {}
+MODULE_FUNCTION(OnPlayerRequestSpawn(playerid)) {}
+MODULE_FUNCTION(OnObjectMoved(objectid)) {}
+MODULE_FUNCTION(OnPlayerObjectMoved(playerid, objectid)) {}
+MODULE_FUNCTION(OnPlayerPickUpPickup(playerid, pickupid)) {}
+MODULE_FUNCTION(OnVehicleMod(playerid, vehicleid, componentid)) {}
+MODULE_FUNCTION(OnVehiclePaintjob(playerid, vehicleid, paintjobid)) {}
+MODULE_FUNCTION(OnVehicleRespray(playerid, vehicleid, color1, color2)) {}
+MODULE_FUNCTION(OnPlayerSelectedMenuRow(playerid, row)) {}
+MODULE_FUNCTION(OnPlayerExitedMenu(playerid)) {}
+MODULE_FUNCTION(OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)) {}
+MODULE_FUNCTION(OnPlayerKeyStateChange(playerid, newkeys, oldkeys)) {}
+MODULE_FUNCTION(OnRconLoginAttempt(ip[], password[], success)) {}
+MODULE_FUNCTION(OnPlayerUpdate(playerid)) {}
+MODULE_FUNCTION(OnPlayerStreamIn(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnPlayerStreamOut(playerid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamIn(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnVehicleStreamOut(vehicleid, forplayerid)) {}
+MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])) {}
+MODULE_FUNCTION(OnPlayerClickPlayer(playerid, clickedplayerid, source)) {}
+#undef MODULE_FUNCTION
