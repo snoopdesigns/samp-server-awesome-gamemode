@@ -231,7 +231,7 @@ public RACE_initNewRace()
 	}
 	else
 	{
-		VEH_getVehicleNameByModelId(vehicleModel, vehicleModelName)
+		VEH_getVehicleNameByModelId(vehicleModel, vehicleModelName);
 		SendClientMessageToAllFormatted(COLOR_MG, "* Vehicle: %s (ID=%d)", vehicleModelName, vehicleModel);
 	}
 	
@@ -263,7 +263,7 @@ public RACE_startRace()
 			if(playersInRace[i] != -1)
 			{
 				SendClientMessageFormatted(i, COLOR_MG_PROGRESS, "* Race is about to start [%d racers, including you]", playerInRaceRemaining);
-				GameTextForPlayer(i, "~r~RACE STARTING NOW", 1000, 3)
+				GameTextForPlayer(i, "~r~RACE STARTING NOW", 1000, 3);
 				//create player textdraw
 				playersInRaceTextdraw[i] = CreatePlayerTextDraw(i, 485.554931, 405.037750, playerTdMsg);
 				PlayerTextDrawLetterSize(i, playersInRaceTextdraw[i], 0.400000, 1.600000);
