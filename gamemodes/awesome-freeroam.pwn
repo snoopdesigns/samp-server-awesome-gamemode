@@ -31,20 +31,20 @@
 	RMSG_%1; \
 	CMDS_%1; \
 	LOG_%1; \
-	/*CS_%1;*/
+	CS_%1
 	
 #define MODULES_1(%1); DB_%1; \
 	REG_%1; \
 	MENUS_%1; \
 	VEH_%1; \
 	PROPS_%1; \
-	RACE_%1;
+	RACE_%1
 
 #define MODULES_2(%1); MG_%1; \
 	RMSG_%1; \
 	CMDS_%1; \
 	LOG_%1; \
-	CS_%1;
+	CS_%1
 
 #define GAMEMODE_VERSION "0.1.001"
 
@@ -188,7 +188,8 @@ public OnPlayerObjectMoved(playerid, objectid)
 
 public OnPlayerPickUpPickup(playerid, pickupid)
 {
-	MODULES(OnPlayerPickUpPickup(playerid, pickupid));
+	MODULES_1(OnPlayerPickUpPickup(playerid, pickupid));
+	MODULES_2(OnPlayerPickUpPickup(playerid, pickupid));
 	return 1;
 }
 
