@@ -22,8 +22,6 @@
 //TODO auto-flip on-off
 //TODO reorder forwards, constants, etc in all files
 
-#define GAMEMODE_VERSION "0.1.001"
-
 main()
 {
 	print("\n----------------------------------");
@@ -40,7 +38,11 @@ PreloadAnimLib(playerid, animlib[])
 public OnGameModeInit()
 {
 	LOG_write("===================================================");
-	LOG_write("============== Gamemode starting ==================");
+	LOG_write(" * Awesome Freeroam Gamemode");
+	LOG_writeFormatted(" * Version: %s", GAMEMODE_VERSION);
+	for (new i = 0; i < sizeof(modules); i++) {
+		LOG_writeFormatted(" * Loaded module: [%s]", modules[i][long_name]);
+	}
 	LOG_write("===================================================");
 	callModulesCallback("OnGameModeInit");
 

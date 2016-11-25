@@ -36,6 +36,12 @@ stock strToFloat(floatstring[])
 	return floatstr(floatstring);
 }
 
+stock getArrayString(result[], length, src[]) {
+	for (new i = 0; i < sizeof(src); i++) {
+		format(result, length, "%s,%s", result, src[i]);
+	}
+}
+
 stock FIX_valstr(dest[], value, bool:pack = false)
 {
     // format can't handle cellmin properly
