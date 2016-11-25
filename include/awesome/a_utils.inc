@@ -8,53 +8,6 @@
 #define SendClientMessageFormatted(%0,%1,%2,%3) format(clientFormattedMessage, sizeof clientFormattedMessage, %2, %3); SendClientMessage(%0, %1, clientFormattedMessage)
 #define SendClientMessageToAllFormatted(%0,%1,%2) format(clientFormattedMessage, sizeof clientFormattedMessage, %1, %2); SendClientMessageToAll(%0, clientFormattedMessage)
 
-#define DECLARE_FORWARDS_1(%1);\
-	forward %1_OnGameModeInit();\
-	forward %1_OnGameModeExit();\
-	forward %1_OnPlayerConnect(playerid);\
-	forward %1_OnPlayerDisconnect(playerid, reason);\
-	forward %1_OnPlayerRequestClass(playerid, classid);\
-	forward %1_OnPlayerSpawn(playerid);\
-	forward %1_OnPlayerCommandText(playerid, cmdtext[]);\
-	forward %1_OnPlayerDeath(playerid, killerid, reason);
-#define DECLARE_FORWARDS_2(%1); \	
-	forward %1_OnVehicleSpawn(vehicleid); \
-	forward %1_OnVehicleDeath(vehicleid, killerid); \
-	forward %1_OnPlayerText(playerid, text[]); \
-	forward %1_OnPlayerEnterVehicle(playerid, vehicleid, ispassenger); \
-	forward %1_OnPlayerExitVehicle(playerid, vehicleid); \
-	forward %1_OnPlayerStateChange(playerid, newstate, oldstate);
-#define DECLARE_FORWARDS_3(%1); \
-	forward %1_OnPlayerEnterCheckpoint(playerid); \
-	forward %1_OnPlayerLeaveCheckpoint(playerid); \
-	forward %1_OnPlayerEnterRaceCheckpoint(playerid); \
-	forward %1_OnPlayerLeaveRaceCheckpoint(playerid); \
-	forward %1_OnRconCommand(cmd[]);
-#define DECLARE_FORWARDS_4(%1); \
-	forward %1_OnPlayerRequestSpawn(playerid); \
-	forward %1_OnObjectMoved(objectid); \
-	forward %1_OnPlayerObjectMoved(playerid, objectid); \
-	forward %1_OnPlayerPickUpPickup(playerid, pickupid);
-#define DECLARE_FORWARDS_5(%1); \	
-	forward %1_OnVehicleMod(playerid, vehicleid, componentid); \
-	forward %1_OnVehiclePaintjob(playerid, vehicleid, paintjobid); \
-	forward %1_OnVehicleRespray(playerid, vehicleid, color1, color2); \
-	forward %1_OnPlayerSelectedMenuRow(playerid, row);
-#define DECLARE_FORWARDS_6(%1); \
-	forward %1_OnPlayerExitedMenu(playerid); \
-	forward %1_OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid); \
-	forward %1_OnPlayerKeyStateChange(playerid, newkeys, oldkeys); \
-	forward %1_OnRconLoginAttempt(ip[], password[], success); \
-	forward %1_OnPlayerUpdate(playerid);
-#define DECLARE_FORWARDS_7(%1); \	
-	forward %1_OnPlayerStreamIn(playerid, forplayerid); \
-	forward %1_OnPlayerStreamOut(playerid, forplayerid); \
-	forward %1_OnVehicleStreamIn(vehicleid, forplayerid); \
-	forward %1_OnVehicleStreamOut(vehicleid, forplayerid);
-#define DECLARE_FORWARDS_8(%1); \	
-	forward %1_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]); \
-	forward %1_OnPlayerClickPlayer(playerid, clickedplayerid, source);
-
 //0 - var, 1 - unix time, 2 - hours, 3 - minutes, 4 - seconds
 #define ConvertTime(%0,%1,%2,%3,%4) \
 	new \

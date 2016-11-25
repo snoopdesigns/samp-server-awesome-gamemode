@@ -47,6 +47,7 @@ MODULE_FUNCTION(OnGameModeInit())
 
 MODULE_FUNCTION(OnPlayerConnect(playerid))
 {
+	LOG_writeFormatted("Called OnPlayerConnect() in REG, playerid = %d", playerid);
 	SetPVarInt(playerid, PLAYER_VAR_LEVEL, 0); // set default level to 0
 	
 	new player_ip[128], player_name[256];
@@ -70,6 +71,10 @@ MODULE_FUNCTION(OnPlayerConnect(playerid))
 	{
 		SendClientMessage(playerid, COLOR_REG, "* Your name is not registered. Please register using /register <password>");
 	}
+}
+
+MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {
+	LOG_writeFormatted("Called OnPlayerDisconnect() in REG, playerid = %d, reason = %d", playerid, reason);
 }
 
 public REG_savePlayerDataTimerFunc()
@@ -227,7 +232,6 @@ stock REG_updatePropertyOfPlayer(playerid, property[], property_value[])
 }
 
 MODULE_FUNCTION(OnGameModeExit()) {}
-MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {}
 MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {}
 MODULE_FUNCTION(OnPlayerSpawn(playerid)) {}
 MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {}
