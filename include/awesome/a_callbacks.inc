@@ -26,8 +26,8 @@ new callbacks[][callback_format_enum] = {
 };
 
 new modules[][modules_item] = {
-	{"DB","Database Layer Module"},
-	{"CMDS","Command Module"},
+	{"DB","Database Layer Module"}
+	/*{"CMDS","Command Module"},
 	{"MENUS","Ingame Menus Module"},
 	{"MG","Minigames Module"},
 	{"PROPS","Properties Subsystem Module"},
@@ -35,7 +35,7 @@ new modules[][modules_item] = {
 	{"RACE","Race Module"},
 	{"RMSG","Random Messages and Announcments Module"},
 	{"VEH","Vehicle Subsystem Module"},
-	{"CS","Player Classes Module"}
+	{"CS","Player Classes Module"}*/
 };
 
 public callModulesCallback(const callback[],{Float,_}:...) {

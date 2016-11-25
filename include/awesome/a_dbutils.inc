@@ -7,10 +7,20 @@
 #include <a_samp>
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/strlib.inc"
 	
 #define MODULE_FUNCTION(%1) forward DB_%1; public DB_%1
 
 #define DB_FILENAME "awesome-freeroam.db"
+	
+enum stored_query {
+	stored_q_name[32],
+	stored_q_format[8],
+	stored_q_sql[32]
+}
+
+new stored_queries[4][stored_query];
+new stored_queries_num = 0;
 	
 new DB:db_handle;
 
@@ -23,11 +33,70 @@ MODULE_FUNCTION(OnGameModeInit())
 		SendRconCommand("exit");
 	}
 	LOG_write("Successfully created a connection to Awesome DB");
+	readStoredQueries("stored_queries.sql");
+	DBUtils_runSelectNamedQuery("findAllPlayers","ss","FUUU","TEST");
 }
 
 MODULE_FUNCTION(OnGameModeExit())
 {
 	db_close(db_handle);
+}
+
+stock readStoredQueries(const filename[]) {
+
+    new File:file = fopen(filename, io_read), line[128];
+    while(fread(file, line))
+    {
+		new queryName[32];
+		new queryFormat[8];
+		new querySql[32];
+		sscanf(rtrim(line), "sss", queryName, queryFormat, querySql);
+        LOG_writeFormatted("Read stored query: name = %s, format = %s, query = %s", queryName, queryFormat, querySql);
+		stored_queries[stored_queries_num][stored_q_name] = queryName;
+		stored_queries[stored_queries_num][stored_q_format] = queryFormat;
+		stored_queries[stored_queries_num][stored_q_sql] = querySql;
+		stored_queries_num++;
+    }
+}
+
+stock findQueryIdByName(const name[]) {
+	for (new i = 0; i < stored_queries_num; i++) {
+	    if (strcmp(name, stored_queries[i][stored_q_name]) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+
+stock DBResult:DBUtils_runSelectNamedQuery(const queryName[],const sqlFormat[],...) {
+    new query_id;
+	query_id = findQueryIdByName(queryName);
+	LOG_writeFormatted("Found query by name: %s, query: %s", stored_queries[query_id][stored_q_name], stored_queries[query_id][stored_q_sql]);
+	if (strcmp(sqlFormat, stored_queries[query_id][stored_q_format]) == 0) {
+		new sql[32];
+		new sql_format[8];
+		format(sql_format, sizeof(sql_format), "%s", stored_queries[query_id][stored_q_format]);
+		LOG_writeFormatted("Query format: %s, %d", sql_format, strlen(sql_format));
+		if (strcmp(stored_queries[query_id][stored_q_format], "NA") != 0) {
+			format(sql, sizeof(sql), "%s", stored_queries[query_id][stored_q_sql]);
+			for (new j = 0; j < strlen(sql_format); j++) {
+				if (sql_format[j] == 's') { // string param
+					LOG_writeFormatted("Found S param: numargs = %d", numargs());
+					new stringParameterValue[8];
+					EXTRACT_ARRAY_ARG(stringParameterValue, j+2);
+					new strToReplace[8];
+					strToReplace = "%s";
+					new beginIndex = strfind(sql, strToReplace);
+					strdel(sql, beginIndex, beginIndex + 2);
+					strins(sql, stringParameterValue, beginIndex);
+				}
+			}
+		}
+		LOG_writeFormatted("Query after modify: %s", sql);
+		return DBUTILS_runSelectQuery(sql);
+	}
 }
 
 stock DBResult:DBUTILS_runSelectQuery(query[])

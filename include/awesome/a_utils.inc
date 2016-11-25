@@ -17,6 +17,20 @@
 	%3 = floatround(floatmul(%0 - %2, 60), floatround_tozero); \
 	%4 = floatround(floatmul(floatmul(%0 - %2, 60) - %3, 1000), floatround_tozero)
 
+new argValIndex = 0;
+new argValChar;
+	
+#define EXTRACT_ARRAY_ARG(%1,%2) \
+	while(!false) { \
+		argValChar = getarg(%2, argValIndex); \
+		LOG_writeFormatted("Read char: %c", argValChar); \
+		%1[argValIndex] = argValChar; \
+		if (argValChar == 0) break; \
+		argValIndex++; \
+	} \
+	LOG_writeFormatted("Extracted arg value: %s", %1); \
+	argValIndex = 0
+	
 new clientFormattedMessage[128];
 
 stock intToStr(int)
@@ -34,12 +48,6 @@ stock strToInt(str[])
 stock strToFloat(floatstring[])
 {
 	return floatstr(floatstring);
-}
-
-stock getArrayString(result[], length, src[]) {
-	for (new i = 0; i < sizeof(src); i++) {
-		format(result, length, "%s,%s", result, src[i]);
-	}
 }
 
 stock FIX_valstr(dest[], value, bool:pack = false)
