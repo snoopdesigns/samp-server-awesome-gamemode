@@ -3,9 +3,9 @@
 #endif
 #define _commands_included
 
-//#include "include/awesome/a_vehutils.inc"
+#include "include/awesome/a_vehutils.inc"
 //#include "include/awesome/a_menus.inc"
-//#include "include/awesome/a_props.inc"
+#include "include/awesome/a_props.inc"
 #include "include/awesome/a_reg.inc"
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/colors.inc"
@@ -15,7 +15,7 @@
 #define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (/*RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && */CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
 /* public functions declaration */
-forward CMDS_checkCommandAccess(playerid, level);
+forward CMDS_checkCommandAccess(const playerid, const level);
 
 MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	LOG_writeFormatted("Called OnPlayerCommandText(), playerid = %d, command = %s", playerid, cmdtext);
@@ -30,9 +30,9 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(stats, 5, cmdtext, 0);
 	
 	//vehicle commands
-	/*dcmd(v, 1, cmdtext, 1);
+	dcmd(v, 1, cmdtext, 1);
 	dcmd(car, 3, cmdtext, 1);
-	dcmd(fix, 6, cmdtext, 1);
+	dcmd(fix, 3, cmdtext, 1);
 	
 	//properties commands
 	dcmd(cprop, 5, cmdtext, 2);
@@ -40,7 +40,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(sell, 4, cmdtext, 1);
 	
 	//minigames
-	dcmd(event, 5, cmdtext, 1);
+	/*dcmd(event, 5, cmdtext, 1);
 	dcmd(leave, 5, cmdtext, 1);
 	
 	//races
@@ -60,7 +60,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	return 1;
 }
 
-public CMDS_checkCommandAccess(playerid, level) {
+public CMDS_checkCommandAccess(const playerid, const level) {
 	if(IsPlayerAdmin(playerid)) return TRUE;
 	if(REG_getPlayerLevel(playerid) >= level) {
 		return TRUE;
@@ -75,13 +75,13 @@ public CMDS_checkCommandAccess(playerid, level) {
 	}
 }
 
-dcmd_kill(playerid, params[]) {
+dcmd_kill(const playerid, const params[]) {
 	strlen(params);//just to handle compile warning
 	SetPlayerHealth(playerid, 0.0);
 	return 1;
 }
 
-dcmd_help(playerid, params[]) {
+dcmd_help(const playerid, const params[]) {
 	strlen(params);//just to handle compile warning
 	//MENUS_showPlayerMenu(playerid, PLAYER_MENU_HELP);
 	return 1;
@@ -91,7 +91,7 @@ dcmd_help(playerid, params[]) {
 //========================REGISTER COMMANDS============================
 //=====================================================================
 
-dcmd_register(playerid, params[]) {
+dcmd_register(const playerid, params[]) {
 	new	password[64];
 	if (sscanf(params, "s", password)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/register <password>\"");
@@ -101,7 +101,7 @@ dcmd_register(playerid, params[]) {
 	return 1;
 }
 
-dcmd_login(playerid, params[]) {
+dcmd_login(const playerid, params[]) {
 	new	password[64];
 	if (sscanf(params, "s", password)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/login <password>\"");
@@ -111,7 +111,7 @@ dcmd_login(playerid, params[]) {
 	return 1;
 }
 
-dcmd_stats(playerid, params[]) {
+dcmd_stats(const playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	REG_printPlayerStats(playerid);
 	return 1;
@@ -121,29 +121,23 @@ dcmd_stats(playerid, params[]) {
 //========================VEHICLE COMMANDS=============================
 //=====================================================================
 
-/*dcmd_car(playerid, params[])
-{
+dcmd_car(const playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	VEH_SpawnPlayerVehicle(playerid, 411);
 	return 1;
 }
 
-dcmd_v(playerid, params[])
-{
+dcmd_v(const playerid, params[]) {
 	new	modelid;
-	if (sscanf(params, "i", modelid)) 
-	{
+	if (sscanf(params, "i", modelid)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/v <modelid>\"");
-	}
-	else
-	{
+	} else {
 		VEH_SpawnPlayerVehicle(playerid, modelid);
 	}
 	return 1;
 }
 
-dcmd_fix(playerid, params[])
-{
+dcmd_fix(const playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	VEH_RepairPlayerVehicle(playerid);
 	return 1;
@@ -153,32 +147,25 @@ dcmd_fix(playerid, params[])
 //========================PROPERTIES COMMANDS==========================
 //=====================================================================
 
-dcmd_buy(playerid, params[])
-{
+dcmd_buy(const playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	PROPS_buyPropertyForPlayer(playerid);
 	return 1;
 }
 
-dcmd_sell(playerid, params[])
-{
+dcmd_sell(const playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	PROPS_sellProperty(playerid);
 	return 1;
 }
 
-dcmd_cprop(playerid, params[])
-{
+dcmd_cprop(const playerid, params[]) {
 	new	propname[64];
 	new cost;
 	new earnings;
-	if (sscanf(params, "sii", propname, cost, earnings)) 
-	{
+	if (sscanf(params, "sii", propname, cost, earnings)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cprop <prop_name> <cost> <earnings>\"");
-	}
-	else
-	{
-		//create property
+	} else {
 		PROPS_createProperty(playerid, propname, cost, earnings);
 	}
 	return 1;
@@ -188,7 +175,7 @@ dcmd_cprop(playerid, params[])
 //========================MINIGAMES COMMANDS===========================
 //=====================================================================
 
-dcmd_event(playerid, params[])
+/*dcmd_event(playerid, params[])
 {
 	strlen(params);//just to handle compile warning
 	MG_registerPlayerForMinigame(playerid);

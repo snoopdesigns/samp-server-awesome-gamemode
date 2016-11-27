@@ -29,7 +29,9 @@ new DB:db_handle;
 forward DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],...);
 forward DBUTILS_getResultSize(const DBResult:db_result);
 forward DBUTILS_clearResults(const DBResult:db_result);
-forward DBUTILS_getFieldFromResult(const DBResult:db_result, const field_name[], result[], max_result_size);
+forward DBUTILS_getString(const DBResult:db_result, const field_name[], result[], max_result_size);
+forward DBUTILS_getInt(const DBResult:db_result, const field_name[]);
+forward Float:DBUTILS_getFloat(const DBResult:db_result, const field_name[]);
 forward DBUTILS_nextItem(DBResult:db_result);
 
 MODULE_FUNCTION(OnGameModeInit()) {
@@ -46,7 +48,7 @@ MODULE_FUNCTION(OnGameModeExit()) {
 	db_close(db_handle);
 }
 
-public DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],...) {
+public DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],{Float,_}:...) {
     new q_id,q_name[32],q_format[8],q_sql[QUERY_SQL_LEN];
 	q_id = findQueryIdByName(queryName);
 	if (q_id == -1) {
@@ -68,6 +70,11 @@ public DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],...) {
 					replaceFirst("%s", stringParameterValue, sql, strlen("%s"), sizeof(sql));
 				} else if (q_format[j] == 'd') {
 					replaceFirst("%d", intToStr(getarg(j+2)), sql, strlen("%d"), sizeof(sql));
+				} else if (q_format[j] == 'f') {
+					new argValFloatString[32];
+					format(argValFloatString, sizeof(argValFloatString), "%f", getarg(j+2));
+					LOG_writeFormatted("F arg: %s",argValFloatString);
+					replaceFirst("%f", argValFloatString, sql, strlen("%f"), sizeof(sql));
 				}
 			}
 		}
@@ -87,8 +94,16 @@ public DBUTILS_clearResults(const DBResult:db_result) {
 	db_free_result(db_result);
 }
 
-public DBUTILS_getFieldFromResult(const DBResult:db_result, const field_name[], result[], max_result_size) {
+public DBUTILS_getString(const DBResult:db_result, const field_name[], result[], max_result_size) {
 	db_get_field_assoc(db_result, field_name, result, max_result_size);
+}
+
+public DBUTILS_getInt(const DBResult:db_result, const field_name[]) {
+	return db_get_field_assoc_int(db_result, field_name);
+}
+
+public Float:DBUTILS_getFloat(const DBResult:db_result, const field_name[]) {
+	return db_get_field_assoc_float(db_result, field_name);
 }
 
 public DBUTILS_nextItem(DBResult:db_result) {

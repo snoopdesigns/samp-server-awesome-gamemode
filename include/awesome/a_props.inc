@@ -4,6 +4,7 @@
 #define _props_included
 
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/a_dbutils.inc"
 #include "include/awesome/colors.inc"
 
 #define MODULE_FUNCTION(%1) forward PROPS_%1; public PROPS_%1
@@ -11,98 +12,172 @@
 #define PROP_UNBUYABLE_TIME_IN_MIN 5
 #define PROP_EARNINGS_INTERVAL_IN_MIN 5 //5 mins
 
-//TODO add map markers on properties
+#define SHOW_3D_LABELS TRUE
 
-new SHOW_3D_LABELS=FALSE;
+/* DB fields constants */
+#define PROPERTY_PICKUP_ID "ID"
+#define PROPERTY_NAME "PropName"
+#define PROPERTY_COST "PropCost"
+#define PROPERTY_EARNINGS "PropEarnings"
+#define PROPERTY_OWNER "PropOwner"
+#define PROPERTY_PURCHASE_TIME "PropPurchaseTime"
+#define PROPERTY_LOCX "PropLocX"
+#define PROPERTY_LOCY "PropLocY"
+#define PROPERTY_LOCZ "PropLocZ"
 
 new PlayerText:playerTDs[MAX_PLAYERS];
 new playerTDsTimer[MAX_PLAYERS];
 
+/* public functions declaration */
+forward PROPS_createProperty(const playerid, propname[], const cost, const earnings);
+forward PROPS_buyPropertyForPlayer(const playerid);
+forward PROPS_sellProperty(const playerid);
+
 /* public timer callbacks */
-forward PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z);
+forward PROPS_OnPlayerExitProperty(const playerid, const Float:x, const Float:y, const Float:z);
 forward PROPS_PlayerEarningsTimer();
 
 MODULE_FUNCTION(OnGameModeInit())
 {
 	LOG_write("Properties Subsystem initializing");
-	new createTablePropsQuery[512];
-	format(createTablePropsQuery, sizeof createTablePropsQuery, "CREATE TABLE IF NOT EXISTS `properties`(%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-		"`ID` INTEGER PRIMARY KEY NOT NULL",
-		"'PropName' VARCHAR(32) NOT NULL",
-		"'PropCost' INTEGER NOT NULL",
-		"'PropEarnings' INTEGER NOT NULL",
-		"'PropOwner' VARCHAR(32) NOT NULL",
-		"'PropPurchaseTime' INTEGER",
-		"'PropLocX' VARCHAR(32) NOT NULL",
-		"'PropLocY' VARCHAR(32) NOT NULL",
-		"'PropLocZ' VARCHAR(32) NOT NULL");
-	DBUTILS_runCreateQuery(createTablePropsQuery);
-	
-	//fetch all props from DB
-	static DBResult: db_result;
-	db_result = DBUTILS_runSelectQuery("SELECT * FROM `properties`");
-	if(DBUTILS_getResultsetSize(db_result) > 0)
-	{
-		do
-		{
-			new propname[128];
-			new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
-			new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
-			new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
-			propname = DBUTILS_getFieldFromResult(db_result, "PropName");
-			new oldid = strToInt(DBUTILS_getFieldFromResult(db_result, "ID"));
+	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropPropertiesTable","NA"));
+	DBUTILS_clearResults(DBUTILS_runNamedQuery("createPropertiesTable","NA"));
+	new DBResult:db_result;
+	db_result = DBUTILS_runNamedQuery("findAllProperties","NA");
+	if(DBUTILS_getResultSize(db_result) > 0) {
+		do {
+			new propname[32];
+			new Float:x = DBUTILS_getFloat(db_result, PROPERTY_LOCX);
+			new Float:y = DBUTILS_getFloat(db_result, PROPERTY_LOCY);
+			new Float:z = DBUTILS_getFloat(db_result, PROPERTY_LOCZ);
+			DBUTILS_getString(db_result, PROPERTY_NAME, propname, sizeof(propname));
+			new oldid = DBUTILS_getInt(db_result, "ID");
 			
 			new id = CreatePickup(1273, 1, x, y, z, -1);
-			if(SHOW_3D_LABELS == 1) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
-			static queryUpdate[128];
-			format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `ID`=%d WHERE `ID`=%d", id, oldid);
-			DBUTILS_runUpdateQuery(queryUpdate);
+			if (SHOW_3D_LABELS == TRUE) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
+			DBUTILS_clearResults(DBUTILS_runNamedQuery("updatePropertyId","dd",id,oldid));
+			
 		} while(DBUTILS_nextItem(db_result));
 	}
-	DBUTILS_runSelectQueryClear(db_result);
+	DBUTILS_clearResults(db_result);
 	
-	//fill player td with nulls
-	for(new i = 0; i < MAX_PLAYERS; i++)
-	{
+	for(new i = 0; i < MAX_PLAYERS; i++) {
 		playerTDs[i] = PlayerText:-1;
 		playerTDsTimer[i] = -1;
 	}
 	SetTimer("PROPS_PlayerEarningsTimer", PROP_EARNINGS_INTERVAL_IN_MIN * 60 * 1000, true);
 }
 
-MODULE_FUNCTION(OnPlayerPickUpPickup(playerid, pickupid))
-{
-	static query[256], DBResult: db_result;
-	format(query, sizeof query, "SELECT * FROM `properties` WHERE `ID`=%d;", pickupid);
-	db_result = DBUTILS_runSelectQuery(query);
-	if(DBUTILS_getResultsetSize(db_result) > 0)
-	{
-		new propname[128], propowner[128];
-		propname = DBUTILS_getFieldFromResult(db_result, "PropName");
-		new cost = strToInt(DBUTILS_getFieldFromResult(db_result, "PropCost"));
-		new earnings = strToInt(DBUTILS_getFieldFromResult(db_result, "PropEarnings"));
-		propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
+MODULE_FUNCTION(OnPlayerPickUpPickup(playerid, pickupid)) {
+	LOG_writeFormatted("Entered onto pickup: %d", pickupid);
+	new DBResult:db_result;
+	db_result = DBUTILS_runNamedQuery("findPropertyByPickupID","d",pickupid);
+	if(DBUTILS_getResultSize(db_result) > 0) {
+		new propname[32], propowner[32];
+		DBUTILS_getString(db_result, PROPERTY_NAME, propname, sizeof(propname));
+		new cost = DBUTILS_getInt(db_result, PROPERTY_COST);
+		new earnings = DBUTILS_getInt(db_result, PROPERTY_EARNINGS);
+		DBUTILS_getString(db_result, PROPERTY_OWNER, propowner, sizeof(propowner));
 		
-		new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
-		new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
-		new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
+		new Float:x = DBUTILS_getFloat(db_result, PROPERTY_LOCX);
+		new Float:y = DBUTILS_getFloat(db_result, PROPERTY_LOCY);
+		new Float:z = DBUTILS_getFloat(db_result, PROPERTY_LOCZ);
 		
 		PROPS_ShowPropertyInfoToPlayer(playerid, x, y, z, propname, cost, earnings, propowner);
 	}
-	DBUTILS_runSelectQueryClear(db_result);
-	
+	DBUTILS_clearResults(db_result);
 }
 
-public PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z)
-{
-	if(GetPlayerDistanceFromPoint(playerid, x, y, z) > 1)
-	{
-		if(playerTDs[playerid] != PlayerText:-1)
-		{
+public PROPS_createProperty(const playerid, propname[], const cost, const earnings) {
+	new Float:x, Float:y, Float:z;
+	GetPlayerPos(playerid, x, y, z);
+	new id = CreatePickup(1273, 1, x, y, z, -1);
+	if (SHOW_3D_LABELS == TRUE) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
+	SendClientMessage(playerid, COLOR_PROPS, "* Property created successfully!");
+	DBUTILS_clearResults(DBUTILS_runNamedQuery("createProperty","dsddfff",id,propname,cost,earnings,x,y,z));
+}
+
+public PROPS_buyPropertyForPlayer(const playerid) {
+	new DBResult:db_result, success = FALSE;
+	db_result = DBUTILS_runNamedQuery("findAllProperties","NA");
+	if(DBUTILS_getResultSize(db_result) > 0) {
+		do {
+			new propname[32], propowner[32];
+			DBUTILS_getString(db_result, PROPERTY_NAME, propname, sizeof(propname));
+			new cost = DBUTILS_getInt(db_result, PROPERTY_COST);
+			DBUTILS_getString(db_result, PROPERTY_OWNER, propowner, sizeof(propowner));
+			new Float:x = DBUTILS_getFloat(db_result, PROPERTY_LOCX);
+			new Float:y = DBUTILS_getFloat(db_result, PROPERTY_LOCY);
+			new Float:z = DBUTILS_getFloat(db_result, PROPERTY_LOCZ);
+			new propid = DBUTILS_getInt(db_result, PROPERTY_PICKUP_ID);
+			
+			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5) {
+				new player_name[MAX_PLAYER_NAME];
+				GetPlayerName(playerid, player_name, sizeof(player_name));
+				if(strlen(propowner) != 0 && strcmp(player_name, propowner, false) == 0) {
+					SendClientMessage(playerid, COLOR_ERROR, "* This property is already yours!");
+					return;
+				}
+				new purchaseTime = DBUTILS_getInt(db_result, PROPERTY_PURCHASE_TIME);
+				if((gettime() - purchaseTime) > PROP_UNBUYABLE_TIME_IN_MIN * 60) {
+					success = TRUE;
+					if(GetPlayerMoney(playerid) >= cost) {
+						GivePlayerMoney(playerid, -1 * cost);
+						DBUTILS_clearResults(DBUTILS_runNamedQuery("updateProperty","sdd",player_name,gettime(),propid));
+						SendClientMessageFormatted(playerid, COLOR_PROPS, "* Property %s successfully purchased!", propname);
+						SendClientMessageToAllFormatted(COLOR_PROPS, "* %s purchased property '%s' for %d$", GetPlayerFormattedName(playerid), propname, cost);
+					} else {
+						SendClientMessage(playerid, COLOR_ERROR, "* You have not enough money to buy this property!");
+					}
+				} else {
+					SendClientMessage(playerid, COLOR_ERROR, "* You are not allowed to buy this prop yet.");
+				}
+			}
+		} while(DBUTILS_nextItem(db_result));
+		if (success == FALSE) SendClientMessage(playerid, COLOR_ERROR, "* You must be standing within 5m of property marker to buy it");
+	}
+	DBUTILS_clearResults(db_result);
+}
+
+public PROPS_sellProperty(const playerid) {
+	new DBResult:db_result, success = FALSE;
+	db_result = DBUTILS_runNamedQuery("findAllProperties","NA");
+	if(DBUTILS_getResultSize(db_result) > 0) {
+		do {
+			new propname[32], propowner[32];
+			DBUTILS_getString(db_result, PROPERTY_NAME, propname, sizeof(propname));
+			new cost = DBUTILS_getInt(db_result, PROPERTY_COST);
+			DBUTILS_getString(db_result, PROPERTY_OWNER, propowner, sizeof(propowner));
+			new Float:x = DBUTILS_getFloat(db_result, PROPERTY_LOCX);
+			new Float:y = DBUTILS_getFloat(db_result, PROPERTY_LOCY);
+			new Float:z = DBUTILS_getFloat(db_result, PROPERTY_LOCZ);
+			new propid = DBUTILS_getInt(db_result, PROPERTY_PICKUP_ID);
+			
+			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5) {
+				success = TRUE;
+				new player_name[MAX_PLAYER_NAME];
+				GetPlayerName(playerid, player_name, sizeof(player_name));
+				if(strlen(propowner) != 0 && strcmp(player_name, propowner, false) == 0) {
+					GivePlayerMoney(playerid, cost);
+					DBUTILS_clearResults(DBUTILS_runNamedQuery("updateProperty","sdd","",0,propid));
+					SendClientMessageFormatted(playerid, COLOR_PROPS, "* You sold your property %s for %d$!", propname, cost);
+					SendClientMessageToAllFormatted(COLOR_PROPS, "* %s sells property '%s' for %d$", GetPlayerFormattedName(playerid), propname, cost);
+				} else {
+					SendClientMessage(playerid, COLOR_ERROR, "* This property is not yours!");
+				}
+			}
+		} while(DBUTILS_nextItem(db_result));
+		if (success == FALSE) SendClientMessage(playerid, COLOR_ERROR, "* You must be standing within 5m of property marker to sell it");
+	}
+	DBUTILS_clearResults(db_result);
+}
+
+public PROPS_OnPlayerExitProperty(const playerid, const Float:x, const Float:y, const Float:z) { 
+	if(GetPlayerDistanceFromPoint(playerid, x, y, z) > 1) {
+		if(playerTDs[playerid] != PlayerText:-1) {
 			PlayerTextDrawDestroy(playerid, playerTDs[playerid]);
 			playerTDs[playerid] = PlayerText:-1;
-			if(playerTDsTimer[playerid] != -1)
-			{
+			if(playerTDsTimer[playerid] != -1) {
 				KillTimer(playerTDsTimer[playerid]);
 				playerTDs[playerid] = PlayerText:-1;
 			}
@@ -110,163 +185,32 @@ public PROPS_OnPlayerExitProperty(playerid, Float:x, Float:y, Float:z)
 	}
 }
 
-public PROPS_PlayerEarningsTimer()
-{
-	static DBResult: db_result;
-	db_result = DBUTILS_runSelectQuery("SELECT * FROM `properties`");
-	if(DBUTILS_getResultsetSize(db_result) > 0)
-	{
+public PROPS_PlayerEarningsTimer() {
+	new DBResult:db_result;
+	db_result = DBUTILS_runNamedQuery("findAllProperties","NA");
+	if(DBUTILS_getResultSize(db_result) > 0) {
 		new earns[MAX_PLAYERS];
 		new earnCount[MAX_PLAYERS];
-		for(new i = 0; i < MAX_PLAYERS; i++)
-		{
-			earns[i] = 0;
-			earnCount[i] = 0;
-		}
-		do
-		{
-			new propowner[128];
-			new earnings = strToInt(DBUTILS_getFieldFromResult(db_result, "PropEarnings"));
-			propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
+		FILL_PLAYERS_ARRAY_NULL(earns);
+		FILL_PLAYERS_ARRAY_NULL(earnCount);
+		do {
+			new propowner[32];
+			new earnings = DBUTILS_getInt(db_result, PROPERTY_EARNINGS);
+			DBUTILS_getString(db_result, PROPERTY_OWNER, propowner, sizeof(propowner));
 			new playerid = GetPlayerIdByName(propowner);
-			if(playerid != -1) 
-			{
-				//GivePlayerMoney(playerid, earnings);
+			if(playerid != -1) {
 				earns[playerid] += earnings;
 				earnCount[playerid] ++;
 			}
 		} while(DBUTILS_nextItem(db_result));
-		for(new i = 0; i < MAX_PLAYERS; i++)
-		{
-			if(earnCount[i] > 0)
-			{
+		
+		for(FOR_PLAYERS) {
+			if(earnCount[i] > 0) {
 				SendClientMessageFormatted(i, COLOR_PROPS, "* You earned %d$ from your [%d] properties!", earns[i], earnCount[i]);
 			}
 		}
 	}
-	DBUTILS_runSelectQueryClear(db_result);
-}
-
-stock PROPS_createProperty(playerid, propname[], cost, earnings)
-{
-	new Float:x, Float:y, Float:z;
-	GetPlayerPos(playerid, x, y, z);
-	new id = CreatePickup(1273, 1, x, y, z, -1);
-	if(SHOW_3D_LABELS) Create3DTextLabel(propname, 0x008080FF, x, y, z+0.7, 40.0, 0, 0);
-	SendClientMessage(playerid, COLOR_PROPS, "* Property created successfully!");
-	
-	static query[256];
-	format(query, sizeof query, "INSERT INTO `properties` (`ID`,`PropName`, `PropCost`, `PropEarnings`, `PropOwner`, `PropLocX`, `PropLocY`, `PropLocZ`) VALUES (%d,'%s',%d,%d,'',%f,%f,%f)", 
-		id,
-		propname,
-		cost,
-		earnings,
-		x,
-		y,
-		z);
-	DBUTILS_runInsertQuery(query);
-}
-
-stock PROPS_buyPropertyForPlayer(playerid)
-{
-	static DBResult: db_result;
-	db_result = DBUTILS_runSelectQuery("SELECT * FROM `properties`");
-	if(DBUTILS_getResultsetSize(db_result) > 0)
-	{
-		do
-		{
-			new propname[128], propowner[128];
-			new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
-			new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
-			new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
-			new cost = strToInt(DBUTILS_getFieldFromResult(db_result, "PropCost"));
-			propname = DBUTILS_getFieldFromResult(db_result, "PropName");
-			propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
-			new propid = strToInt(DBUTILS_getFieldFromResult(db_result, "ID"));
-			
-			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5)
-			{
-				new player_name[MAX_PLAYER_NAME];
-				GetPlayerName(playerid, player_name, sizeof(player_name));
-				if(strlen(propowner) != 0 && strcmp(player_name, propowner, false) == 0) 
-				{
-					SendClientMessage(playerid, COLOR_ERROR, "* This property is already yours!");
-					return;
-				}
-				new propTime[128];
-				propTime = DBUTILS_getFieldFromResult(db_result, "PropPurchaseTime");
-				new purchaseTime = strToInt(propTime);
-				if(strlen(propTime) == 0 || (gettime() - purchaseTime) > PROP_UNBUYABLE_TIME_IN_MIN * 60)
-				{
-					if(GetPlayerMoney(playerid) >= cost)
-					{
-						GivePlayerMoney(playerid, -1 * cost);
-						static queryUpdate[128];
-						format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='%s',`PropPurchaseTime`=%d WHERE `ID`=%d", player_name, gettime(), propid);
-						DBUTILS_runUpdateQuery(queryUpdate);
-						SendClientMessageFormatted(playerid, COLOR_PROPS, "* Property %s successfully purchased!", propname);
-						SendClientMessageToAllFormatted(COLOR_PROPS, "* %s purchased property '%s' for %d$", GetPlayerFormattedName(playerid), propname, cost);
-					}
-					else {
-						SendClientMessage(playerid, COLOR_ERROR, "* You have not enough money to buy this property!");
-					}
-				}
-				else 
-				{
-					SendClientMessage(playerid, COLOR_ERROR, "* You are not allowed to buy this prop yet.");
-				}
-			}
-			else 
-			{
-				SendClientMessage(playerid, COLOR_ERROR, "* You must be standing within 5m of property marker to buy it");
-			}
-		} while(DBUTILS_nextItem(db_result));
-	}
-	DBUTILS_runSelectQueryClear(db_result);
-}
-
-stock PROPS_sellProperty(playerid)
-{
-	static DBResult: db_result;
-	db_result = DBUTILS_runSelectQuery("SELECT * FROM `properties`");
-	if(DBUTILS_getResultsetSize(db_result) > 0)
-	{
-		do
-		{
-			new propname[128], propowner[128];
-			new Float:x = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocX"));
-			new Float:y = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocY"));
-			new Float:z = floatstr(DBUTILS_getFieldFromResult(db_result, "PropLocZ"));
-			new cost = strToInt(DBUTILS_getFieldFromResult(db_result, "PropCost"));
-			propname = DBUTILS_getFieldFromResult(db_result, "PropName");
-			propowner = DBUTILS_getFieldFromResult(db_result, "PropOwner");
-			new propid = strToInt(DBUTILS_getFieldFromResult(db_result, "ID"));
-			
-			if(GetPlayerDistanceFromPoint(playerid, x, y, z) <= 0.5)
-			{
-				new player_name[MAX_PLAYER_NAME];
-				GetPlayerName(playerid, player_name, sizeof(player_name));
-				if(strlen(propowner) != 0 && strcmp(player_name, propowner, false) == 0) 
-				{
-					GivePlayerMoney(playerid, cost);
-					static queryUpdate[128];
-					format(queryUpdate, sizeof queryUpdate, "UPDATE `properties` SET `PropOwner`='',`PropPurchaseTime`=%d WHERE `ID`=%d", gettime(), propid);
-					DBUTILS_runUpdateQuery(queryUpdate);
-					SendClientMessageFormatted(playerid, COLOR_PROPS, "* You sold your property %s for %d$!", propname, cost);
-					SendClientMessageToAllFormatted(COLOR_PROPS, "* %s sells property '%s' for %d$", GetPlayerFormattedName(playerid), propname, cost);
-				}
-				else
-				{
-					SendClientMessage(playerid, COLOR_ERROR, "* This property is not yours!");
-				}
-			}
-			else 
-			{
-				SendClientMessage(playerid, COLOR_ERROR, "* You must be standing within 5m of property marker to sell it");
-			}
-		} while(DBUTILS_nextItem(db_result));
-	}
-	DBUTILS_runSelectQueryClear(db_result);
+	DBUTILS_clearResults(db_result);
 }
 
 stock PROPS_ShowPropertyInfoToPlayer(playerid, Float:x, Float:y, Float:z, propname[], cost, earnings, owner[])

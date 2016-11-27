@@ -12,8 +12,6 @@ new Text: txtClassSelHelper;
 new gPlayerClass[MAX_PLAYERS];
 
 MODULE_FUNCTION(OnGameModeInit()) {
-
-	//player classes
 	//MEDIC
 	AddPlayerClass(274,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	AddPlayerClass(275,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
@@ -30,17 +28,14 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	AddPlayerClass(284,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	
 	//ARMY
-	
 	AddPlayerClass(287,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	
 	//Fastfood
-	
 	AddPlayerClass(167,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	AddPlayerClass(155,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	AddPlayerClass(209,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	
 	//GOLFERS
-	
 	AddPlayerClass(258,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	AddPlayerClass(259,-2658.8489,627.7543,14.4531,179.5835,0,0,0,0,0,0);
 	
@@ -85,6 +80,7 @@ MODULE_FUNCTION(OnPlayerConnect(playerid)) {
 }
 
 MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {
+	LOG_writeFormatted("Requesting class: %d for player: %d", classid, playerid);
 	SetPlayerInterior(playerid,3);
 	SetPlayerPos(playerid,-2673.8381,1399.7424,918.3516);
 	SetPlayerFacingAngle(playerid,181.0);
@@ -93,47 +89,36 @@ MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {
 	ApplyAnimation(playerid,"DANCING","DNCE_M_B",4.0,1,0,0,0,-1);
 	
 	new tdmsg[128];
-	switch(classid)
-	{
-		case 0..2:
-		{
+	switch(classid) {
+		case 0..2: {
 			gPlayerClass[playerid] = 0; // medic
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~sawn-off~n~tec9", "MEDIC");
 		}
-		case 3..4:
-		{
+		case 3..4: {
 			gPlayerClass[playerid] = 1;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "PIMP");
 		}
-		case 5..8:
-		{
+		case 5..8: {
 			gPlayerClass[playerid] = 2;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "POLICE");
 		}
-		case 9:
-		{
+		case 9: {
 			gPlayerClass[playerid] = 3;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "ARMY");
 		}
-		case 10..12:
-		{
+		case 10..12: {
 			gPlayerClass[playerid] = 4;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "FASTFOOD");
 		}
-		case 13..14:
-		{
+		case 13..14: {
 			gPlayerClass[playerid] = 5;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "GOLFERS");
 		}
-		case 15..17:
-		{
+		case 15..17: {
 			gPlayerClass[playerid] = 6;
 			format(tdmsg, sizeof tdmsg, "~w~class_~r~%s~n~~w~weapons~n~~r~pistol~n~sniper", "WORKERS");
 		}
-		default:
-		{
-			
-		}
+		default:{}
 	}
 	TextDrawHideForPlayer(playerid,txtClassSelHelper);
 	TextDrawSetString(txtClassSelHelper, tdmsg); 
@@ -144,48 +129,42 @@ MODULE_FUNCTION(OnPlayerSpawn(playerid)) {
 	ClearAnimations(playerid);
 	SetPlayerInterior(playerid,0);
 	TextDrawHideForPlayer(playerid,txtClassSelHelper);
-	switch(gPlayerClass[playerid])
-	{
-		case 0:
-		{
+	switch(gPlayerClass[playerid]) {
+		case 0: {
 			SetPlayerPos(playerid, -2658.8489,627.7543,14.4531);
 			SetPlayerFacingAngle(playerid, 179.5835);
 		}
-		case 1:
-		{
+		case 1: {
 			SetPlayerPos(playerid, -2632.3511,1393.5183,7.1016);
 			SetPlayerFacingAngle(playerid, 189.5099);
 		}
-		case 2:
-		{
+		case 2: {
 			SetPlayerPos(playerid, -1634.8334,664.4601,7.1875);
 			SetPlayerFacingAngle(playerid, 267.4529);
 		}
-		case 3:
-		{
+		case 3: {
 			SetPlayerPos(playerid, -1374.6626,457.9957,7.1875);
 			SetPlayerFacingAngle(playerid, 0.4291);
 		}
-		case 4:
-		{
+		case 4: {
 			SetPlayerPos(playerid, -2674.9612,271.9800,4.3359);
 			SetPlayerFacingAngle(playerid, 2.4552);
 		}
-		case 5:
-		{
+		case 5: {
 			SetPlayerPos(playerid, -2711.0923,-302.6165,7.1807);
 			SetPlayerFacingAngle(playerid, 47.6342);
 		}
-		case 6:
-		{
+		case 6: {
 			SetPlayerPos(playerid, -2102.5830,163.5523,35.0998);
 			SetPlayerFacingAngle(playerid, 359.6911);
 		}
-		default:
-		{
-		}
+		default: {}
 	}
 	SetCameraBehindPlayer(playerid);
+}
+
+stock PreloadAnimLib(playerid, animlib[]) {
+	ApplyAnimation(playerid,animlib,"null",0.0,0,0,0,0,0);
 }
 
 MODULE_FUNCTION(OnGameModeExit()) {}

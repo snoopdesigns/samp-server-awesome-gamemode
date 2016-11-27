@@ -23,6 +23,7 @@ new argValChar;
 #define str_eq(%1,%2) strcmp(%1,%2)==0
 #define str_neq(%1,%2) strcmp(%1,%2)!=0
 #define FOR_PLAYERS new i=0;i<MAX_PLAYERS;i++
+#define FILL_PLAYERS_ARRAY_NULL(%1) for(new i=0;i<MAX_PLAYERS;i++) %1[i]=0
 	
 #define EXTRACT_ARRAY_ARG(%1,%2) \
 	for (argValIndex = 0; argValIndex < 255; argValIndex++) { \
@@ -83,6 +84,10 @@ stock strToInt(str[])
 stock strToFloat(floatstring[])
 {
 	return floatstr(floatstring);
+}
+
+stock floatToStr(const Float:val, result[], res_size) {
+	format(result, res_size, "%.2f", val);
 }
 
 stock FIX_valstr(dest[], value, bool:pack = false)

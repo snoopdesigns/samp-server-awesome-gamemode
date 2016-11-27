@@ -8,9 +8,9 @@
 #include "include/awesome/a_consts.inc"
 #include "include/awesome/a_commands.inc"
 #include "include/awesome/a_classselect.inc"
-/*#include "include/awesome/a_menus.inc"
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_props.inc"
+/*#include "include/awesome/a_menus.inc"
 #include "include/awesome/a_minigames.inc"
 #include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"*/
@@ -28,12 +28,6 @@ main()
 	print(" Awesome Freeroam v0.1 by snoopdesigns");
 	print("----------------------------------\n");
 }
-
-PreloadAnimLib(playerid, animlib[]) 
-{
-	ApplyAnimation(playerid,animlib,"null",0.0,0,0,0,0,0);
-}
-
 
 public OnGameModeInit()
 {
@@ -184,6 +178,7 @@ public OnPlayerObjectMoved(playerid, objectid)
 
 public OnPlayerPickUpPickup(playerid, pickupid)
 {
+	LOG_writeFormatted("Pickup id: %d", pickupid);
 	callModulesCallback("OnPlayerPickUpPickup", playerid, pickupid);
 	return 1;
 }

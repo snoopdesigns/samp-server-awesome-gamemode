@@ -41,7 +41,6 @@ MODULE_FUNCTION(OnGameModeInit()) {
 }
 
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {
-	LOG_writeFormatted("Called OnPlayerConnect() in REG, playerid = %d", playerid);
 	SetPVarInt(playerid, PLAYER_VAR_LEVEL, 0); // set default level to 0
 	
 	new player_ip[32], player_name[32];
@@ -63,7 +62,6 @@ MODULE_FUNCTION(OnPlayerConnect(playerid)) {
 }
 
 MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {
-	// TODO remove pvar
 	LOG_writeFormatted("Called OnPlayerDisconnect() in REG, playerid = %d, reason = %d", playerid, reason);
 }
 
@@ -184,7 +182,7 @@ stock REG_getPropertyOfPlayer(playerid, property[])
 	new player_name[MAX_PLAYER_NAME], result[32];
    	GetPlayerName(playerid, player_name, sizeof(player_name));
 	new DBResult:db_result = DBUTILS_runNamedQuery("getPlayerProperty","ss",property,player_name);
-	DBUTILS_getFieldFromResult(db_result, property, result, sizeof(result));
+	DBUTILS_getString(db_result, property, result, sizeof(result));
 	DBUTILS_clearResults(db_result);
 	return result;
 }

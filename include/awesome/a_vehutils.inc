@@ -14,14 +14,17 @@
 //player vars
 #define PLAYER_VAR_CURVEHICLE "CURVEHICLE"
 
+/* public functions declaration */
+forward VEH_RepairPlayerVehicle(const playerid);
+forward VEH_SpawnPlayerVehicle(const playerid, const modelid);
+
 /* public timer callbacks */
 forward VEH_VehicleControlTimer();
-forward VEH_CreateVehicle(playerid, modelid);
+forward VEH_CreateVehicle(const playerid, const modelid);
 
-MODULE_FUNCTION(OnGameModeInit())
-{
+MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Vehicles Subsystem initializing");
-	//vehicles
+	//vehicles: infernus at clinic
 	AddStaticVehicle(411,-2653.6113,600.3569,14.1353,179.8569,0,0);
 	
 	new total_vehicles_from_files = LoadStaticVehiclesFromFile("vehicles/sf_law.txt");
@@ -31,73 +34,37 @@ MODULE_FUNCTION(OnGameModeInit())
 	SetTimer("VEH_VehicleControlTimer", VEH_CONTROL_TIMER_INTERVAL, true);
 } 
 
-MODULE_FUNCTION(OnPlayerKeyStateChange(playerid, newkeys, oldkeys))
-{
-	if(((newkeys & (KEY_FIRE)) == (KEY_FIRE)) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER )
-    {
-		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid)))
-		{
+MODULE_FUNCTION(OnPlayerKeyStateChange(playerid, newkeys, oldkeys)) {
+	if(((newkeys & (KEY_FIRE)) == (KEY_FIRE)) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER) {
+		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid))) {
 			AddVehicleComponent(GetPlayerVehicleID(playerid), 1010);
 		}
     }
-    if((((newkeys & (KEY_FIRE)) != (KEY_FIRE)) && ((oldkeys & (KEY_FIRE)) == (KEY_FIRE))) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER )
-    {
-		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid)))
-		{
+    if((((newkeys & (KEY_FIRE)) != (KEY_FIRE)) && ((oldkeys & (KEY_FIRE)) == (KEY_FIRE))) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER ) {
+		if(!VEH_IsPlayerInInvalidNosVehicle(playerid,GetPlayerVehicleID(playerid))) {
 			RemoveVehicleComponent(GetPlayerVehicleID(playerid), 1010);
 		}
     }
 }
 
-public VEH_VehicleControlTimer()
-{
-	for(new i = 0; i<MAX_PLAYERS; i++)
-    {
-		if(IsPlayerConnected(i))
-		{
-			new Float:health;
-			new veh = GetPlayerVehicleID(i);
-			if(veh != 0 && GetVehicleModel(veh) != 430/*sumo boat*/) 
-			{
-				GetVehicleHealth(veh, health);
-				if(health < 500) 
-				{
-					SetVehicleHealth(veh, 1000);
-				}
-			}
-		}
-    }
-}
-
-public VEH_CreateVehicle(playerid, modelid)
-{
-	new Float:x, Float:y, Float:z, Float:angle;
-	GetPlayerFacingAngle(playerid, angle);
-	GetPlayerPos(playerid, x, y, z);
-	new vehicleid = CreateVehicle(modelid, x, y, z, angle, 0, 0, -1, 0);
-	if(vehicleid != MAX_VEHICLES)
-	{
-		PutPlayerInVehicle(playerid, vehicleid, 0);
-		AddVehicleComponent(vehicleid, 1087); //hydralistics
-		AddVehicleComponent(vehicleid, 1010); //hitros
+MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {
+	new curveh = GetPVarInt(playerid, PLAYER_VAR_CURVEHICLE);
+	if (curveh != 0) {
+		SetVehicleToRespawn(curveh);
+		DestroyVehicle(curveh);
+		DeletePVar(playerid, PLAYER_VAR_CURVEHICLE);
 	}
-	TogglePlayerControllable(playerid,1);
-	SetCameraBehindPlayer(playerid);
-	SetPVarInt(playerid, PLAYER_VAR_CURVEHICLE, vehicleid);
 }
 
-stock VEH_RepairPlayerVehicle(playerid)
-{
+public VEH_RepairPlayerVehicle(const playerid) {
 	RepairVehicle(GetPlayerVehicleID(playerid));
 	SendClientMessage(playerid, COLOR_GREEN, "* Your vehicle has been repaired!");
 }
 
-stock VEH_SpawnPlayerVehicle(playerid, modelid) 
-{
+public VEH_SpawnPlayerVehicle(const playerid, const modelid) {
 	new curveh = GetPVarInt(playerid, PLAYER_VAR_CURVEHICLE);
 	new oldVehDestroyed = FALSE;
-	if(curveh > 0)
-	{
+	if(curveh > 0) {
 		//need to remove old player vehicle
 		DestroyVehicle(curveh);
 		DeletePVar(playerid, PLAYER_VAR_CURVEHICLE);
@@ -108,33 +75,55 @@ stock VEH_SpawnPlayerVehicle(playerid, modelid)
 	SetPlayerCameraPos(playerid, x,y,z+10);
 	SetPlayerCameraLookAt(playerid, x,y,z);
 	TogglePlayerControllable(playerid,0);
-	if(oldVehDestroyed)
-	{
+	if(oldVehDestroyed) {
 		GameTextForPlayer(playerid, "Re-Spawning vehicle...", 1000, 5);
-	} 
-	else 
-	{
+	} else {
 		GameTextForPlayer(playerid, "Spawning vehicle...", 1000, 5);
 	}
 	SetTimerEx("VEH_CreateVehicle", 600, false, "ii", playerid, modelid); 
 }
 
-stock VEH_IsPlayerInInvalidNosVehicle(playerid,vehicleid)
-{
-	#define MAX_INVALID_NOS_VEHICLES 29
-    new InvalidNosVehicles[MAX_INVALID_NOS_VEHICLES] =
-    {
+/* public timer function for creating player vehicle */
+public VEH_CreateVehicle(const playerid, const modelid) {
+	new Float:x, Float:y, Float:z, Float:angle;
+	GetPlayerFacingAngle(playerid, angle);
+	GetPlayerPos(playerid, x, y, z);
+	new vehicleid = CreateVehicle(modelid, x, y, z, angle, 0, 0, -1, 0);
+	if(vehicleid != MAX_VEHICLES) {
+		PutPlayerInVehicle(playerid, vehicleid, 0);
+		AddVehicleComponent(vehicleid, 1087); //hydralistics
+		AddVehicleComponent(vehicleid, 1010); //hitros
+	}
+	TogglePlayerControllable(playerid,1);
+	SetCameraBehindPlayer(playerid);
+	SetPVarInt(playerid, PLAYER_VAR_CURVEHICLE, vehicleid);
+}
+
+//TODO enable disable auto repair
+public VEH_VehicleControlTimer() {
+	for(FOR_PLAYERS) {
+		if(IsPlayerConnected(i)) {
+			new Float:health;
+			new veh = GetPlayerVehicleID(i);
+			if(veh != 0 && GetVehicleModel(veh) != 430/*sumo boat*/) {
+				GetVehicleHealth(veh, health);
+				if(health < 500) {
+					SetVehicleHealth(veh, 1000);
+				}
+			}
+		}
+    }
+}
+
+stock VEH_IsPlayerInInvalidNosVehicle(const playerid, const vehicleid) {
+    new InvalidNosVehicles[29] = {
         581,523,462,521,463,522,461,448,468,586,
         509,481,510,472,473,493,595,484,430,453,
         452,446,454,590,569,537,538,570,449
     };
-    vehicleid = GetPlayerVehicleID(playerid);
-    if(IsPlayerInVehicle(playerid,vehicleid))
-    {
-		for(new i = 0; i < MAX_INVALID_NOS_VEHICLES; i++)
-        {
-			if(GetVehicleModel(vehicleid) == InvalidNosVehicles[i])	
-			{
+    if(IsPlayerInVehicle(playerid,vehicleid)) {
+		for(new i = 0; i < sizeof(InvalidNosVehicles); i++) {
+			if(GetVehicleModel(vehicleid) == InvalidNosVehicles[i])	{
 				return true;
 			}
 		}
@@ -142,23 +131,18 @@ stock VEH_IsPlayerInInvalidNosVehicle(playerid,vehicleid)
     return false;
 }
 
-stock VEH_getVehicleNameByModelId(modelid, vehicle_name[])
-{
-	switch(modelid)
-	{
-		case 411: 
-		{
+stock VEH_getVehicleNameByModelId(const modelid, vehicle_name[]) {
+	switch(modelid) {
+		case 411:  {
 			strins(vehicle_name, "Infernus", 0, 64);
 		}
-		default:
-		{
+		default: {
 			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
 		}
 	}
 }
 
-stock LoadStaticVehiclesFromFile(const filename[])
-{
+stock LoadStaticVehiclesFromFile(const filename[]) {
 	new File:file_ptr;
 	new line[256];
 	new var_from_line[64];
@@ -176,10 +160,8 @@ stock LoadStaticVehiclesFromFile(const filename[])
 
 	vehicles_loaded = 0;
 
-	while(fread(file_ptr,line,256) > 0)
-	{
+	while(fread(file_ptr,line,256) > 0) {
 	    index = 0;
-
 	    // Read type
   		index = token_by_delim(line,var_from_line,',',index);
   		if(index == (-1)) continue;
@@ -211,7 +193,6 @@ stock LoadStaticVehiclesFromFile(const filename[])
   		Color2 = strval(var_from_line);
   		
   		AddStaticVehicleEx(vehicletype,SpawnX,SpawnY,SpawnZ,SpawnRot,Color1,Color2,(30*60));
-		
 		vehicles_loaded++;
 	}
 
@@ -222,7 +203,6 @@ stock LoadStaticVehiclesFromFile(const filename[])
 
 MODULE_FUNCTION(OnGameModeExit()) {}
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {}
-MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {}
 MODULE_FUNCTION(OnPlayerRequestClass(playerid, classid)) {}
 MODULE_FUNCTION(OnPlayerSpawn(playerid)) {}
 MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {}

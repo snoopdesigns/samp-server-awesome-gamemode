@@ -23,20 +23,24 @@ new callbacks[][callback_format_enum] = {
 	{"OnGameModeExit",""},
 	{"OnPlayerConnect","d"},
 	{"OnPlayerDisconnect","dd"},
-	{"OnPlayerCommandText","ds"}
+	{"OnPlayerCommandText","ds"},
+	{"OnPlayerRequestClass","dd"},
+	{"OnPlayerSpawn","d"},
+	{"OnPlayerKeyStateChange","ddd"},
+	{"OnPlayerPickUpPickup","dd"}
 };
 
 new modules[][modules_item] = {
 	{"DB","Database Layer Module"},
 	{"REG","Registration and Player stats Module"},
 	{"CMDS","Command Module"},
-	{"CS","Player Classes Module"}
+	{"CS","Player Classes Module"},
+	{"VEH","Vehicle Subsystem Module"},
+	{"PROPS","Properties Subsystem Module"}
 	/*{"MENUS","Ingame Menus Module"},
 	{"MG","Minigames Module"},
-	{"PROPS","Properties Subsystem Module"},
 	{"RACE","Race Module"},
-	{"RMSG","Random Messages and Announcments Module"},
-	{"VEH","Vehicle Subsystem Module"}*/
+	{"RMSG","Random Messages and Announcments Module"},*/
 };
 
 public callModulesCallback(const callback[],...) {
@@ -63,6 +67,13 @@ public callModulesCallback(const callback[],...) {
 				EXTRACT_ARRAY_ARG(arg1Val, 1);
 				EXTRACT_ARRAY_ARG(arg2Val, 2);
 				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val);
+			}
+			case 4: {
+				new arg1Val[32],arg2Val[32],arg3Val[32];
+				EXTRACT_ARRAY_ARG(arg1Val, 1);
+				EXTRACT_ARRAY_ARG(arg2Val, 2);
+				EXTRACT_ARRAY_ARG(arg3Val, 3);
+				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val, arg3Val);
 			}
 		}
 	}
