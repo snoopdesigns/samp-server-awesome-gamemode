@@ -7,51 +7,110 @@
 #include <a_samp>
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_utils.inc"
-#include "include/awesome/strlib.inc"
 	
 #define MODULE_FUNCTION(%1) forward DB_%1; public DB_%1
 
 #define DB_FILENAME "awesome-freeroam.db"
+#define STORED_Q_FILENAME "stored_queries.sql"
+#define QUERY_SQL_LEN 512
 	
 enum stored_query {
 	stored_q_name[32],
 	stored_q_format[8],
-	stored_q_sql[32]
+	stored_q_sql[QUERY_SQL_LEN]
 }
 
-new stored_queries[4][stored_query];
+new stored_queries[16][stored_query];
 new stored_queries_num = 0;
 	
 new DB:db_handle;
 
-MODULE_FUNCTION(OnGameModeInit()) 
-{
+/* public functions declaration */
+forward DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],...);
+forward DBUTILS_getResultSize(const DBResult:db_result);
+forward DBUTILS_clearResults(const DBResult:db_result);
+forward DBUTILS_getFieldFromResult(const DBResult:db_result, const field_name[], result[], max_result_size);
+forward DBUTILS_nextItem(DBResult:db_result);
+
+MODULE_FUNCTION(OnGameModeInit()) {
     LOG_write("Database Subsystem initializing");
-	if((db_handle = db_open(DB_FILENAME)) == DB:0)
-	{
+	if((db_handle = db_open(DB_FILENAME)) == DB:0) {
 		LOG_write("Failed to open a connection to Awesome DB");
 		SendRconCommand("exit");
 	}
 	LOG_write("Successfully created a connection to Awesome DB");
-	readStoredQueries("stored_queries.sql");
-	DBUtils_runSelectNamedQuery("findAllPlayers","ss","FUUU","TEST");
+	readStoredQueries(STORED_Q_FILENAME);
 }
 
-MODULE_FUNCTION(OnGameModeExit())
-{
+MODULE_FUNCTION(OnGameModeExit()) {
 	db_close(db_handle);
+}
+
+public DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],...) {
+    new q_id,q_name[32],q_format[8],q_sql[QUERY_SQL_LEN];
+	q_id = findQueryIdByName(queryName);
+	if (q_id == -1) {
+		LOG_writeFormatted("Unable to find query by name: %s", queryName);
+		return DBResult:0;
+	}
+	copyString(stored_queries[q_id][stored_q_name], q_name, sizeof(q_name));
+	copyString(stored_queries[q_id][stored_q_format], q_format, sizeof(q_format));
+	copyString(stored_queries[q_id][stored_q_sql], q_sql, sizeof(q_sql));
+	// TODO if query not found - deadlock
+	if (str_eq(sqlFormat, q_format)) {
+		new sql[QUERY_SQL_LEN];
+		copyString(q_sql, sql, sizeof(sql));
+		if (str_neq(q_format, "NA")) {
+			for (new j = 0; j < strlen(q_format); j++) {
+				if (q_format[j] == 's') { // string param
+					new stringParameterValue[32];
+					EXTRACT_ARRAY_ARG(stringParameterValue, j+2);
+					replaceFirst("%s", stringParameterValue, sql, strlen("%s"), sizeof(sql));
+				} else if (q_format[j] == 'd') {
+					replaceFirst("%d", intToStr(getarg(j+2)), sql, strlen("%d"), sizeof(sql));
+				}
+			}
+		}
+		LOG_writeFormatted("Executing query: %s", sql);
+		return db_query(db_handle,sql);
+	} else {
+		LOG_writeFormatted("Query format is invalid: %s", q_format);
+	}
+	return DBResult:0;
+}
+
+public DBUTILS_getResultSize(const DBResult:db_result) {
+	return db_num_rows(db_result);
+}
+
+public DBUTILS_clearResults(const DBResult:db_result) {
+	db_free_result(db_result);
+}
+
+public DBUTILS_getFieldFromResult(const DBResult:db_result, const field_name[], result[], max_result_size) {
+	db_get_field_assoc(db_result, field_name, result, max_result_size);
+}
+
+public DBUTILS_nextItem(DBResult:db_result) {
+	return db_next_row(db_result);
 }
 
 stock readStoredQueries(const filename[]) {
 
-    new File:file = fopen(filename, io_read), line[128];
+    new File:file = fopen(filename, io_read), line[QUERY_SQL_LEN];
     while(fread(file, line))
     {
+		rtrim(line);
 		new queryName[32];
 		new queryFormat[8];
-		new querySql[32];
-		sscanf(rtrim(line), "sss", queryName, queryFormat, querySql);
-        LOG_writeFormatted("Read stored query: name = %s, format = %s, query = %s", queryName, queryFormat, querySql);
+		new querySql[QUERY_SQL_LEN];
+		sscanf(line, "sss", queryName, queryFormat, querySql);
+		LOG_write("==================================");
+        LOG_write("Read stored query:");
+		LOG_writeFormatted("Name: %s", queryName);
+		LOG_writeFormatted("Format: %s", queryFormat);
+		LOG_writeFormatted("SQL: %s", querySql);
+		LOG_write("==================================");
 		stored_queries[stored_queries_num][stored_q_name] = queryName;
 		stored_queries[stored_queries_num][stored_q_format] = queryFormat;
 		stored_queries[stored_queries_num][stored_q_sql] = querySql;
@@ -66,95 +125,6 @@ stock findQueryIdByName(const name[]) {
 		}
 	}
 	return -1;
-}
-
-
-
-stock DBResult:DBUtils_runSelectNamedQuery(const queryName[],const sqlFormat[],...) {
-    new query_id;
-	query_id = findQueryIdByName(queryName);
-	LOG_writeFormatted("Found query by name: %s, query: %s", stored_queries[query_id][stored_q_name], stored_queries[query_id][stored_q_sql]);
-	if (strcmp(sqlFormat, stored_queries[query_id][stored_q_format]) == 0) {
-		new sql[32];
-		new sql_format[8];
-		format(sql_format, sizeof(sql_format), "%s", stored_queries[query_id][stored_q_format]);
-		LOG_writeFormatted("Query format: %s, %d", sql_format, strlen(sql_format));
-		if (strcmp(stored_queries[query_id][stored_q_format], "NA") != 0) {
-			format(sql, sizeof(sql), "%s", stored_queries[query_id][stored_q_sql]);
-			for (new j = 0; j < strlen(sql_format); j++) {
-				if (sql_format[j] == 's') { // string param
-					LOG_writeFormatted("Found S param: numargs = %d", numargs());
-					new stringParameterValue[8];
-					EXTRACT_ARRAY_ARG(stringParameterValue, j+2);
-					new strToReplace[8];
-					strToReplace = "%s";
-					new beginIndex = strfind(sql, strToReplace);
-					strdel(sql, beginIndex, beginIndex + 2);
-					strins(sql, stringParameterValue, beginIndex);
-				}
-			}
-		}
-		LOG_writeFormatted("Query after modify: %s", sql);
-		return DBUTILS_runSelectQuery(sql);
-	}
-}
-
-stock DBResult:DBUTILS_runSelectQuery(query[])
-{
-	return db_query(db_handle, query);
-}
-
-stock DBUTILS_runSelectQueryClear(DBResult: db_result) 
-{
-	db_free_result(db_result);
-}
-
-stock DBUTILS_runCreateQuery(query[])
-{
-	DBUTILS_logQuery(query);
-	db_free_result(db_query(db_handle, query));
-}
-
-stock DBUTILS_runDropQuery(table_name[])
-{
-	new query[256];
-	format(query, sizeof(query), "DROP TABLE IF EXISTS '%s'", table_name);
-	DBUTILS_logQuery(query);
-	db_free_result(db_query(db_handle, query));
-}
-
-stock DBUTILS_runInsertQuery(query[])
-{
-	DBUTILS_runCreateQuery(query);
-}
-
-stock DBUTILS_runUpdateQuery(query[])
-{
-	DBUTILS_runCreateQuery(query);
-}
-
-stock DBUTILS_getResultsetSize(DBResult:db_result)
-{
-	return db_num_rows(db_result);
-}
-
-stock DBUTILS_nextItem(DBResult:db_result)
-{
-	return db_next_row(db_result);
-}
-
-stock DBUTILS_getFieldFromResult(DBResult:db_result, field_name[]) 
-{
-	new field[128];
-	db_get_field_assoc(db_result, field_name, field, sizeof field);
-	return field;
-}
-
-DBUTILS_logQuery(query[]) 
-{
-	new string[1024];
-	format(string,sizeof(string),"[DB_QUERY]: %s",query);
-	LOG_write(string);
 }
 
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {}

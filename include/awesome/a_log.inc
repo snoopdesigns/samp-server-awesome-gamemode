@@ -7,9 +7,10 @@
 #include "include/awesome/a_utils.inc"
 
 #define MODULE_FUNCTION(%1) forward LOG_%1; public LOG_%1
+#define LOG_MSG_MAX_LEN 512
 
 #define LOG_writeFormatted(%1,%2) format(logFormatttedMsg, sizeof logFormatttedMsg, %1, %2); LOG_write(logFormatttedMsg)
-new logFormatttedMsg[128];
+new logFormatttedMsg[LOG_MSG_MAX_LEN];
 
 #define LOG_FILENAME "awesome-gamemode.log"
 

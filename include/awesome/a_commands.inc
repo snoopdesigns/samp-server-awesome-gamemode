@@ -3,37 +3,22 @@
 #endif
 #define _commands_included
 
-#include "include/awesome/a_vehutils.inc"
-#include "include/awesome/a_menus.inc"
-#include "include/awesome/a_props.inc"
+//#include "include/awesome/a_vehutils.inc"
+//#include "include/awesome/a_menus.inc"
+//#include "include/awesome/a_props.inc"
+#include "include/awesome/a_reg.inc"
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/colors.inc"
 
 #define MODULE_FUNCTION(%1) forward CMDS_%1; public CMDS_%1
 
-#define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
+#define dcmd(%1,%2,%3,%4) if(!strcmp((%3)[1], #%1, true, (%2)) && ((((%3)[(%2) + 1] == '\0') && (/*RACE_checkCommandAccess(playerid, (#%1)) && MG_checkCommandAccess(playerid, (#%1)) && */CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, ""))) || (((%3)[(%2) + 1] == ' ') && (CMDS_checkCommandAccess(playerid, (%4)) && dcmd_%1(playerid, (%3)[(%2) + 2]))))) return 1
 
-stock CMDS_checkCommandAccess(playerid, level)
-{
-	if(IsPlayerAdmin(playerid)) return TRUE;
-	if(REG_getPlayerLevel(playerid) >= level)
-	{
-		return TRUE;
-	} else {		
-		if(REG_getPlayerLevel(playerid) == 0) //player is not registered
-		{
-			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you need to register to access this command!");
-		}
-		else 
-		{
-			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you have not access to this command!");
-			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Required player level: %d", level);
-		}
-		return FALSE;
-	}
-}
+/* public functions declaration */
+forward CMDS_checkCommandAccess(playerid, level);
 
 MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
+	LOG_writeFormatted("Called OnPlayerCommandText(), playerid = %d, command = %s", playerid, cmdtext);
 	dcmd(kill, 4, cmdtext, 0);
 	
 	//help command
@@ -42,9 +27,10 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	// register commands
 	dcmd(login, 5, cmdtext, 0);
 	dcmd(register, 8, cmdtext, 0);
+	dcmd(stats, 5, cmdtext, 0);
 	
 	//vehicle commands
-	dcmd(v, 1, cmdtext, 1);
+	/*dcmd(v, 1, cmdtext, 1);
 	dcmd(car, 3, cmdtext, 1);
 	dcmd(fix, 6, cmdtext, 1);
 	
@@ -69,26 +55,35 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(setscore, 8, cmdtext, 2);
 	dcmd(setmoney, 8, cmdtext, 2);
 	dcmd(restart, 7, cmdtext, 2);
-	dcmd(setlevel, 8, cmdtext, 2);	
+	dcmd(setlevel, 8, cmdtext, 2);*/
 	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
 	return 1;
 }
 
-//=====================================================================
-//========================COMMON COMMANDS==============================
-//=====================================================================
+public CMDS_checkCommandAccess(playerid, level) {
+	if(IsPlayerAdmin(playerid)) return TRUE;
+	if(REG_getPlayerLevel(playerid) >= level) {
+		return TRUE;
+	} else {		
+		if(REG_getPlayerLevel(playerid) == 0) {
+			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you need to register to access this command!");
+		} else {
+			SendClientMessage(playerid, COLOR_ERROR, "* Sorry, you have not access to this command!");
+			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Required player level: %d", level);
+		}
+		return FALSE;
+	}
+}
 
-dcmd_kill(playerid, params[])
-{
+dcmd_kill(playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	SetPlayerHealth(playerid, 0.0);
 	return 1;
 }
 
-dcmd_help(playerid, params[])
-{
+dcmd_help(playerid, params[]) {
 	strlen(params);//just to handle compile warning
-	MENUS_showPlayerMenu(playerid, PLAYER_MENU_HELP);
+	//MENUS_showPlayerMenu(playerid, PLAYER_MENU_HELP);
 	return 1;
 }
 
@@ -96,31 +91,29 @@ dcmd_help(playerid, params[])
 //========================REGISTER COMMANDS============================
 //=====================================================================
 
-dcmd_register(playerid, params[])
-{
+dcmd_register(playerid, params[]) {
 	new	password[64];
-	if (sscanf(params, "s", password)) 
-	{
+	if (sscanf(params, "s", password)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/register <password>\"");
-	}
-	else
-	{
+	} else {
 		REG_registerNewPlayer(playerid, password);
 	}
 	return 1;
 }
 
-dcmd_login(playerid, params[])
-{
+dcmd_login(playerid, params[]) {
 	new	password[64];
-	if (sscanf(params, "s", password)) 
-	{
+	if (sscanf(params, "s", password)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/login <password>\"");
-	}
-	else
-	{
+	} else {
 		REG_loginPlayer(playerid, password);
 	}
+	return 1;
+}
+
+dcmd_stats(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	REG_printPlayerStats(playerid);
 	return 1;
 }
 
@@ -128,7 +121,7 @@ dcmd_login(playerid, params[])
 //========================VEHICLE COMMANDS=============================
 //=====================================================================
 
-dcmd_car(playerid, params[])
+/*dcmd_car(playerid, params[])
 {
 	strlen(params);//just to handle compile warning
 	VEH_SpawnPlayerVehicle(playerid, 411);
@@ -364,7 +357,7 @@ dcmd_setlevel(playerid, params[])
 		}
 	}
 	return 1;
-}
+}*/
 
 MODULE_FUNCTION(OnGameModeInit()) {}
 MODULE_FUNCTION(OnGameModeExit()) {}

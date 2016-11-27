@@ -20,18 +20,53 @@
 new argValIndex = 0;
 new argValChar;
 	
+#define str_eq(%1,%2) strcmp(%1,%2)==0
+#define str_neq(%1,%2) strcmp(%1,%2)!=0
+#define FOR_PLAYERS new i=0;i<MAX_PLAYERS;i++
+	
 #define EXTRACT_ARRAY_ARG(%1,%2) \
-	while(!false) { \
+	for (argValIndex = 0; argValIndex < 255; argValIndex++) { \
 		argValChar = getarg(%2, argValIndex); \
-		LOG_writeFormatted("Read char: %c", argValChar); \
 		%1[argValIndex] = argValChar; \
 		if (argValChar == 0) break; \
-		argValIndex++; \
 	} \
-	LOG_writeFormatted("Extracted arg value: %s", %1); \
-	argValIndex = 0
+	argValIndex=0
 	
 new clientFormattedMessage[128];
+
+stock rtrim(sSource[])
+{
+	new
+		iEnd,
+		iInputLength = strlen(sSource);
+
+	for(iEnd = (iInputLength - 1); iEnd > 0; --iEnd)
+	{
+		switch(sSource[iEnd])
+		{
+			case ' ', '\t', '\r', '\n':
+			{
+				continue;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+
+	strdel(sSource, (iEnd + 1), iInputLength);
+}
+
+stock copyString(const source[], dest[], destlen) {
+	format(dest, destlen, "%s", source);
+}
+
+stock replaceFirst(const toSearch[], const toReplace[], src[], search_len, src_len) {
+	new beginIndex = strfind(src, toSearch);
+	strdel(src, beginIndex, beginIndex + search_len);
+	strins(src, toReplace, beginIndex, src_len);
+}
 
 stock intToStr(int)
 {

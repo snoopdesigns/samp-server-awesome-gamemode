@@ -22,23 +22,24 @@ new callbacks[][callback_format_enum] = {
 	{"OnGameModeInit",""},
 	{"OnGameModeExit",""},
 	{"OnPlayerConnect","d"},
-	{"OnPlayerDisconnect","dd"}
+	{"OnPlayerDisconnect","dd"},
+	{"OnPlayerCommandText","ds"}
 };
 
 new modules[][modules_item] = {
-	{"DB","Database Layer Module"}
-	/*{"CMDS","Command Module"},
-	{"MENUS","Ingame Menus Module"},
+	{"DB","Database Layer Module"},
+	{"REG","Registration and Player stats Module"},
+	{"CMDS","Command Module"},
+	{"CS","Player Classes Module"}
+	/*{"MENUS","Ingame Menus Module"},
 	{"MG","Minigames Module"},
 	{"PROPS","Properties Subsystem Module"},
-	{"REG","Registration and Player stats Module"},
 	{"RACE","Race Module"},
 	{"RMSG","Random Messages and Announcments Module"},
-	{"VEH","Vehicle Subsystem Module"},
-	{"CS","Player Classes Module"}*/
+	{"VEH","Vehicle Subsystem Module"}*/
 };
 
-public callModulesCallback(const callback[],{Float,_}:...) {
+public callModulesCallback(const callback[],...) {
 	for (new i = 0; i < sizeof(modules); i++) {
 		new functionName[64];
 		format(functionName, sizeof functionName, "%s_%s", modules[i][short_name], callback);
@@ -48,16 +49,20 @@ public callModulesCallback(const callback[],{Float,_}:...) {
 				callback_format_j = j;
 			}
 		}
-		LOG_writeFormatted("Calling function: %s, format: %s, numargs: %d", functionName, callbacks[callback_format_j][callback_format], numargs()-1);
 		switch (numargs()) {
 			case 1: {
 				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format]);
 			}
 			case 2: {
-				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], getarg(1));
+				new arg1Val[32];
+				EXTRACT_ARRAY_ARG(arg1Val, 1);
+				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val);
 			}
 			case 3: {
-				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], getarg(1), getarg(2));
+				new arg1Val[32],arg2Val[32];
+				EXTRACT_ARRAY_ARG(arg1Val, 1);
+				EXTRACT_ARRAY_ARG(arg2Val, 2);
+				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val);
 			}
 		}
 	}
