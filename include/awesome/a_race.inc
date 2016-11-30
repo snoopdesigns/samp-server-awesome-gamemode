@@ -95,7 +95,8 @@ forward RACE_leave(const playerid);
 
 /* public timer callbacks */
 forward RACE_initNewRace();
-forward RACE_startRace();
+forward RACE_prepareRaceStart();
+forward RACE_start();
 forward RACE_finishRace();
 forward RACE_CountDown();
 forward RACE_playerTdTimer();
@@ -298,8 +299,7 @@ public RACE_initNewRace() {
 		SendClientMessageToAll(COLOR_MG, "* There is no current record holder for this race.");
 	}
 	
-	if(race[vehicle_id] == 0)
-	{
+	if(race[vehicle_id] == 0) {
 		SendClientMessageToAll(COLOR_MG, "* Vehicle: ANY");
 	} else {
 		new vehicleModelName[64];
@@ -308,12 +308,12 @@ public RACE_initNewRace() {
 	}
 	
 	race[status] = RACE_STATUS_WAITING_PLAYERS;
-	SetTimer("RACE_startRace", RACES_START_DELAY, 0);
+	SetTimer("RACE_prepareRaceStart", RACES_START_DELAY, 0);
 }
 
-public RACE_startRace() {
+public RACE_prepareRaceStart() {
 
-	if(race[total_players]) {
+	if(race[total_players] > 0) {
 		new playerTdMsg[128];
 		format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~-/%d~n~~r~Position_~w~-/%d~n~~r~Time_~w~---", race[num_check] , race[total_players]); 
 		race[status] = RACE_STATUS_ACTIVE;
@@ -349,6 +349,24 @@ public RACE_startRace() {
 	}
 }
 
+public RACE_start() {
+	for (FOR_PLAYERS) {
+		if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
+			DisablePlayerRaceCheckpoint(i);
+			SetPlayerRaceCheckpoint(i,1,
+				race_checkpoints[player_race[i][progress]][x], 
+				race_checkpoints[player_race[i][progress]][y], 
+				race_checkpoints[player_race[i][progress]][z],
+				race_checkpoints[player_race[i][progress]+1][x], 
+				race_checkpoints[player_race[i][progress]+1][y], 
+				race_checkpoints[player_race[i][progress]+1][z], 
+				10);
+		}
+	}
+	playersInRaceTextdrawTimer = SetTimer("RACE_playerTdTimer", 1000, 1);
+	race[start_time] = GetTickCount();
+}
+
 public RACE_finishRace() {
 	for(FOR_PLAYERS) {
 		if(player_race[i][participate] == TRUE) {
@@ -369,19 +387,8 @@ public RACE_CountDown() {
 				GameTextForPlayer(i, "GO", 1000, 3);
 				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
 				TogglePlayerControllable(i,1);
-				DisablePlayerRaceCheckpoint(i);
-				SetPlayerRaceCheckpoint(i,1,
-					race_checkpoints[player_race[i][progress]][x], 
-					race_checkpoints[player_race[i][progress]][y], 
-					race_checkpoints[player_race[i][progress]][z],
-					race_checkpoints[player_race[i][progress]+1][x], 
-					race_checkpoints[player_race[i][progress]+1][y], 
-					race_checkpoints[player_race[i][progress]+1][z], 
-					10);
 			}
 		}
-		playersInRaceTextdrawTimer = SetTimer("RACE_playerTdTimer", 1000, 1);
-		race[start_time] = GetTickCount();
 		return 1;
 	}
 
@@ -389,9 +396,9 @@ public RACE_CountDown() {
 	format(string, sizeof(string), "%d", raceCountdownTimerCount);
 	for (FOR_PLAYERS) {
 	    if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
+			TogglePlayerControllable(i,0);
 			GameTextForPlayer(i, string, 1000, 3);
 			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
-			TogglePlayerControllable(i,0);
 		}
 	}
 
@@ -478,6 +485,7 @@ stock RACE_loadRandomRace() {
 	race[status] = RACE_STATUS_INACTIVE;
 	race[start_time] = 0;
 	race[total_players] = 0;
+	race[finished_players] = 0;
 	DBUTILS_clearResults(db_result);
 	
 	// Loading checkpoints
