@@ -16,6 +16,7 @@ createNewRace ss INSERT INTO race(RaceName,CreatorName,RecordTime,RecordHolder,V
 createRaceCheckpointsTable NA CREATE TABLE IF NOT EXISTS race_cp(ID INTEGER PRIMARY KEY NOT NULL, RaceID INTEGER NOT NULL, X FLOAT, Y FLOAT, Z FLOAT, Num INTEGER);
 dropRaceCheckpointsTable NA DROP TABLE IF EXISTS race_cp;
 findRaceByName s SELECT * from race WHERE RaceName = '%s';
+findAllRaces NA SELECT * FROM race;
 createRaceCheckpoint dfffd INSERT INTO race_cp(RaceID,X,Y,Z,Num) VALUES(%d,%f,%f,%f,%d);
 updateRaceStr ssd UPDATE race SET %s = '%s' WHERE ID = %d;
 updateRaceInt sdd UPDATE race SET %s = %d WHERE ID = %d;

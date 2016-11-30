@@ -41,6 +41,8 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	
 	//races
 	dcmd(join, 4, cmdtext, 1);
+	dcmd(leaverace, 9, cmdtext, 1);
+	dcmd(races, 5, cmdtext, 1);
 	dcmd(lcp, 3, cmdtext, 1);
 	dcmd(cr, 2, cmdtext, 2);
 	dcmd(crcheck, 7, cmdtext, 2);
@@ -178,6 +180,18 @@ dcmd_cprop(const playerid, params[]) {
 dcmd_join(playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	RACE_join(playerid);
+	return 1;
+}
+
+dcmd_leaverace(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	RACE_leave(playerid);
+	return 1;
+}
+
+dcmd_races(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	RACE_printRacesInfo(playerid);
 	return 1;
 }
 

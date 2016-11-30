@@ -80,13 +80,13 @@ new playersInRaceTextdrawTimer = -1;
 new raceCountdownTimer = -1;
 new raceCountdownTimerCount;
 
-//TODO create player leave race method
 //TODO countdown to separate file
-//TODO what if race started and player disconnect, who wins?
-// method to send gametext for all players that are within race
+//TODO method to send gametext for all players that are within race
 //TODO common method for countdowns
+//TODO method to start requested race by ID
 
 /* public functions declaration */
+forward RACE_printRacesInfo(const playerid);
 forward RACE_createRace(const playerid, const racename[]);
 forward RACE_createRaceCheck(const playerid);
 forward RACE_createRaceEnd(const playerid);
@@ -150,6 +150,22 @@ MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {
 MODULE_FUNCTION(OnPlayerDeath(playerid, killerid, reason)) {
 	SendClientMessage(playerid, COLOR_MG, "* You died and cannot finish the race.");
 	RACE_playerFinishRace(playerid, 1);
+}
+
+public RACE_printRacesInfo(const playerid) {
+	SendClientMessage(playerid, COLOR_MG, "** Available races:");
+	new DBResult:db_result;
+	db_result = DBUTILS_runNamedQuery("findAllRaces","NA");
+	do {
+		new racename[32],creator[MAX_PLAYER_NAME], checkpoints_num, vehicle_idd,Float:dist;
+		DBUTILS_getString(db_result, RACE_NAME, racename, sizeof(racename));
+		DBUTILS_getString(db_result, RACE_CREATOR_NAME, creator, sizeof(creator));
+		checkpoints_num = DBUTILS_getInt(db_result, RACE_NUM_CHECK);
+		vehicle_idd = DBUTILS_getInt(db_result, RACE_VEHICLE_MODEL);
+		dist = DBUTILS_getFloat(db_result, RACE_DISTANCE)/1000;
+		SendClientMessageFormatted(playerid, COLOR_MG, "* Race: %s, Creator: %s, Distance: %.2fkm, Checkpoints: %d, Vehicle: %d",racename,creator, dist,checkpoints_num,vehicle_idd);
+	} while(DBUTILS_nextItem(db_result));
+	DBUTILS_clearResults(db_result);
 }
 
 public RACE_join(const playerid) {
@@ -583,7 +599,7 @@ stock RACE_getPlayerPosition(const playerid) {
 stock RACE_checkCommandAccess(const playerid, const cmd[]) {
 	if(IsPlayerAdmin(playerid)) return TRUE;
 	if(player_race[playerid][participate] == TRUE) {
-		if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "lcp") != 0) {
+		if(strcmp(cmd, "kill") != 0 && strcmp(cmd, "lcp") != 0 && strcmp(cmd, "leaverace") != 0) {
 			SendClientMessage(playerid, COLOR_ERROR, "* This command is unavailable while you are in the race.");
 			return FALSE;
 		}
