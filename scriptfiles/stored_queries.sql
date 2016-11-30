@@ -1,2 +1,12 @@
 findAllPlayers NA select * from players;
 findAllProperties NA select * from properties;
+createRaceTable NA CREATE TABLE IF NOT EXISTS race('ID' INTEGER PRIMARY KEY NOT NULL,'RaceName' VARCHAR(32) NOT NULL, 'CreatorName' VARCHAR(32), 'RecordTime' INTEGER, 'RecordHolder' VARCHAR(32), 'VehicleModel' INTEGER, 'NumCheck' INTEGER, 'Distance' FLOAT, 'Active' INTEGER);
+createNewRace ss INSERT INTO race('RaceName','CreatorName','RecordTime','RecordHolder','VehicleModel','NumCheck','Distance','Active') VALUES('%s','%s',0,'',0,0,0,0);
+createRaceCheckpointsTable NA CREATE TABLE IF NOT EXISTS race_cp('ID' INTEGER PRIMARY KEY NOT NULL, 'RaceID' INTEGER NOT NULL, 'X' FLOAT, 'Y' FLOAT, 'Z' FLOAT, 'Num' INTEGER);
+findRaceByName s SELECT * from race WHERE RaceName = '%s';
+createRaceCheckpoint dfffd INSERT INTO race_cp('RaceID','X','Y','Z','Num') VALUES(%d,%f,%f,%f,%d);
+updateRaceStr ssd UPDATE race SET %s = '%s' WHERE ID = %d;
+updateRaceInt sdd UPDATE race SET %s = %d WHERE ID = %d;
+updateRaceFloat sfd UPDATE race SET %s = %f WHERE ID = %d;
+findRandomRace NA SELECT * FROM RACE ORDER BY RANDOM() LIMIT 1;
+findCheckpointsByRaceID d SELECT * FROM race_cp WHERE ID = %d ORDER BY Num ASC;
