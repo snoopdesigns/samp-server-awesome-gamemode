@@ -10,9 +10,9 @@
 #include "include/awesome/a_classselect.inc"
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_props.inc"
+#include "include/awesome/a_race.inc"
 /*#include "include/awesome/a_menus.inc"
 #include "include/awesome/a_minigames.inc"
-#include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"*/
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_callbacks.inc"
@@ -45,8 +45,6 @@ public OnGameModeInit()
 	
 	UsePlayerPedAnims();
 	LOG_write("Awesome Freeroam successfully started!");
-	
-	OnPlayerCommandText(244, "help");
 	return 1;
 }
 
@@ -140,8 +138,7 @@ public OnPlayerLeaveCheckpoint(playerid)
 	return 1;
 }
 
-public OnPlayerEnterRaceCheckpoint(playerid)
-{
+public OnPlayerEnterRaceCheckpoint(playerid) {
 	callModulesCallback("OnPlayerEnterRaceCheckpoint", playerid);
 	return 1;
 }
@@ -233,7 +230,7 @@ public OnRconLoginAttempt(ip[], password[], success)
 
 public OnPlayerUpdate(playerid)
 {
-	callModulesCallback("OnPlayerUpdate", playerid);
+	//callModulesCallback("OnPlayerUpdate", playerid);
 	return 1;
 }
 

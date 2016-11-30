@@ -20,7 +20,7 @@ enum stored_query {
 	stored_q_sql[QUERY_SQL_LEN]
 }
 
-new stored_queries[16][stored_query];
+new stored_queries[32][stored_query];
 new stored_queries_num = 0;
 	
 new DB:db_handle;

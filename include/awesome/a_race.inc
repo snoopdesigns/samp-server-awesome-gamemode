@@ -103,18 +103,20 @@ forward RACE_playerTdTimer();
 
 MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Race Subsystem initializing");
+	
+	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropRaceTable","NA"));
+	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropRaceCheckpointsTable","NA"));
+	
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceCheckpointsTable","NA"));
 	
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
-	RACE_join(0);
-	RACE_movePlayerToLcp(0);
-	RACE_checkCommandAccess(0,"111");
 }
 
 MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
 	if(player_race[playerid][participate] == TRUE && race[status] == RACE_STATUS_ACTIVE) {
 		DisablePlayerRaceCheckpoint(playerid);
+		PlayerPlaySound(playerid, 1056, 0.0, 0.0, 0.0);
 		if(player_race[playerid][progress] == race[num_check] - 1) {
 			RACE_playerFinishRace(playerid, 0);
 		} else {
@@ -122,14 +124,14 @@ MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
 			if(race[num_check] - 1 == player_race[playerid][progress]) {
 				GameTextForPlayer(playerid, "~r~LAST CHECKPOINT...", 1000, 3);
 				for(new i = 0; i < MAX_PLAYERS; i++) {
-					if(player_race[playerid][participate] == TRUE) {
+					if(player_race[i][participate] == TRUE && playerid != i) {
 						new msgFinish[128];
 						format(msgFinish, sizeof msgFinish, "~r~%s ~n~~y~is about to cross ~n~the finish line", GetPlayerFormattedName(i));
 						GameTextForPlayer(i, msgFinish, 1000, 3); 
 					}
 				}
 			}
-			SetPlayerRaceCheckpoint(playerid,1,
+			SetPlayerRaceCheckpoint(playerid,0,
 				race_checkpoints[player_race[playerid][progress]][x], 
 				race_checkpoints[player_race[playerid][progress]][y], 
 				race_checkpoints[player_race[playerid][progress]][z],
@@ -155,6 +157,7 @@ public RACE_join(const playerid) {
 		if(player_race[playerid][participate] == FALSE) {
 			SendClientMessage(playerid, COLOR_MG, "* You joined race, it is starting soon.");
 			player_race[playerid][participate] = TRUE;
+			race[total_players]++;
 			SetPlayerPos(playerid, race_checkpoints[0][x], race_checkpoints[0][y], race_checkpoints[0][z]);
 			//additionaly set player angle to first checkpoint
 			/*new Float: angle, Float: facingAngle;
@@ -224,6 +227,7 @@ public RACE_createRace(const playerid, const racename[]) {
 		new DBResult:db_result;
 		db_result = DBUTILS_runNamedQuery("findRaceByName","s",racename);
 		raceCreation[isActive] = TRUE;
+		LOG_writeFormatted("Setting race creator to %d", playerid);
 		raceCreation[creator_id] = playerid;
 		raceCreation[race_id] = DBUTILS_getInt(db_result, RACE_ID);
 		raceCreation[creator_name] = player_name;
@@ -236,6 +240,7 @@ public RACE_createRace(const playerid, const racename[]) {
 }
 
 public RACE_createRaceCheck(const playerid) {
+	LOG_writeFormatted("Race creator: %d, playerid = %d, active: %d", raceCreation[creator_id], playerid, raceCreation[isActive]);
 	if(raceCreation[isActive] == TRUE && playerid == raceCreation[creator_id]) {
 		SendClientMessage(playerid, COLOR_IMPROVEMENT, "* Race checkpoint added");
 		new Float:xpos, Float:ypos, Float:zpos;
@@ -249,9 +254,11 @@ public RACE_createRaceCheck(const playerid) {
 				raceCreation[last_y], 
 				xpos, 
 				ypos);
-			raceCreation[last_x] = xpos;
-			raceCreation[last_y] = ypos;
 		}
+		raceCreation[last_x] = xpos;
+		raceCreation[last_y] = ypos;
+		LOG_writeFormatted("Race distance: %f", raceCreation[distance]);
+		SendClientMessageFormatted(playerid, COLOR_MG, "Distance: %f", raceCreation[distance]);
 	} else {
 		SendClientMessage(playerid, COLOR_ERROR, "* No active race creations.. Type /cr <filename> to start race creation");
 	}
@@ -262,19 +269,13 @@ public RACE_createRaceEnd(const playerid) {
 		new player_name[MAX_PLAYER_NAME];
 		GetPlayerName(playerid, player_name, sizeof player_name);
 		
-		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sd",RACE_ACTIVE,1,race[id]));
-		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sd",RACE_NUM_CHECK,raceCreation[num_cp],race[id]));
-		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceFloat","sf",RACE_DISTANCE,raceCreation[distance],race[id]));
-		//TODO calculate distance
+		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sdd",RACE_ACTIVE,1,raceCreation[race_id]));
+		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sdd",RACE_NUM_CHECK,raceCreation[num_cp],raceCreation[race_id]));
+		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceFloat","sfd",RACE_DISTANCE,raceCreation[distance],raceCreation[race_id]));
 		
 		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* New race successfully created, ID = %d", raceCreation[race_id]);
 		
-		raceCreation[isActive] = FALSE;
-		raceCreation[race_id] = -1;
-		raceCreation[creator_id] = -1;
-		new empty[MAX_PLAYER_NAME];
-		raceCreation[creator_name] = empty;
-		raceCreation[num_cp] = 0;
+		RACE_clearRaceCreationInfo();
 	}
 	else 
 	{
@@ -312,7 +313,6 @@ public RACE_initNewRace() {
 }
 
 public RACE_prepareRaceStart() {
-
 	if(race[total_players] > 0) {
 		new playerTdMsg[128];
 		format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~-/%d~n~~r~Position_~w~-/%d~n~~r~Time_~w~---", race[num_check] , race[total_players]); 
@@ -351,9 +351,11 @@ public RACE_prepareRaceStart() {
 
 public RACE_start() {
 	for (FOR_PLAYERS) {
-		if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
+		if(player_race[i][participate] == TRUE && IsPlayerConnected(i) && IsPlayerInRaceCheckpoint(i)) {
 			DisablePlayerRaceCheckpoint(i);
-			SetPlayerRaceCheckpoint(i,1,
+			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
+			player_race[i][progress] ++;
+			SetPlayerRaceCheckpoint(i,0,
 				race_checkpoints[player_race[i][progress]][x], 
 				race_checkpoints[player_race[i][progress]][y], 
 				race_checkpoints[player_race[i][progress]][z],
@@ -379,33 +381,6 @@ public RACE_finishRace() {
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 }
 
-public RACE_CountDown() {
-	if(raceCountdownTimerCount == 0) {
-		KillTimer(raceCountdownTimer);
-		for (FOR_PLAYERS) {
-			if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
-				GameTextForPlayer(i, "GO", 1000, 3);
-				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
-				TogglePlayerControllable(i,1);
-			}
-		}
-		return 1;
-	}
-
-	new string[128];
-	format(string, sizeof(string), "%d", raceCountdownTimerCount);
-	for (FOR_PLAYERS) {
-	    if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
-			TogglePlayerControllable(i,0);
-			GameTextForPlayer(i, string, 1000, 3);
-			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
-		}
-	}
-
-	raceCountdownTimerCount--;
-	return 1;
-}
-
 public RACE_playerTdTimer() {
 	for (FOR_PLAYERS) {
 		if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
@@ -425,6 +400,34 @@ public RACE_playerTdTimer() {
 			PlayerTextDrawSetString(i, player_race[i][td], playerTdMsg);
 		}
 	}
+}
+
+public RACE_CountDown() {
+	if(raceCountdownTimerCount == 0) {
+		KillTimer(raceCountdownTimer);
+		for (FOR_PLAYERS) {
+			if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
+				GameTextForPlayer(i, "GO", 1000, 3);
+				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
+				TogglePlayerControllable(i,1);
+				RACE_start();
+			}
+		}
+		return 1;
+	}
+
+	new string[128];
+	format(string, sizeof(string), "%d", raceCountdownTimerCount);
+	for (FOR_PLAYERS) {
+	    if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
+			TogglePlayerControllable(i,0);
+			GameTextForPlayer(i, string, 1000, 3);
+			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
+		}
+	}
+
+	raceCountdownTimerCount--;
+	return 1;
 }
 
 stock RACE_clearRaceInfos() {
@@ -455,7 +458,9 @@ stock RACE_clearRaceInfos() {
 	race[start_time] = 0;
 	race[total_players] = 0;
 	race[finished_players] = 0;
-	
+}
+
+stock RACE_clearRaceCreationInfo() {
 	raceCreation[isActive] = FALSE;
 	raceCreation[race_id] = -1;
 	raceCreation[creator_id] = -1;
@@ -490,6 +495,7 @@ stock RACE_loadRandomRace() {
 	
 	// Loading checkpoints
 	db_result = DBUTILS_runNamedQuery("findCheckpointsByRaceID","d", race[id]);
+	LOG_writeFormatted("Num rows: %d", DBUTILS_getResultSize(db_result));
 	do {
 		new cp_num,Float:cp_x,Float:cp_y,Float:cp_z;
 		cp_num = DBUTILS_getInt(db_result, CP_NUM);
@@ -500,6 +506,7 @@ stock RACE_loadRandomRace() {
 		race_checkpoints[cp_num][x] = cp_x;
 		race_checkpoints[cp_num][y] = cp_y;
 		race_checkpoints[cp_num][z] = cp_z;
+		LOG_writeFormatted("Loaded CP (%d): %f, %f, %f", cp_num, race_checkpoints[cp_num][x], race_checkpoints[cp_num][y], race_checkpoints[cp_num][z]);
 	} while(DBUTILS_nextItem(db_result));
 	DBUTILS_clearResults(db_result);
 	

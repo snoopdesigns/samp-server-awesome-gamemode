@@ -27,7 +27,9 @@ new callbacks[][callback_format_enum] = {
 	{"OnPlayerRequestClass","dd"},
 	{"OnPlayerSpawn","d"},
 	{"OnPlayerKeyStateChange","ddd"},
-	{"OnPlayerPickUpPickup","dd"}
+	{"OnPlayerPickUpPickup","dd"},
+	{"OnPlayerEnterRaceCheckpoint","d"},
+	{"OnPlayerDeath","ddd"}
 };
 
 new modules[][modules_item] = {
@@ -36,10 +38,10 @@ new modules[][modules_item] = {
 	{"CMDS","Command Module"},
 	{"CS","Player Classes Module"},
 	{"VEH","Vehicle Subsystem Module"},
-	{"PROPS","Properties Subsystem Module"}
+	{"PROPS","Properties Subsystem Module"},
+	{"RACE","Race Module"}
 	/*{"MENUS","Ingame Menus Module"},
 	{"MG","Minigames Module"},
-	{"RACE","Race Module"},
 	{"RMSG","Random Messages and Announcments Module"},*/
 };
 
@@ -47,6 +49,9 @@ public callModulesCallback(const callback[],...) {
 	for (new i = 0; i < sizeof(modules); i++) {
 		new functionName[64];
 		format(functionName, sizeof functionName, "%s_%s", modules[i][short_name], callback);
+		if (strlen(functionName) > 31) {
+			strdel(functionName, 31, strlen(functionName));
+		}
 		new callback_format_j = 0;
 		for(new j = 0; j < sizeof(callbacks); j++) {
 			if (strcmp(callback, callbacks[j][callback_name]) == 0) {
@@ -60,6 +65,7 @@ public callModulesCallback(const callback[],...) {
 			case 2: {
 				new arg1Val[32];
 				EXTRACT_ARRAY_ARG(arg1Val, 1);
+				LOG_writeFormatted("Calling callback: %s, param: %d", functionName, arg1Val);
 				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val);
 			}
 			case 3: {

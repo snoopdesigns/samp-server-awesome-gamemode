@@ -39,16 +39,16 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(buy, 3, cmdtext, 1);
 	dcmd(sell, 4, cmdtext, 1);
 	
-	//minigames
-	/*dcmd(event, 5, cmdtext, 1);
-	dcmd(leave, 5, cmdtext, 1);
-	
 	//races
 	dcmd(join, 4, cmdtext, 1);
 	dcmd(lcp, 3, cmdtext, 1);
 	dcmd(cr, 2, cmdtext, 2);
 	dcmd(crcheck, 7, cmdtext, 2);
 	dcmd(crend, 5, cmdtext, 2);
+	
+	//minigames
+	/*dcmd(event, 5, cmdtext, 1);
+	dcmd(leave, 5, cmdtext, 1);
 	
 	//admin commands
 	dcmd(sethealth, 9, cmdtext, 2);
@@ -172,6 +172,44 @@ dcmd_cprop(const playerid, params[]) {
 }
 
 //=====================================================================
+//========================RACES COMMANDS===============================
+//=====================================================================
+
+dcmd_join(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	RACE_join(playerid);
+	return 1;
+}
+
+dcmd_lcp(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	RACE_movePlayerToLcp(playerid);
+	return 1;
+}
+
+dcmd_cr(playerid, params[]) {
+	new	racename[64];
+	if (sscanf(params, "s", racename)) {
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cr <racename>\"");
+	} else {
+		RACE_createRace(playerid, racename);
+	}
+	return 1;
+}
+
+dcmd_crcheck(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	RACE_createRaceCheck(playerid);
+	return 1;
+}
+
+dcmd_crend(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	RACE_createRaceEnd(playerid);
+	return 1;
+}
+
+//=====================================================================
 //========================MINIGAMES COMMANDS===========================
 //=====================================================================
 
@@ -186,59 +224,6 @@ dcmd_leave(playerid, params[])
 {
 	strlen(params);//just to handle compile warning
 	MG_PlayerLeftMinigame(playerid);
-	return 1;
-}
-
-//=====================================================================
-//========================RACES COMMANDS===============================
-//=====================================================================
-
-dcmd_join(playerid, params[])
-{
-	strlen(params);//just to handle compile warning
-	RACE_join(playerid);
-	return 1;
-}
-
-dcmd_lcp(playerid, params[])
-{
-	strlen(params);//just to handle compile warning
-	RACE_movePlayerToLcp(playerid);
-	return 1;
-}
-
-dcmd_cr(playerid, params[])
-{
-	new	filename[64];
-	if (sscanf(params, "s", filename)) 
-	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/cr <filename>\"");
-	}
-	else
-	{
-		RACE_createRace(playerid, filename);
-	}
-	return 1;
-}
-
-dcmd_crcheck(playerid, params[])
-{
-	strlen(params);//just to handle compile warning
-	RACE_createRaceCheck(playerid);
-	return 1;
-}
-
-dcmd_crend(playerid, params[])
-{
-	new	racename[64];
-	if (sscanf(params, "s", racename)) 
-	{
-		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/crend <name>\"");
-	}
-	else
-	{
-		RACE_createRaceEnd(playerid, racename);
-	}
 	return 1;
 }
 
