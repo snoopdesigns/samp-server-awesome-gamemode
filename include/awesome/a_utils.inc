@@ -24,6 +24,7 @@ new argValChar;
 #define str_neq(%1,%2) strcmp(%1,%2)!=0
 #define FOR_PLAYERS new i=0;i<MAX_PLAYERS;i++
 #define FILL_PLAYERS_ARRAY_NULL(%1) for(new i=0;i<MAX_PLAYERS;i++) %1[i]=0
+#define MSG_FOR_PLAYERS(%1,%2) for(FOR_PLAYERS){if(%2 == TRUE) %1;}
 	
 #define EXTRACT_ARRAY_ARG(%1,%2) \
 	for (argValIndex = 0; argValIndex < 255; argValIndex++) { \

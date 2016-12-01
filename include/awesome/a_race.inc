@@ -81,7 +81,6 @@ new raceCountdownTimer = -1;
 new raceCountdownTimerCount;
 
 //TODO countdown to separate file
-//TODO method to send gametext for all players that are within race
 //TODO common method for countdowns
 //TODO method to start requested race by ID
 
@@ -386,11 +385,7 @@ public RACE_start() {
 }
 
 public RACE_finishRace() {
-	for(FOR_PLAYERS) {
-		if(player_race[i][participate] == TRUE) {
-			DisablePlayerRaceCheckpoint(i);
-		}
-	}
+	MSG_FOR_PLAYERS(DisablePlayerRaceCheckpoint(i), player_race[i][participate])
 	RACE_clearRaceInfos();
 	KillTimer(playersInRaceTextdrawTimer);
 	playersInRaceTextdrawTimer = -1;
