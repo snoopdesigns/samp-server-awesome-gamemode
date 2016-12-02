@@ -91,7 +91,7 @@ forward RACE_join(const playerid);
 forward RACE_leave(const playerid);
 
 /* public timer callbacks */
-forward RACE_initNewRace();
+forward RACE_initNewRace(const playerid, const raceID);
 forward RACE_prepareRaceStart();
 forward RACE_start();
 forward RACE_finishRace();
@@ -107,7 +107,7 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceCheckpointsTable","NA"));
 	
-	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
+	SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd", -1, -1);
 }
 
 MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
@@ -118,8 +118,10 @@ MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
 			RACE_playerFinishRace(playerid, 0);
 		} else {
 			player_race[playerid][progress] ++;
+			new checkpoint_type = 0;
 			if(race[num_check] - 1 == player_race[playerid][progress]) {
 				GameTextForPlayer(playerid, "~r~LAST CHECKPOINT...", 1000, 3);
+				checkpoint_type = 1;
 				for(new i = 0; i < MAX_PLAYERS; i++) {
 					if(player_race[i][participate] == TRUE && playerid != i) {
 						new msgFinish[128];
@@ -128,7 +130,7 @@ MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
 					}
 				}
 			}
-			SetPlayerRaceCheckpoint(playerid,0,
+			SetPlayerRaceCheckpoint(playerid,checkpoint_type,
 				race_checkpoints[player_race[playerid][progress]][x], 
 				race_checkpoints[player_race[playerid][progress]][y], 
 				race_checkpoints[player_race[playerid][progress]][z],
@@ -154,13 +156,14 @@ public RACE_printRacesInfo(const playerid) {
 	new DBResult:db_result;
 	db_result = DBUTILS_runNamedQuery("findAllRaces","NA");
 	do {
-		new racename[32],creator[MAX_PLAYER_NAME], checkpoints_num, vehicle_idd,Float:dist;
+		new rid,racename[32],creator[MAX_PLAYER_NAME], checkpoints_num, vehicle_idd,Float:dist;
+		rid = DBUTILS_getInt(db_result, RACE_ID);
 		DBUTILS_getString(db_result, RACE_NAME, racename, sizeof(racename));
 		DBUTILS_getString(db_result, RACE_CREATOR_NAME, creator, sizeof(creator));
 		checkpoints_num = DBUTILS_getInt(db_result, RACE_NUM_CHECK);
 		vehicle_idd = DBUTILS_getInt(db_result, RACE_VEHICLE_MODEL);
 		dist = DBUTILS_getFloat(db_result, RACE_DISTANCE)/1000;
-		SendClientMessageFormatted(playerid, COLOR_MG, "* Race: %s, Creator: %s, Distance: %.2fkm, Checkpoints: %d, Vehicle: %d",racename,creator, dist,checkpoints_num,vehicle_idd);
+		SendClientMessageFormatted(playerid, COLOR_MG, "* ID: %d, Race: %s, Creator: %s, Distance: %.2fkm, Checkpoints: %d, Vehicle: %d",rid,racename,creator,dist,checkpoints_num,vehicle_idd);
 	} while(DBUTILS_nextItem(db_result));
 	DBUTILS_clearResults(db_result);
 }
@@ -296,10 +299,17 @@ public RACE_createRaceEnd(const playerid) {
 	}
 }
 
-public RACE_initNewRace() {
+public RACE_initNewRace(const playerid, const raceID) {
+	if (race[status] == RACE_STATUS_ACTIVE || race[status] == RACE_STATUS_WAITING_PLAYERS)  {
+		if (raceID != -1) {
+			/** initNewRace requested by command */
+			SendClientMessage(playerid, COLOR_ERROR, "Unable to start race: there is active race already.");
+		}
+		return;
+	}
 	RACE_clearRaceInfos();
-	if(RACE_loadRandomRace() == 0) {
-		SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
+	if(RACE_loadRandomRace(raceID) == 0) {
+		SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd", -1, -1);
 		return;
 	}
 	
@@ -357,7 +367,7 @@ public RACE_prepareRaceStart() {
 	} else {
 		SendClientMessageToAll(COLOR_MG_RES, "* Race not started beacause nobody comes");
 		race[status] = RACE_STATUS_INACTIVE;
-		SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
+		SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd", -1, -1);
 	}
 }
 
@@ -384,7 +394,7 @@ public RACE_finishRace() {
 	RACE_clearRaceInfos();
 	KillTimer(playersInRaceTextdrawTimer);
 	playersInRaceTextdrawTimer = -1;
-	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
+	SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd",-1, -1);
 }
 
 public RACE_playerTdTimer() {
@@ -450,10 +460,14 @@ stock RACE_clearRaceCreationInfo() {
 	raceCreation[last_y] = 0.0;
 }
 
-stock RACE_loadRandomRace() {
-	//TODO load checkpoints
+/* raceID -1 means random race */
+stock RACE_loadRandomRace(const raceID) {
     new DBResult: db_result;
-	db_result = DBUTILS_runNamedQuery("findRandomRace","NA");
+	if (raceID == -1) {
+		db_result = DBUTILS_runNamedQuery("findRandomRace","NA");
+	} else {
+		db_result = DBUTILS_runNamedQuery("findRaceByID","d",raceID);
+	}
 	if(DBUTILS_getResultSize(db_result) == 0) {
 		return 0;
 	}

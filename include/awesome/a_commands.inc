@@ -48,6 +48,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(cr, 2, cmdtext, 2);
 	dcmd(crcheck, 7, cmdtext, 2);
 	dcmd(crend, 5, cmdtext, 2);
+	dcmd(race, 4, cmdtext, 2);
 	dcmd(cd, 2, cmdtext, 2);
 	
 	//minigames
@@ -222,6 +223,16 @@ dcmd_crcheck(playerid, params[]) {
 dcmd_crend(playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	RACE_createRaceEnd(playerid);
+	return 1;
+}
+
+dcmd_race(playerid, params[]) {
+	new	raceid;
+	if (sscanf(params, "d", raceid)) {
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/race <raceID>\"");
+	} else {
+		RACE_initNewRace(playerid, raceid);
+	}
 	return 1;
 }
 

@@ -22,4 +22,5 @@ updateRaceStr ssd UPDATE race SET %s = '%s' WHERE ID = %d;
 updateRaceInt sdd UPDATE race SET %s = %d WHERE ID = %d;
 updateRaceFloat sfd UPDATE race SET %s = %f WHERE ID = %d;
 findRandomRace NA SELECT * FROM RACE WHERE Active = 1 ORDER BY RANDOM() LIMIT 1;
+findRaceByID d SELECT * FROM RACE WHERE ID = %d;
 findCheckpointsByRaceID d SELECT * FROM race_cp WHERE RaceID = %d ORDER BY Num ASC;
