@@ -8,6 +8,7 @@
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_reg.inc"
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/a_countdown.inc"
 #include "include/awesome/colors.inc"
 
 #define MODULE_FUNCTION(%1) forward CMDS_%1; public CMDS_%1
@@ -47,6 +48,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(cr, 2, cmdtext, 2);
 	dcmd(crcheck, 7, cmdtext, 2);
 	dcmd(crend, 5, cmdtext, 2);
+	dcmd(cd, 2, cmdtext, 2);
 	
 	//minigames
 	/*dcmd(event, 5, cmdtext, 1);
@@ -220,6 +222,13 @@ dcmd_crcheck(playerid, params[]) {
 dcmd_crend(playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	RACE_createRaceEnd(playerid);
+	return 1;
+}
+
+dcmd_cd(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	SendClientMessage(playerid, COLOR_MG, "Starting countdown...");
+	COUNTDOWN_start();
 	return 1;
 }
 

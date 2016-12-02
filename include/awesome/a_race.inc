@@ -78,9 +78,6 @@ new player_race[MAX_PLAYERS][PLAYER_RACE_STATUS];
 
 new playersInRaceTextdrawTimer = -1;
 
-new raceCountdownTimer = -1;
-new raceCountdownTimerCount;
-
 //TODO countdown to separate file
 //TODO common method for countdowns
 //TODO method to start requested race by ID
@@ -109,8 +106,6 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceCheckpointsTable","NA"));
-	
-	createCountdown(player_race[i][participate]);
 	
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 }
@@ -335,8 +330,7 @@ public RACE_prepareRaceStart() {
 		new playerTdMsg[128];
 		format(playerTdMsg, sizeof playerTdMsg, "~r~Progress_~w~-/%d~n~~r~Position_~w~-/%d~n~~r~Time_~w~---", race[num_check] , race[total_players]); 
 		race[status] = RACE_STATUS_ACTIVE;
-		raceCountdownTimerCount = 5;
-		raceCountdownTimer = SetTimer("RACE_CountDown", 1000, 1);
+		createCountdown(player_race[i][participate], "RACE_start");
 		for(FOR_PLAYERS) {
 			if(player_race[i][participate] == TRUE) {
 				SendClientMessageFormatted(i, COLOR_MG_PROGRESS, "* Race is about to start [%d racers, including you]", race[total_players]);
@@ -370,8 +364,6 @@ public RACE_prepareRaceStart() {
 public RACE_start() {
 	for (FOR_PLAYERS) {
 		if(player_race[i][participate] == TRUE && IsPlayerConnected(i) && IsPlayerInRaceCheckpoint(i)) {
-			DisablePlayerRaceCheckpoint(i);
-			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
 			player_race[i][progress] ++;
 			SetPlayerRaceCheckpoint(i,0,
 				race_checkpoints[player_race[i][progress]][x], 
@@ -414,34 +406,6 @@ public RACE_playerTdTimer() {
 			PlayerTextDrawSetString(i, player_race[i][td], playerTdMsg);
 		}
 	}
-}
-
-public RACE_CountDown() {
-	if(raceCountdownTimerCount == 0) {
-		KillTimer(raceCountdownTimer);
-		for (FOR_PLAYERS) {
-			if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
-				GameTextForPlayer(i, "GO", 1000, 3);
-				PlayerPlaySound(i, 1057, 0.0, 0.0, 0.0);
-				TogglePlayerControllable(i,1);
-				RACE_start();
-			}
-		}
-		return 1;
-	}
-
-	new string[128];
-	format(string, sizeof(string), "%d", raceCountdownTimerCount);
-	for (FOR_PLAYERS) {
-	    if(player_race[i][participate] == TRUE && IsPlayerConnected(i)) {
-			TogglePlayerControllable(i,0);
-			GameTextForPlayer(i, string, 1000, 3);
-			PlayerPlaySound(i, 1056, 0.0, 0.0, 0.0);
-		}
-	}
-
-	raceCountdownTimerCount--;
-	return 1;
 }
 
 stock RACE_clearRaceInfos() {

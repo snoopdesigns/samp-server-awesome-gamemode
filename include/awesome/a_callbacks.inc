@@ -39,7 +39,8 @@ new modules[][modules_item] = {
 	{"CS","Player Classes Module"},
 	{"VEH","Vehicle Subsystem Module"},
 	{"PROPS","Properties Subsystem Module"},
-	{"RACE","Race Module"}
+	{"RACE","Race Module"},
+	{"CD","Countdown Implementation"}
 	/*{"MENUS","Ingame Menus Module"},
 	{"MG","Minigames Module"},
 	{"RMSG","Random Messages and Announcments Module"},*/
