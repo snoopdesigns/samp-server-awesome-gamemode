@@ -4,6 +4,7 @@
 #define _race_included
 
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/a_countdown.inc"
 #include "include/awesome/colors.inc"
 
 #define MODULE_FUNCTION(%1) forward RACE_%1; public RACE_%1
@@ -108,6 +109,8 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceCheckpointsTable","NA"));
+	
+	createCountdown(player_race[i][participate]);
 	
 	SetTimer("RACE_initNewRace", RACES_INTERVAL, 0);
 }
