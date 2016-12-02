@@ -78,9 +78,8 @@ new player_race[MAX_PLAYERS][PLAYER_RACE_STATUS];
 
 new playersInRaceTextdrawTimer = -1;
 
-//TODO countdown to separate file
-//TODO common method for countdowns
-//TODO method to start requested race by ID
+//TODOcheck valid vehicle for race at start
+//TODO at race creation set the race vehicle for current player vehicle
 
 /* public functions declaration */
 forward RACE_printRacesInfo(const playerid);
@@ -176,10 +175,10 @@ public RACE_join(const playerid) {
 			race[total_players]++;
 			SetPlayerPos(playerid, race_checkpoints[0][x], race_checkpoints[0][y], race_checkpoints[0][z]);
 			//additionaly set player angle to first checkpoint
-			/*new Float: angle, Float: facingAngle;
-			angle = atan2(raceCheckpoints[0][y] - raceEntryPoint[0][y], raceCheckpoints[0][x] - raceEntryPoint[0][x]);
+			new Float: angle, Float: facingAngle;
+			angle = atan2(race_checkpoints[1][y] - race_checkpoints[0][y], race_checkpoints[1][x] - race_checkpoints[0][x]);
 			facingAngle = 90 - angle;
-			SetPlayerFacingAngle(playerid, facingAngle);*/
+			SetPlayerFacingAngle(playerid, facingAngle);
 			GameTextForPlayer(playerid, "Proceed to starting point", 1000, 3);
 			
 			SetPlayerRaceCheckpoint(playerid,0,
@@ -287,6 +286,7 @@ public RACE_createRaceEnd(const playerid) {
 		
 		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sdd",RACE_ACTIVE,1,raceCreation[race_id]));
 		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sdd",RACE_NUM_CHECK,raceCreation[num_cp],raceCreation[race_id]));
+		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sdd",RACE_VEHICLE_MODEL,GetVehicleModel(GetPlayerVehicleID(playerid)), raceCreation[race_id]));
 		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceFloat","sfd",RACE_DISTANCE,raceCreation[distance],raceCreation[race_id]));
 		
 		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* New race successfully created, ID = %d", raceCreation[race_id]);
@@ -327,7 +327,7 @@ public RACE_initNewRace(const playerid, const raceID) {
 		SendClientMessageToAll(COLOR_MG, "* Vehicle: ANY");
 	} else {
 		new vehicleModelName[64];
-		VEH_getVehicleNameByModelId(race[vehicle_id], vehicleModelName);
+		vehicleModelName = VEH_getVehicleNameByModelId(race[vehicle_id]);
 		SendClientMessageToAllFormatted(COLOR_MG, "* Vehicle: %s (ID=%d)", vehicleModelName, race[vehicle_id]);
 	}
 	
@@ -487,7 +487,6 @@ stock RACE_loadRandomRace(const raceID) {
 	
 	// Loading checkpoints
 	db_result = DBUTILS_runNamedQuery("findCheckpointsByRaceID","d", race[id]);
-	LOG_writeFormatted("Num rows: %d", DBUTILS_getResultSize(db_result));
 	do {
 		new cp_num,Float:cp_x,Float:cp_y,Float:cp_z;
 		cp_num = DBUTILS_getInt(db_result, CP_NUM);
@@ -498,7 +497,6 @@ stock RACE_loadRandomRace(const raceID) {
 		race_checkpoints[cp_num][x] = cp_x;
 		race_checkpoints[cp_num][y] = cp_y;
 		race_checkpoints[cp_num][z] = cp_z;
-		LOG_writeFormatted("Loaded CP (%d): %f, %f, %f", cp_num, race_checkpoints[cp_num][x], race_checkpoints[cp_num][y], race_checkpoints[cp_num][z]);
 	} while(DBUTILS_nextItem(db_result));
 	DBUTILS_clearResults(db_result);
 	
@@ -528,7 +526,7 @@ stock RACE_playerFinishRace(const playerid, const race_finish_status) {
 			SendClientMessageFormatted(playerid, COLOR_MG_RES, "* You set up new race record, time: %02d Min %02d Sec", tH, tM, tS);
 			SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s set up new record of '%s' race, time: %02d Min %02d Sec", GetPlayerFormattedName(playerid), race[name], tH, tM, tS);
 			DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceStr","ssd", RACE_RECORD_HOLDER, player_name, race[id]));
-			DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","ssd", RACE_RECORD_TIME, totalRaceTime, race[id]));
+			DBUTILS_clearResults(DBUTILS_runNamedQuery("updateRaceInt","sdd", RACE_RECORD_TIME, totalRaceTime, race[id]));
 			//gave player something cool
 		}
 	} else { //player exited

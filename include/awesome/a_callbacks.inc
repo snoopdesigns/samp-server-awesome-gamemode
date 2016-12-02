@@ -66,7 +66,6 @@ public callModulesCallback(const callback[],...) {
 			case 2: {
 				new arg1Val[32];
 				EXTRACT_ARRAY_ARG(arg1Val, 1);
-				LOG_writeFormatted("Calling callback: %s, param: %d", functionName, arg1Val);
 				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val);
 			}
 			case 3: {

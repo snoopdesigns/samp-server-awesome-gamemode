@@ -34,6 +34,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(v, 1, cmdtext, 1);
 	dcmd(car, 3, cmdtext, 1);
 	dcmd(fix, 3, cmdtext, 1);
+	dcmd(vehmodel, 8, cmdtext, 1);
 	
 	//properties commands
 	dcmd(cprop, 5, cmdtext, 2);
@@ -145,6 +146,12 @@ dcmd_v(const playerid, params[]) {
 dcmd_fix(const playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	VEH_RepairPlayerVehicle(playerid);
+	return 1;
+}
+
+dcmd_vehmodel(const playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	VEH_getVehicleModel(playerid);
 	return 1;
 }
 

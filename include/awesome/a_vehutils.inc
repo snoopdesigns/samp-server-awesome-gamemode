@@ -14,9 +14,45 @@
 //player vars
 #define PLAYER_VAR_CURVEHICLE "CURVEHICLE"
 
+new VehicleNames[][] = {
+    "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perrenial", "Sentinel",
+	"Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
+	"Voodoo", "Pony", "Mule", "Cheetah", "Ambulance", "Leviathan", "Moonbeam",
+    "Esperanto", "Taxi", "Washington", "Bobcat", "Whoopee", "BF Injection",
+	"Hunter", "Premier", "Enforcer", "Securicar", "Banshee", "Predator", "Bus",
+	"Rhino", "Barracks", "Hotknife", "Trailer", "Previon", "Coach", "Cabbie",
+	"Stallion", "Rumpo", "RC Bandit", "Romero", "Packer", "Monster", "Admiral",
+	"Squalo", "Seasparrow", "Pizzaboy", "Tram", "Trailer", "Turismo", "Speeder",
+	"Reefer", "Tropic", "Flatbed", "Yankee", "Caddy", "Solair", "Berkley's RC Van",
+	"Skimmer", "PCJ-600", "Faggio", "Freeway", "RC Baron", "RC Raider", "Glendale",
+	"Oceanic","Sanchez", "Sparrow", "Patriot", "Quad", "Coastguard", "Dinghy",
+	"Hermes", "Sabre", "Rustler", "ZR-350", "Walton", "Regina", "Comet", "BMX",
+	"Burrito", "Camper", "Marquis", "Baggage", "Dozer", "Maverick", "News Chopper",
+	"Rancher", "FBI Rancher", "Virgo", "Greenwood", "Jetmax", "Hotring", "Sandking",
+	"Blista Compact", "Police Maverick", "Boxville", "Benson", "Mesa", "RC Goblin",
+	"Hotring Racer A", "Hotring Racer B", "Bloodring Banger", "Rancher", "Super GT",
+	"Elegant", "Journey", "Bike", "Mountain Bike", "Beagle", "Cropduster", "Stunt",
+ 	"Tanker", "Roadtrain", "Nebula", "Majestic", "Buccaneer", "Shamal", "Hydra",
+ 	"FCR-900", "NRG-500", "HPV1000", "Cement Truck", "Tow Truck", "Fortune",
+ 	"Cadrona", "FBI Truck", "Willard", "Forklift", "Tractor", "Combine", "Feltzer",
+ 	"Remington", "Slamvan", "Blade", "Freight", "Streak", "Vortex", "Vincent",
+    "Bullet", "Clover", "Sadler", "Firetruck", "Hustler", "Intruder", "Primo",
+	"Cargobob", "Tampa", "Sunrise", "Merit", "Utility", "Nevada", "Yosemite",
+	"Windsor", "Monster", "Monster", "Uranus", "Jester", "Sultan", "Stratium",
+	"Elegy", "Raindance", "RC Tiger", "Flash", "Tahoma", "Savanna", "Bandito",
+    "Freight Flat", "Streak Carriage", "Kart", "Mower", "Dune", "Sweeper",
+	"Broadway", "Tornado", "AT-400", "DFT-30", "Huntley", "Stafford", "BF-400",
+	"News Van", "Tug", "Trailer", "Emperor", "Wayfarer", "Euros", "Hotdog", "Club",
+	"Freight Box", "Trailer", "Andromada", "Dodo", "RC Cam", "Launch", "Police Car",
+ 	"Police Car", "Police Car", "Police Ranger", "Picador", "S.W.A.T", "Alpha",
+ 	"Phoenix", "Glendale", "Sadler", "Luggage", "Luggage", "Stairs", "Boxville",
+ 	"Tiller", "Utility Trailer"
+};
+
 /* public functions declaration */
 forward VEH_RepairPlayerVehicle(const playerid);
 forward VEH_SpawnPlayerVehicle(const playerid, const modelid);
+forward VEH_getVehicleModel(const playerid);
 
 /* public timer callbacks */
 forward VEH_VehicleControlTimer();
@@ -83,6 +119,15 @@ public VEH_SpawnPlayerVehicle(const playerid, const modelid) {
 	SetTimerEx("VEH_CreateVehicle", 600, false, "ii", playerid, modelid); 
 }
 
+public VEH_getVehicleModel(const playerid) {
+	if (IsPlayerInAnyVehicle(playerid)) {
+		new modelname[64], modelid;
+		modelid = GetVehicleModel(GetPlayerVehicleID(playerid));
+		modelname = VEH_getVehicleNameByModelId(modelid);
+		SendClientMessageFormatted(playerid, COLOR_GREEN, "* You are in %s [VehicleModel = %d]", modelname, modelid);
+	}
+}
+
 /* public timer function for creating player vehicle */
 public VEH_CreateVehicle(const playerid, const modelid) {
 	new Float:x, Float:y, Float:z, Float:angle;
@@ -131,15 +176,10 @@ stock VEH_IsPlayerInInvalidNosVehicle(const playerid, const vehicleid) {
     return false;
 }
 
-stock VEH_getVehicleNameByModelId(const modelid, vehicle_name[]) {
-	switch(modelid) {
-		case 411:  {
-			strins(vehicle_name, "Infernus", 0, 64);
-		}
-		default: {
-			SendClientMessageToAll(COLOR_ERROR, "* Something goes wrong... =(");
-		}
-	}
+stock VEH_getVehicleNameByModelId(const modelid) {
+	new vehicleModelName[64];
+	format(vehicleModelName,sizeof(vehicleModelName),"%s",VehicleNames[modelid - 400]);
+	return vehicleModelName;
 }
 
 stock LoadStaticVehiclesFromFile(const filename[]) {
