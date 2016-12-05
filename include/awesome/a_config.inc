@@ -13,21 +13,19 @@
 #define CFG_KEY "CfgKey"
 #define CFG_VALUE "CfgValue"
 
+#define RACE_DELAY_KEY "race-delay"
+#define RACE_START_DELAY_KEY "race-start-delay"
+
 forward CFG_getStrValue(const key[], result[], const result_size, const default_value[]);
 forward CFG_getIntValue(const key[], const default_value);
 forward CFG_updateStrValue(const key[], const value[]);
+forward CFG_updateIntValue(const key[], const value);
 
 MODULE_FUNCTION(OnGameModeInit()) {
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createConfigurationTable","NA"));
-	new result[32], result_int;
-	CFG_getStrValue("test-key", result, sizeof(result), "FUUU");
-	result_int = CFG_getIntValue("test-key-int", 42);
-	LOG_writeFormatted("CONFIG: %s", result);
-	LOG_writeFormatted("CONFIG: %d", result_int);
 }
 
 public CFG_getStrValue(const key[], result[], const result_size, const default_value[]) {
-	LOG_writeFormatted("Configuration value requested: %s", key);
 	new DBResult:db_result,cfg_value[32];
 	db_result = DBUTILS_runNamedQuery("findConfigurationByKey","s",key);
 	if(DBUTILS_getResultSize(db_result) != 0) {
@@ -61,6 +59,10 @@ public CFG_updateStrValue(const key[], const value[]) {
 		DBUTILS_clearResults(DBUTILS_runNamedQuery("updateConfigurationValue","ss",key,value));
 	}
 	DBUTILS_clearResults(db_result);
+}
+
+public CFG_updateIntValue(const key[], const value) {
+	CFG_updateStrValue(key, intToStr(value));
 }
 
 MODULE_FUNCTION(OnGameModeExit()) {}
