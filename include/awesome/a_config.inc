@@ -17,6 +17,7 @@
 #define RACE_DELAY_KEY "race-delay"
 #define RACE_START_DELAY_KEY "race-start-delay"
 #define STATS_SAVE_DELAY_KEY "stats-save-delay"
+#define RMSG_DELAY_KEY "rmsg-delay"
 
 forward CFG_getStrValue(const key[], result[], const result_size, const default_value[]);
 forward CFG_getIntValue(const key[], const default_value);
@@ -73,6 +74,8 @@ public CFG_printAvailableConfiguration(const playerid) {
 	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", RACE_DELAY_KEY);
 	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", RACE_START_DELAY_KEY);
 	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", STATS_SAVE_DELAY_KEY);
+	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", RMSG_DELAY_KEY);
+
 	SendClientMessage(playerid, COLOR_IMPROVEMENT, "Current configuration:");
 	new DBResult:db_result,cfg_value[32], cfg_key[32];
 	db_result = DBUTILS_runNamedQuery("findAllConfigurations","NA");

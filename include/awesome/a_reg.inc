@@ -40,7 +40,7 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Registration Subsystem initializing");
 	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropPlayerTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createPlayerTable","NA"));
-	SetTimer("REG_savePlayerDataTimerFunc", CFG_getIntValue(STATS_SAVE_DELAY_KEY, DEFAULT_DB_SAVE_INTERVAL), true);
+	SetTimer("REG_savePlayerDataTimerFunc", CFG_getIntValue(STATS_SAVE_DELAY_KEY, DEFAULT_DB_SAVE_INTERVAL), false);
 }
 
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {
@@ -143,6 +143,7 @@ public REG_setPlayerLevel(const playerid, const level) {
 /** save stats timer function */
 public REG_savePlayerDataTimerFunc() {
 	REG_savePlayersData();
+	SetTimer("REG_savePlayerDataTimerFunc", CFG_getIntValue(STATS_SAVE_DELAY_KEY, DEFAULT_DB_SAVE_INTERVAL), false);
 }
 
 stock REG_isPlayerRegistered(const playerid) {

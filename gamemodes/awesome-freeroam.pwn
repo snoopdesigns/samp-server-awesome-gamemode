@@ -11,9 +11,9 @@
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_race.inc"
+#include "include/awesome/a_randmsg.inc"
 /*#include "include/awesome/a_menus.inc"
-#include "include/awesome/a_minigames.inc"
-#include "include/awesome/a_randmsg.inc"*/
+#include "include/awesome/a_minigames.inc"*/
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_callbacks.inc"
 

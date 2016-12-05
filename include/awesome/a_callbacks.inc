@@ -41,10 +41,10 @@ new modules[][modules_item] = {
 	{"PROPS","Properties Subsystem Module"},
 	{"RACE","Race Module"},
 	{"CD","Countdown Implementation"},
-	{"CFG","Configuration Module"}
+	{"CFG","Configuration Module"},
+	{"RMSG","Random Messages and Announcments Module"}
 	/*{"MENUS","Ingame Menus Module"},
-	{"MG","Minigames Module"},
-	{"RMSG","Random Messages and Announcments Module"},*/
+	{"MG","Minigames Module"}*/
 };
 
 public callModulesCallback(const callback[],...) {
