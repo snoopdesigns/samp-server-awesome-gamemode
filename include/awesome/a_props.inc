@@ -5,6 +5,7 @@
 
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/a_dbutils.inc"
+#include "include/awesome/a_config.inc"
 #include "include/awesome/colors.inc"
 
 #define MODULE_FUNCTION(%1) forward PROPS_%1; public PROPS_%1
@@ -37,8 +38,7 @@ forward PROPS_sellProperty(const playerid);
 forward PROPS_OnPlayerExitProperty(const playerid, const Float:x, const Float:y, const Float:z);
 forward PROPS_PlayerEarningsTimer();
 
-MODULE_FUNCTION(OnGameModeInit())
-{
+MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Properties Subsystem initializing");
 	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropPropertiesTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createPropertiesTable","NA"));

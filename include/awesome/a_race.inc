@@ -5,12 +5,13 @@
 
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/a_countdown.inc"
+#include "include/awesome/a_config.inc"
 #include "include/awesome/colors.inc"
 
 #define MODULE_FUNCTION(%1) forward RACE_%1; public RACE_%1
 
-#define RACES_INTERVAL 1 * 10 * 1000 // 4 minutes
-#define RACES_START_DELAY 20000 // 20 secs
+#define DEFAULT_RACES_INTERVAL 10000
+#define DEFAULT_RACES_START_DELAY 20000 // 20 secs
 
 #define RACE_STATUS_INACTIVE 0 
 #define RACE_STATUS_WAITING_PLAYERS 1 
@@ -106,7 +107,7 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createRaceCheckpointsTable","NA"));
 	
-	SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd", -1, -1);
+	SetTimerEx("RACE_initNewRace", CFG_getIntValue(RACE_DELAY_KEY, DEFAULT_RACES_INTERVAL), 0, "dd", -1, -1);
 }
 
 MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
@@ -310,7 +311,7 @@ public RACE_initNewRace(const playerid, const raceID) {
 	}
 	RACE_clearRaceInfos();
 	if(RACE_loadRandomRace(raceID) == 0) {
-		SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd", -1, -1);
+		SetTimerEx("RACE_initNewRace", CFG_getIntValue(RACE_DELAY_KEY, DEFAULT_RACES_INTERVAL), 0, "dd", -1, -1);
 		return;
 	}
 	
@@ -333,7 +334,7 @@ public RACE_initNewRace(const playerid, const raceID) {
 	}
 	
 	race[status] = RACE_STATUS_WAITING_PLAYERS;
-	SetTimer("RACE_prepareRaceStart", RACES_START_DELAY, 0);
+	SetTimer("RACE_prepareRaceStart", CFG_getIntValue(RACE_START_DELAY_KEY, DEFAULT_RACES_START_DELAY), 0);
 }
 
 public RACE_prepareRaceStart() {
@@ -368,7 +369,7 @@ public RACE_prepareRaceStart() {
 	} else {
 		SendClientMessageToAll(COLOR_MG_RES, "* Race not started beacause nobody comes");
 		race[status] = RACE_STATUS_INACTIVE;
-		SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd", -1, -1);
+		SetTimerEx("RACE_initNewRace", CFG_getIntValue(RACE_DELAY_KEY, DEFAULT_RACES_INTERVAL), 0, "dd", -1, -1);
 	}
 }
 
@@ -395,7 +396,7 @@ public RACE_finishRace() {
 	RACE_clearRaceInfos();
 	KillTimer(playersInRaceTextdrawTimer);
 	playersInRaceTextdrawTimer = -1;
-	SetTimerEx("RACE_initNewRace", RACES_INTERVAL, 0, "dd",-1, -1);
+	SetTimerEx("RACE_initNewRace", CFG_getIntValue(RACE_DELAY_KEY, DEFAULT_RACES_INTERVAL), 0, "dd", -1, -1);
 }
 
 public RACE_playerTdTimer() {
