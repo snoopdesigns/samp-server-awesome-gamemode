@@ -124,7 +124,7 @@ MODULE_FUNCTION(OnPlayerEnterRaceCheckpoint(playerid)) {
 				for(new i = 0; i < MAX_PLAYERS; i++) {
 					if(player_race[i][participate] == TRUE && playerid != i) {
 						new msgFinish[128];
-						format(msgFinish, sizeof msgFinish, "~r~%s ~n~~y~is about to cross ~n~the finish line", GetPlayerFormattedName(i));
+						format(msgFinish, sizeof msgFinish, "~r~%s ~n~~y~is about to cross ~n~the finish line", GetPlayerFormattedName(playerid));
 						GameTextForPlayer(i, msgFinish, 1000, 3); 
 					}
 				}
@@ -146,7 +146,6 @@ MODULE_FUNCTION(OnPlayerDisconnect(playerid, reason)) {
 }
 
 MODULE_FUNCTION(OnPlayerDeath(playerid, killerid, reason)) {
-	SendClientMessage(playerid, COLOR_MG, "* You died and cannot finish the race.");
 	RACE_playerFinishRace(playerid, 1);
 }
 
@@ -154,16 +153,18 @@ public RACE_printRacesInfo(const playerid) {
 	SendClientMessage(playerid, COLOR_MG, "** Available races:");
 	new DBResult:db_result;
 	db_result = DBUTILS_runNamedQuery("findAllRaces","NA");
-	do {
-		new rid,racename[32],creator[MAX_PLAYER_NAME], checkpoints_num, vehicle_idd,Float:dist;
-		rid = DBUTILS_getInt(db_result, RACE_ID);
-		DBUTILS_getString(db_result, RACE_NAME, racename, sizeof(racename));
-		DBUTILS_getString(db_result, RACE_CREATOR_NAME, creator, sizeof(creator));
-		checkpoints_num = DBUTILS_getInt(db_result, RACE_NUM_CHECK);
-		vehicle_idd = DBUTILS_getInt(db_result, RACE_VEHICLE_MODEL);
-		dist = DBUTILS_getFloat(db_result, RACE_DISTANCE)/1000;
-		SendClientMessageFormatted(playerid, COLOR_MG, "* ID: %d, Race: %s, Creator: %s, Distance: %.2fkm, Checkpoints: %d, Vehicle: %d",rid,racename,creator,dist,checkpoints_num,vehicle_idd);
-	} while(DBUTILS_nextItem(db_result));
+	if (DBUTILS_getResultSize(db_result) > 0) {
+		do {
+			new rid,racename[32],creator[MAX_PLAYER_NAME], checkpoints_num, vehicle_idd,Float:dist;
+			rid = DBUTILS_getInt(db_result, RACE_ID);
+			DBUTILS_getString(db_result, RACE_NAME, racename, sizeof(racename));
+			DBUTILS_getString(db_result, RACE_CREATOR_NAME, creator, sizeof(creator));
+			checkpoints_num = DBUTILS_getInt(db_result, RACE_NUM_CHECK);
+			vehicle_idd = DBUTILS_getInt(db_result, RACE_VEHICLE_MODEL);
+			dist = DBUTILS_getFloat(db_result, RACE_DISTANCE)/1000;
+			SendClientMessageFormatted(playerid, COLOR_MG, "* ID: %d, Race: %s, Creator: %s, Distance: %.2fkm, Checkpoints: %d, Vehicle: %d",rid,racename,creator,dist,checkpoints_num,vehicle_idd);
+		} while(DBUTILS_nextItem(db_result));
+	}
 	DBUTILS_clearResults(db_result);
 }
 
@@ -487,17 +488,19 @@ stock RACE_loadRandomRace(const raceID) {
 	
 	// Loading checkpoints
 	db_result = DBUTILS_runNamedQuery("findCheckpointsByRaceID","d", race[id]);
-	do {
-		new cp_num,Float:cp_x,Float:cp_y,Float:cp_z;
-		cp_num = DBUTILS_getInt(db_result, CP_NUM);
-		cp_x = DBUTILS_getFloat(db_result, CP_X);
-		cp_y = DBUTILS_getFloat(db_result, CP_Y);
-		cp_z = DBUTILS_getFloat(db_result, CP_Z);
-		race_checkpoints[cp_num][num] = cp_num;
-		race_checkpoints[cp_num][x] = cp_x;
-		race_checkpoints[cp_num][y] = cp_y;
-		race_checkpoints[cp_num][z] = cp_z;
-	} while(DBUTILS_nextItem(db_result));
+	if (DBUTILS_getResultSize(db_result)) {
+		do {
+			new cp_num,Float:cp_x,Float:cp_y,Float:cp_z;
+			cp_num = DBUTILS_getInt(db_result, CP_NUM);
+			cp_x = DBUTILS_getFloat(db_result, CP_X);
+			cp_y = DBUTILS_getFloat(db_result, CP_Y);
+			cp_z = DBUTILS_getFloat(db_result, CP_Z);
+			race_checkpoints[cp_num][num] = cp_num;
+			race_checkpoints[cp_num][x] = cp_x;
+			race_checkpoints[cp_num][y] = cp_y;
+			race_checkpoints[cp_num][z] = cp_z;
+		} while(DBUTILS_nextItem(db_result));
+	}
 	DBUTILS_clearResults(db_result);
 	
 	return 1;
@@ -513,9 +516,7 @@ stock RACE_playerFinishRace(const playerid, const race_finish_status) {
 		new totalRaceTime = timeStamp - race[start_time];
 		ConvertTime(var, totalRaceTime, tH, tM, tS);
 		SendClientMessageFormatted(playerid, COLOR_MG_RES, "* You finished the race in %d position. Time: %02d Min %02d Sec", race[finished_players], tH, tM, tS);
-		if(race[finished_players] == 1) {
-			SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s finished the race in %d position. Time: %02d Min %02d Sec", GetPlayerFormattedName(playerid), race[finished_players], tH, tM, tS);
-		}
+		SendClientMessageToAllFormatted(COLOR_MG_RES, "* %s finished the race in %d position. Time: %02d Min %02d Sec", GetPlayerFormattedName(playerid), race[finished_players], tH, tM, tS);
 		player_race[playerid][participate] = FALSE;
 		DisablePlayerRaceCheckpoint(playerid);
 		PlayerTextDrawHide(playerid, player_race[playerid][td]);
@@ -535,6 +536,7 @@ stock RACE_playerFinishRace(const playerid, const race_finish_status) {
 				DisablePlayerRaceCheckpoint(playerid);
 				PlayerTextDrawHide(playerid, player_race[playerid][td]);
 				PlayerTextDrawDestroy(playerid, player_race[playerid][td]);
+				SendClientMessage(playerid, COLOR_MG, "* You died and cannot finish the race.");
 			}
 			player_race[playerid][participate] = FALSE;
 			player_race[playerid][td] = PlayerText: -1;

@@ -133,7 +133,9 @@ public VEH_CreateVehicle(const playerid, const modelid) {
 	new Float:x, Float:y, Float:z, Float:angle;
 	GetPlayerFacingAngle(playerid, angle);
 	GetPlayerPos(playerid, x, y, z);
-	new vehicleid = CreateVehicle(modelid, x, y, z, angle, 0, 0, -1, 0);
+	new color = random(256);
+	SendClientMessageFormatted(playerid, COLOR_GREEN, "Spawning with color = %d", color);
+	new vehicleid = CreateVehicle(modelid, x, y, z, angle, color, 0, -1, 0);
 	if(vehicleid != MAX_VEHICLES) {
 		PutPlayerInVehicle(playerid, vehicleid, 0);
 		AddVehicleComponent(vehicleid, 1087); //hydralistics

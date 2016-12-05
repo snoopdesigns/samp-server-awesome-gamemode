@@ -29,6 +29,8 @@
 forward REG_registerNewPlayer(const playerid, const password[]);
 forward REG_loginPlayer(const playerid, const password[]);
 forward REG_printPlayerStats(const playerid);
+forward REG_getPlayerLevel(const playerid);
+forward REG_setPlayerLevel(const playerid, const level);
 
 /* public timer callbacks */
 forward REG_savePlayerDataTimerFunc();
@@ -128,6 +130,16 @@ public REG_printPlayerStats(const playerid) {
 	}
 }
 
+public REG_getPlayerLevel(const playerid) {
+	return GetPVarInt(playerid, PLAYER_VAR_LEVEL);
+}
+
+public REG_setPlayerLevel(const playerid, const level) {
+	SetPVarInt(playerid, PLAYER_VAR_LEVEL, level);
+	REG_updatePropertyOfPlayer(playerid, PLAYER_PROP_LEVEL, intToStr(GetPVarInt(playerid, PLAYER_VAR_LEVEL)));
+}
+
+/** save stats timer function */
 public REG_savePlayerDataTimerFunc() {
 	REG_savePlayersData();
 }
@@ -166,19 +178,12 @@ stock REG_saveSinglePlayerData(const playerid) {
 	SendClientMessage(playerid, COLOR_GREEN, "* Your player stats has been saved to the database.");
 }
 
-stock REG_isPlayerAuthenticated(playerid)
-{
+stock REG_isPlayerAuthenticated(const playerid) {
 	if(GetPVarInt(playerid, PLAYER_VAR_LEVEL) > 0) return TRUE;
 	return FALSE;
 }
 
-stock REG_getPlayerLevel(playerid)
-{
-	return GetPVarInt(playerid, PLAYER_VAR_LEVEL);
-}
-
-stock REG_getPropertyOfPlayer(playerid, property[])
-{
+stock REG_getPropertyOfPlayer(const playerid, const property[]) {
 	new player_name[MAX_PLAYER_NAME], result[32];
    	GetPlayerName(playerid, player_name, sizeof(player_name));
 	new DBResult:db_result = DBUTILS_runNamedQuery("getPlayerProperty","ss",property,player_name);
@@ -187,8 +192,7 @@ stock REG_getPropertyOfPlayer(playerid, property[])
 	return result;
 }
 
-stock REG_updatePropertyOfPlayer(playerid, property[], property_value[])
-{
+stock REG_updatePropertyOfPlayer(const playerid, const property[], const property_value[]) {
 	new player_name[MAX_PLAYER_NAME];
    	GetPlayerName(playerid, player_name, sizeof(player_name));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("updatePlayerPropertyString","sss",property,property_value,player_name));

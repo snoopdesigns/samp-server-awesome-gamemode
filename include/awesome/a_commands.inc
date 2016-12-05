@@ -54,14 +54,14 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	
 	//minigames
 	/*dcmd(event, 5, cmdtext, 1);
-	dcmd(leave, 5, cmdtext, 1);
+	dcmd(leave, 5, cmdtext, 1);*/
 	
 	//admin commands
 	dcmd(sethealth, 9, cmdtext, 2);
 	dcmd(setscore, 8, cmdtext, 2);
 	dcmd(setmoney, 8, cmdtext, 2);
 	dcmd(restart, 7, cmdtext, 2);
-	dcmd(setlevel, 8, cmdtext, 2);*/
+	dcmd(setlevel, 8, cmdtext, 2);
 	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
 	return 1;
 }
@@ -266,7 +266,7 @@ dcmd_leave(playerid, params[])
 	strlen(params);//just to handle compile warning
 	MG_PlayerLeftMinigame(playerid);
 	return 1;
-}
+}*/
 
 //=====================================================================
 //========================ADMIN COMMANDS===============================
@@ -370,7 +370,7 @@ dcmd_setlevel(playerid, params[])
 		}
 	}
 	return 1;
-}*/
+}
 
 MODULE_FUNCTION(OnGameModeInit()) {}
 MODULE_FUNCTION(OnGameModeExit()) {}
