@@ -26,5 +26,6 @@ findRaceByID d SELECT * FROM RACE WHERE ID = %d;
 findCheckpointsByRaceID d SELECT * FROM race_cp WHERE RaceID = %d ORDER BY Num ASC;
 createConfigurationTable NA CREATE TABLE IF NOT EXISTS configuration(ID INTEGER PRIMARY KEY NOT NULL, CfgKey VARCHAR(32), CfgValue VARCHAR(32));
 findConfigurationByKey s SELECT * FROM configuration WHERE CfgKey='%s';
+findAllConfigurations NA SELECT * FROM configuration;
 createNewConfiguration ss INSERT INTO configuration(CfgKey, CfgValue) VALUES('%s','%s');
 updateConfigurationValue ss UPDATE configuration SET CfgValue='%s' WHERE CfgKey='%s';

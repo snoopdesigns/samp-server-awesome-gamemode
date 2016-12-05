@@ -8,6 +8,7 @@
 #include "include/awesome/a_dbutils.inc"
 #include "include/awesome/a_consts.inc"
 #include "include/awesome/a_utils.inc"
+#include "include/awesome/a_config.inc"
 #include "include/awesome/colors.inc"
 
 /* modules callback declaration */
@@ -15,7 +16,7 @@
 
 //player vars
 #define PLAYER_VAR_LEVEL "LEVEL"
-#define DB_SAVE_INTERVAL 5 * 60 * 1000 //5 minutes
+#define DEFAULT_DB_SAVE_INTERVAL 5 * 60 * 1000 //5 minutes
 
 /* DB fields constants */
 #define PLAYER_PROP_NAME "PlayerName"
@@ -39,7 +40,7 @@ MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Registration Subsystem initializing");
 	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropPlayerTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createPlayerTable","NA"));
-	SetTimer("REG_savePlayerDataTimerFunc", DB_SAVE_INTERVAL, true);
+	SetTimer("REG_savePlayerDataTimerFunc", CFG_getIntValue(STATS_SAVE_DELAY_KEY, DEFAULT_DB_SAVE_INTERVAL), true);
 }
 
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {

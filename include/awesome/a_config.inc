@@ -8,6 +8,7 @@
 #include "include/awesome/a_utils.inc"
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_dbutils.inc"
+#include "include/awesome/colors.inc"
 
 /* DB fields constants */
 #define CFG_KEY "CfgKey"
@@ -15,11 +16,13 @@
 
 #define RACE_DELAY_KEY "race-delay"
 #define RACE_START_DELAY_KEY "race-start-delay"
+#define STATS_SAVE_DELAY_KEY "stats-save-delay"
 
 forward CFG_getStrValue(const key[], result[], const result_size, const default_value[]);
 forward CFG_getIntValue(const key[], const default_value);
 forward CFG_updateStrValue(const key[], const value[]);
 forward CFG_updateIntValue(const key[], const value);
+forward CFG_printAvailableConfiguration(const playerid);
 
 MODULE_FUNCTION(OnGameModeInit()) {
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createConfigurationTable","NA"));
@@ -63,6 +66,24 @@ public CFG_updateStrValue(const key[], const value[]) {
 
 public CFG_updateIntValue(const key[], const value) {
 	CFG_updateStrValue(key, intToStr(value));
+}
+
+public CFG_printAvailableConfiguration(const playerid) {
+	SendClientMessage(playerid, COLOR_IMPROVEMENT, "Available configuration:");
+	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", RACE_DELAY_KEY);
+	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", RACE_START_DELAY_KEY);
+	SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s", STATS_SAVE_DELAY_KEY);
+	SendClientMessage(playerid, COLOR_IMPROVEMENT, "Current configuration:");
+	new DBResult:db_result,cfg_value[32], cfg_key[32];
+	db_result = DBUTILS_runNamedQuery("findAllConfigurations","NA");
+	if (DBUTILS_getResultSize(db_result) > 0) {
+		do {
+			DBUTILS_getString(db_result, CFG_KEY, cfg_key, sizeof(cfg_key));
+			DBUTILS_getString(db_result, CFG_VALUE, cfg_value, sizeof(cfg_value));
+			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* %s = %s", cfg_key, cfg_value);
+		} while(DBUTILS_nextItem(db_result));
+	}
+	DBUTILS_clearResults(db_result);
 }
 
 MODULE_FUNCTION(OnGameModeExit()) {}

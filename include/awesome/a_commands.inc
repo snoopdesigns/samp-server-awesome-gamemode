@@ -4,6 +4,7 @@
 #define _commands_included
 
 #include "include/awesome/a_vehutils.inc"
+#include "include/awesome/a_config.inc"
 //#include "include/awesome/a_menus.inc"
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_reg.inc"
@@ -62,6 +63,8 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(setmoney, 8, cmdtext, 2);
 	dcmd(restart, 7, cmdtext, 2);
 	dcmd(setlevel, 8, cmdtext, 2);
+	dcmd(setcfg, 6, cmdtext, 2);
+	dcmd(cfg, 3, cmdtext, 2);
 	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
 	return 1;
 }
@@ -272,16 +275,14 @@ dcmd_leave(playerid, params[])
 //========================ADMIN COMMANDS===============================
 //=====================================================================
 
-dcmd_restart(playerid, params[])
-{
+dcmd_restart(playerid, params[]) {
 	intToStr(playerid);
 	strlen(params);//just to handle compile warning
 	SendRconCommand("changemode awesome-freeroam");
 	return 1;
 }
 
-dcmd_sethealth(playerid, params[])
-{
+dcmd_sethealth(playerid, params[]) {
 	new	health;
 	if (sscanf(params, "i", health)) 
 	{
@@ -303,72 +304,69 @@ dcmd_sethealth(playerid, params[])
 dcmd_setscore(playerid, params[])
 {
 	new	id, score;
-	if (sscanf(params, "ii", id, score)) 
-	{
+	if (sscanf(params, "ii", id, score)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setscore <id> <score>\"");
-	}
-	else
-	{
-		if(IsPlayerConnected(id))
-		{
+	} else {
+		if(IsPlayerConnected(id)) {
 			SetPlayerScore(id, score);
 			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player %s score has been set to %d", GetPlayerFormattedName(id), score);
 			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin %s set your score to %d", GetPlayerFormattedName(playerid), score);
-		}
-		else 
-		{
+		} else {
 			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Player with ID = %d does not exists!", id);
 		}
 	}
 	return 1;
 }
 
-dcmd_setmoney(playerid, params[])
-{
+dcmd_setmoney(playerid, params[]) {
 	new	id, money;
-	if (sscanf(params, "ii", id, money)) 
-	{
+	if (sscanf(params, "ii", id, money)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setmoney <id> <money>\"");
-	}
-	else
-	{
-		if(IsPlayerConnected(id))
-		{
+	} else {
+		if(IsPlayerConnected(id)) {
 			GivePlayerMoney(id, money);
 			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player %s moneys has been increased to %d", GetPlayerFormattedName(id), money);
 			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin %s gave you money %d", GetPlayerFormattedName(playerid), money);
-		}
-		else 
-		{
+		} else {
 			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Player with ID = %d does not exists!", id);
 		}
 	}
 	return 1;
 }
 
-dcmd_setlevel(playerid, params[])
-{
+dcmd_setlevel(playerid, params[]) {
 	new	id, newlevel;
-	if (sscanf(params, "ii", id, newlevel)) 
-	{
+	if (sscanf(params, "ii", id, newlevel)) {
 		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setlevel <id> <level>\"");
-	}
-	else
-	{
-		if(IsPlayerConnected(id))
-		{
+	} else {
+		if(IsPlayerConnected(id)) {
 			REG_updatePropertyOfPlayer(id, "PlayerLevel", intToStr(newlevel));
 			new targetname[MAX_PLAYER_NAME], playername[MAX_PLAYER_NAME];
 			GetPlayerName(playerid, playername, sizeof playername);
 			GetPlayerName(id, targetname, sizeof targetname);
 			SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Player %s now has level %d", GetPlayerFormattedName(id), newlevel);
 			SendClientMessageFormatted(id, COLOR_IMPROVEMENT, "* Admin %s sets you player level to %d", GetPlayerFormattedName(playerid), newlevel);
-		}
-		else 
-		{
+		} else {
 			SendClientMessageFormatted(playerid, COLOR_ERROR, "* Player with ID = %d does not exists!", id);
 		}
 	}
+	return 1;
+}
+
+dcmd_setcfg(playerid, params[]) {
+	new	cfg_key[32], cfg_value[32];
+	if (sscanf(params, "ss", cfg_key, cfg_value)) {
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/setcfg <key> <value>\"");
+	} else {
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Updated configuration: key = %s, value = %s", cfg_key, cfg_value);
+		CFG_updateStrValue(cfg_key, cfg_value);
+	}
+	return 1;
+}
+
+dcmd_cfg(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	CFG_printAvailableConfiguration(playerid);
 	return 1;
 }
 

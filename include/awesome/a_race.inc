@@ -489,7 +489,7 @@ stock RACE_loadRandomRace(const raceID) {
 	
 	// Loading checkpoints
 	db_result = DBUTILS_runNamedQuery("findCheckpointsByRaceID","d", race[id]);
-	if (DBUTILS_getResultSize(db_result)) {
+	if (DBUTILS_getResultSize(db_result) > 0) {
 		do {
 			new cp_num,Float:cp_x,Float:cp_y,Float:cp_z;
 			cp_num = DBUTILS_getInt(db_result, CP_NUM);
