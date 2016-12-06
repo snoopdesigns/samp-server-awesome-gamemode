@@ -36,27 +36,32 @@ new argValChar;
 	
 new clientFormattedMessage[128];
 
-stock rtrim(sSource[])
-{
+stock gen_random(s[], const len) {
+    static alphanum[] =
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    for (new i = 0; i < len; ++i) {
+        s[i] = alphanum[random(sizeof(alphanum) - 1)];
+    }
+
+    s[len] = 0;
+}
+
+stock rtrim(sSource[]) {
 	new
 		iEnd,
 		iInputLength = strlen(sSource);
 
-	for(iEnd = (iInputLength - 1); iEnd > 0; --iEnd)
-	{
-		switch(sSource[iEnd])
-		{
-			case ' ', '\t', '\r', '\n':
-			{
+	for(iEnd = (iInputLength - 1); iEnd > 0; --iEnd) {
+		switch(sSource[iEnd]) {
+			case ' ', '\t', '\r', '\n': {
 				continue;
 			}
-			default:
-			{
+			default: {
 				break;
 			}
 		}
 	}
-
 	strdel(sSource, (iEnd + 1), iInputLength);
 }
 

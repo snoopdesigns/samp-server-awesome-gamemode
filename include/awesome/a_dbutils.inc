@@ -65,13 +65,13 @@ public DBResult:DBUTILS_runNamedQuery(const queryName[],const sqlFormat[],{Float
 		if (str_neq(q_format, "NA")) {
 			for (new j = 0; j < strlen(q_format); j++) {
 				if (q_format[j] == 's') { // string param
-					new stringParameterValue[32];
+					new stringParameterValue[65];
 					EXTRACT_ARRAY_ARG(stringParameterValue, j+2);
 					replaceFirst("%s", stringParameterValue, sql, strlen("%s"), sizeof(sql));
 				} else if (q_format[j] == 'd') {
 					replaceFirst("%d", intToStr(getarg(j+2)), sql, strlen("%d"), sizeof(sql));
 				} else if (q_format[j] == 'f') {
-					new argValFloatString[32];
+					new argValFloatString[65];
 					format(argValFloatString, sizeof(argValFloatString), "%f", getarg(j+2));
 					LOG_writeFormatted("F arg: %s",argValFloatString);
 					replaceFirst("%f", argValFloatString, sql, strlen("%f"), sizeof(sql));
