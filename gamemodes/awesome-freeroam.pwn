@@ -12,8 +12,8 @@
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_race.inc"
 #include "include/awesome/a_randmsg.inc"
-/*#include "include/awesome/a_menus.inc"
-#include "include/awesome/a_minigames.inc"*/
+#include "include/awesome/a_dialog.inc"
+/*#include "include/awesome/a_minigames.inc"*/
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_callbacks.inc"
 
@@ -45,6 +45,9 @@ public OnGameModeInit()
 	
 	UsePlayerPedAnims();
 	LOG_write("Awesome Freeroam successfully started!");
+	
+	OnDialogResponse(1, 11, 222, 1, "test1234");
+	
 	return 1;
 }
 
@@ -260,6 +263,7 @@ public OnVehicleStreamOut(vehicleid, forplayerid)
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
+	LOG_writeFormatted("OnDialogResponse called base: %d, %d, %d, %d, %s", playerid, dialogid, response, listitem, inputtext);
 	callModulesCallback("OnDialogResponse", playerid, dialogid, response, listitem, inputtext);
 	return 1;
 }

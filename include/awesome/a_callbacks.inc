@@ -29,7 +29,8 @@ new callbacks[][callback_format_enum] = {
 	{"OnPlayerKeyStateChange","ddd"},
 	{"OnPlayerPickUpPickup","dd"},
 	{"OnPlayerEnterRaceCheckpoint","d"},
-	{"OnPlayerDeath","ddd"}
+	{"OnPlayerDeath","ddd"},
+	{"OnDialogResponse","dddds"}
 };
 
 new modules[][modules_item] = {
@@ -42,9 +43,9 @@ new modules[][modules_item] = {
 	{"RACE","Race Module"},
 	{"CD","Countdown Implementation"},
 	{"CFG","Configuration Module"},
-	{"RMSG","Random Messages and Announcments Module"}
-	/*{"MENUS","Ingame Menus Module"},
-	{"MG","Minigames Module"}*/
+	{"RMSG","Random Messages and Announcments Module"},
+	{"DIALOG","Ingame Dialog Module"}
+	/*{"MG","Minigames Module"}*/
 };
 
 public callModulesCallback(const callback[],...) {
@@ -81,6 +82,23 @@ public callModulesCallback(const callback[],...) {
 				EXTRACT_ARRAY_ARG(arg2Val, 2);
 				EXTRACT_ARRAY_ARG(arg3Val, 3);
 				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val, arg3Val);
+			}
+			case 5: {
+				new arg1Val[32],arg2Val[32],arg3Val[32],arg4Val[32];
+				EXTRACT_ARRAY_ARG(arg1Val, 1);
+				EXTRACT_ARRAY_ARG(arg2Val, 2);
+				EXTRACT_ARRAY_ARG(arg3Val, 3);
+				EXTRACT_ARRAY_ARG(arg4Val, 4);
+				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val, arg3Val, arg4Val);
+			}
+			case 6: {
+				new arg1Val[32],arg2Val[32],arg3Val[32],arg4Val[32],arg5Val[32];
+				EXTRACT_ARRAY_ARG(arg1Val, 1);
+				EXTRACT_ARRAY_ARG(arg2Val, 2);
+				EXTRACT_ARRAY_ARG(arg3Val, 3);
+				EXTRACT_ARRAY_ARG(arg4Val, 4);
+				EXTRACT_ARRAY_ARG(arg5Val, 5);
+				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val, arg3Val, arg4Val, arg5Val);
 			}
 		}
 	}

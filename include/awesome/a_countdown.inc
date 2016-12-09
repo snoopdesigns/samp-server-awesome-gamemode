@@ -55,7 +55,7 @@ public COUNTDOWN_tick(const c_id) {
 		for (new i=0; i<countdown[c_id][player_num]; i++) {
 			TogglePlayerControllable(countdown[c_id][players+i],1);
 			PlayerPlaySound(countdown[c_id][players+i], 1057, 0.0, 0.0, 0.0);
-			GameTextForPlayer(countdown[c_id][players+i], "GO", 1000, 3);
+			GameTextForPlayer(countdown[c_id][players+i], "~r~GO", 1000, 3);
 		}
 		CallRemoteFunction(countdown[c_id][function],"");
 		countdown[c_id][count] = -1;

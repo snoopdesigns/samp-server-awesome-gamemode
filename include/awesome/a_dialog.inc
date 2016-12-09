@@ -1,51 +1,52 @@
-#if defined _menus_included
+#if defined _dialog_included
 	#endinput
 #endif
-#define _menus_included
+#define _dialog_included
 
 #include "include/awesome/a_commands.inc"
 #include "include/awesome/colors.inc"
 #include "include/awesome/a_utils.inc"
 
-#define MODULE_FUNCTION(%1) forward MENUS_%1; public MENUS_%1
+#define MODULE_FUNCTION(%1) forward DIALOG_%1; public DIALOG_%1
 
-#define PLAYER_MENU_HELP 0
-#define PLAYER_MENU_VEHICLES 1
-#define PLAYER_MENU_PROPS 2
+#define PLAYER_DIALOG_HELP 0
+#define PLAYER_DIALOG_VEHICLES 1
+#define PLAYER_DIALOG_PROPS 2
 
-enum playerMenuInfo
-{
-	playerMenuHeading[128],
-	playerMenuText[256],
-	playerMenuType
-	
+enum DIALOG_INFO {
+	playerDialogHeading[32],
+	playerDialogText[256],
+	playerDialogType
 }
 
-new menus[3][playerMenuInfo];
+new dialogs[3][DIALOG_INFO];
 
-MODULE_FUNCTION(OnGameModeInit())
-{
-	LOG_write("Menus Subsystem initializing");
+/* public functions declaration */
+forward MENUS_showPlayerMenu(const playerid, const dialogid);
+
+MODULE_FUNCTION(OnGameModeInit()) {
+	LOG_write("Dialog Subsystem initializing");
+	
 	//help menu
 	static dialog[256];
-	static heading[128];
+	static heading[32];
 	format(dialog, sizeof dialog, "%s\n%s\n%s", 
 		"Vehicle commands",
 		"Player commands",
 		"Properties commands");
 	heading = "Available commands";
-	menus[PLAYER_MENU_HELP][playerMenuHeading] = heading;
-	menus[PLAYER_MENU_HELP][playerMenuText] = dialog;
-	menus[PLAYER_MENU_HELP][playerMenuType] = DIALOG_STYLE_LIST;
+	dialogs[PLAYER_DIALOG_HELP][playerDialogHeading] = heading;
+	dialogs[PLAYER_DIALOG_HELP][playerDialogText] = dialog;
+	dialogs[PLAYER_DIALOG_HELP][playerDialogType] = DIALOG_STYLE_LIST;
 	
 	//vehicle commands
 	format(dialog, sizeof dialog, "%s\n%s", 
 		"Spawn Infernus: /car",
 		"Repair vehicle: /fix");
 	heading = "Vehicle commands";
-	menus[PLAYER_MENU_VEHICLES][playerMenuHeading] = heading;
-	menus[PLAYER_MENU_VEHICLES][playerMenuText] = dialog;
-	menus[PLAYER_MENU_VEHICLES][playerMenuType] = DIALOG_STYLE_LIST;
+	dialogs[PLAYER_DIALOG_VEHICLES][playerDialogHeading] = heading;
+	dialogs[PLAYER_DIALOG_VEHICLES][playerDialogText] = dialog;
+	dialogs[PLAYER_DIALOG_VEHICLES][playerDialogType] = DIALOG_STYLE_LIST;
 	
 	//props info
 	format(dialog, sizeof dialog, "%s\n%s\n%s\n%s", 
@@ -54,25 +55,21 @@ MODULE_FUNCTION(OnGameModeInit())
 		"Type /buy within 5 meters of property marker to buy it",
 		"Type /sell within 5 meters of property marker to sell it");
 	heading = "Properties";
-	menus[PLAYER_MENU_PROPS][playerMenuHeading] = heading;
-	menus[PLAYER_MENU_PROPS][playerMenuText] = dialog;
-	menus[PLAYER_MENU_PROPS][playerMenuType] = DIALOG_STYLE_MSGBOX;
+	dialogs[PLAYER_DIALOG_PROPS][playerDialogHeading] = heading;
+	dialogs[PLAYER_DIALOG_PROPS][playerDialogText] = dialog;
+	dialogs[PLAYER_DIALOG_PROPS][playerDialogType] = DIALOG_STYLE_MSGBOX;
 }
 
-MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]))
-{
-	strlen(inputtext);//just to handle compilte warning
-	if(response)
-    {
-		switch(dialogid) 
-		{
-			case PLAYER_MENU_HELP:
-			{
-				switch(listitem)
-				{
+MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])) {
+	LOG_writeFormatted("OnDialogResponse called: %d, %d, %d, %d, %s", playerid, dialogid, response, listitem, inputtext);
+	strlen(inputtext);//just to handle compile warning
+	if(response) {
+		switch(dialogid)  {
+			case PLAYER_DIALOG_HELP: {
+				switch(listitem) {
 					case 0:
 					{
-						MENUS_showPlayerMenu(playerid, PLAYER_MENU_VEHICLES);
+						MENUS_showPlayerMenu(playerid, PLAYER_DIALOG_VEHICLES);
 					}
 					case 1:
 					{
@@ -80,11 +77,11 @@ MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputte
 					}
 					case 2:
 					{
-						MENUS_showPlayerMenu(playerid, PLAYER_MENU_PROPS);
+						MENUS_showPlayerMenu(playerid, PLAYER_DIALOG_PROPS);
 					}
 				}
 			}
-			case PLAYER_MENU_VEHICLES:
+			case PLAYER_DIALOG_VEHICLES:
 				switch(listitem)
 				{
 					case 0:
@@ -100,15 +97,11 @@ MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputte
 	}
 }
 
-stock MENUS_showPlayerMenu(playerid, menuid)
-{
-	if(menus[menuid][playerMenuType] == DIALOG_STYLE_LIST)
-	{
-		ShowPlayerDialog(playerid, menuid, menus[menuid][playerMenuType], menus[menuid][playerMenuHeading], menus[menuid][playerMenuText], "Select", "Cancel");
-	}
-	else if(menus[menuid][playerMenuType] == DIALOG_STYLE_MSGBOX)
-	{
-		ShowPlayerDialog(playerid, menuid, menus[menuid][playerMenuType], menus[menuid][playerMenuHeading], menus[menuid][playerMenuText], "OK", "");
+public MENUS_showPlayerMenu(const playerid, const dialogid) {
+	if(dialogs[dialogid][playerDialogType] == DIALOG_STYLE_LIST) {
+		ShowPlayerDialog(playerid, dialogid, dialogs[dialogid][playerDialogType], dialogs[dialogid][playerDialogHeading], dialogs[dialogid][playerDialogText], "Select", "Cancel");
+	} else if(dialogs[dialogid][playerDialogType] == DIALOG_STYLE_MSGBOX) {
+		ShowPlayerDialog(playerid, dialogid, dialogs[dialogid][playerDialogType], dialogs[dialogid][playerDialogHeading], dialogs[dialogid][playerDialogText], "OK", "");
 	}
 }
 
