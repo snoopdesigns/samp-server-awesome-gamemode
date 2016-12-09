@@ -61,7 +61,6 @@ MODULE_FUNCTION(OnGameModeInit()) {
 }
 
 MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])) {
-	LOG_writeFormatted("OnDialogResponse called: %d, %d, %d, %d, %s", playerid, dialogid, response, listitem, inputtext);
 	strlen(inputtext);//just to handle compile warning
 	if(response) {
 		switch(dialogid)  {
