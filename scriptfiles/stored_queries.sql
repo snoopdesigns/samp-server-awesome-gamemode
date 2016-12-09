@@ -1,6 +1,6 @@
 dropPlayerTable NA DROP TABLE IF EXISTS players;
-createPlayerTable NA CREATE TABLE IF NOT EXISTS players(PlayerName VARCHAR(24) PRIMARY KEY NOT NULL, PlayerPasswordHash VARCHAR(64) NOT NULL, PlayerPasswordSalt VARCHAR(64) NOT NULL, PlayerIP VARCHAR(32) NOT NULL, PlayerLevel INTEGER NOT NULL, PlayerScore INTEGER NOT NULL, PlayerMoney INTEGER NOT NULL);
-createPlayer ssssddd INSERT INTO players (PlayerName,PlayerPasswordHash, PlayerPasswordSalt, PlayerIP, PlayerLevel, PlayerScore, PlayerMoney) VALUES ('%s','%s','%s','%s',%d,%d,%d);
+createPlayerTable NA CREATE TABLE IF NOT EXISTS players(PlayerName VARCHAR(24) PRIMARY KEY NOT NULL, PlayerPasswordHash VARCHAR(32) NOT NULL, PlayerIP VARCHAR(32) NOT NULL, PlayerLevel INTEGER NOT NULL, PlayerScore INTEGER NOT NULL, PlayerMoney INTEGER NOT NULL);
+createPlayer sssddd INSERT INTO players (PlayerName,PlayerPasswordHash, PlayerIP, PlayerLevel, PlayerScore, PlayerMoney) VALUES ('%s','%s','%s',%d,%d,%d);
 getPlayerProperty ss SELECT %s FROM players WHERE PlayerName='%s';
 updatePlayerPropertyString sss UPDATE players SET %s='%s' WHERE PlayerName='%s';
 createPropertiesTable NA CREATE TABLE IF NOT EXISTS properties(ID INTEGER PRIMARY KEY NOT NULL, PropName VARCHAR(32) NOT NULL, PropCost INTEGER NOT NULL, PropEarnings INTEGER NOT NULL, PropOwner VARCHAR(32) NOT NULL, PropPurchaseTime INTEGER, PropLocX FLOAT NOT NULL, PropLocY FLOAT NOT NULL, PropLocZ FLOAT NOT NULL);

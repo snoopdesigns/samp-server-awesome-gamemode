@@ -21,7 +21,6 @@
 /* DB fields constants */
 #define PLAYER_PROP_NAME "PlayerName"
 #define PLAYER_PROP_PASSWORD_HASH "PlayerPasswordHash"
-#define PLAYER_PROP_PASSWORD_SALT "PlayerPasswordSalt"
 #define PLAYER_PROP_IP "PlayerIP"
 #define PLAYER_PROP_LEVEL "PlayerLevel"
 #define PLAYER_PROP_SCORE "PlayerScore"
@@ -39,41 +38,9 @@ forward REG_savePlayerDataTimerFunc();
 
 MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Registration Subsystem initializing");
-	DBUTILS_clearResults(DBUTILS_runNamedQuery("dropPlayerTable","NA"));
+	//DBUTILS_clearResults(DBUTILS_runNamedQuery("dropPlayerTable","NA"));
 	DBUTILS_clearResults(DBUTILS_runNamedQuery("createPlayerTable","NA"));
 	SetTimer("REG_savePlayerDataTimerFunc", CFG_getIntValue(STATS_SAVE_DELAY_KEY, DEFAULT_DB_SAVE_INTERVAL), false);
-	
-	new password[] = "MYPASS";
-	new name[] = "snoopdesigns";
-	new ip[] = "127.0.0.1";
-	new passwordHash[MAX_PLAYER_NAME],passwordSalt[MAX_PLAYER_NAME],passwordSaltKeep[MAX_PLAYER_NAME];
-	gen_random(passwordSalt, sizeof(passwordSalt));
-	strins(passwordSaltKeep, passwordSalt, 0);
-	SHA256_PassHash(password, passwordSalt, passwordHash, sizeof(passwordHash));
-	LOG_writeFormatted("PasswordHash to write to DB: %s|", passwordHash);
-	LOG_writeFormatted("PasswordSalt to write to DB: %s|", passwordSaltKeep);
-	DBUTILS_clearResults(DBUTILS_runNamedQuery("createPlayer","ssssddd",name,passwordHash,passwordSaltKeep,ip,1,22,12345));
-	
-	new password_hash_from_db[MAX_PLAYER_NAME], password_salt_from_db[MAX_PLAYER_NAME], password_hash[MAX_PLAYER_NAME];
-	
-	new DBResult:db_result = DBUTILS_runNamedQuery("getPlayerProperty","ss",PLAYER_PROP_PASSWORD_HASH,name);
-	DBUTILS_getString(db_result, PLAYER_PROP_PASSWORD_HASH, password_hash_from_db, sizeof(password_hash_from_db));
-	DBUTILS_clearResults(db_result);
-	
-	new DBResult:db_result1 = DBUTILS_runNamedQuery("getPlayerProperty","ss",PLAYER_PROP_PASSWORD_SALT,name);
-	DBUTILS_getString(db_result1, PLAYER_PROP_PASSWORD_SALT, password_salt_from_db, sizeof(password_salt_from_db));
-	DBUTILS_clearResults(db_result1);
-	LOG_writeFormatted("PasswordHash from DB: %s|", password_hash_from_db);
-	LOG_writeFormatted("PasswordSalt from DB: %s|", password_salt_from_db);	
-	
-	new password_new[] = "MYPASS";
-	
-	SHA256_PassHash(password_new, password_salt_from_db, password_hash, sizeof(password_hash));	
-	
-	LOG_writeFormatted("PasswordHash of password: %s", password_hash);
-	if(str_eq(password_hash_from_db, password_hash)) {
-		LOG_write("FUUUUUUUUUUUUU");
-	}
 }
 
 MODULE_FUNCTION(OnPlayerConnect(playerid)) {
@@ -106,10 +73,9 @@ public REG_registerNewPlayer(const playerid, password[]) {
 	GetPlayerName(playerid, name, sizeof(name));
 	GetPlayerIp(playerid, ip, sizeof(ip));
 	if(REG_isPlayerRegistered(playerid) == FALSE) {
-		new passwordHash[64 + 1],passwordSalt[64];
-		gen_random(passwordSalt, sizeof(passwordSalt));
-		SHA256_PassHash(password, passwordSalt, passwordHash, sizeof(passwordHash));
-		DBUTILS_clearResults(DBUTILS_runNamedQuery("createPlayer","ssssddd",name,passwordHash,passwordSalt,ip,1,GetPlayerScore(playerid),GetPlayerMoney(playerid)));
+		new passwordHash[32];
+		passwordHash = hash(password);
+		DBUTILS_clearResults(DBUTILS_runNamedQuery("createPlayer","sssddd",name,passwordHash,ip,1,GetPlayerScore(playerid),GetPlayerMoney(playerid)));
 		if(REG_isPlayerRegistered(playerid) == TRUE) {
 			// player successfully registered
 			SetPVarInt(playerid, PLAYER_VAR_LEVEL, 1);
@@ -131,10 +97,9 @@ public REG_loginPlayer(const playerid, password[]) {
 	GetPlayerName(playerid, name, sizeof(name));
 	if(REG_isPlayerAuthenticated(playerid) == FALSE) {
 		if(REG_isPlayerRegistered(playerid) == TRUE) {
-			new password_hash_from_db[64+1], password_salt_from_db[64], password_hash[64+1];
+			new password_hash_from_db[32], password_hash[32];
 			password_hash_from_db = REG_getPropertyOfPlayer(playerid, PLAYER_PROP_PASSWORD_HASH);
-			password_salt_from_db = REG_getPropertyOfPlayer(playerid, PLAYER_PROP_PASSWORD_SALT);
-			SHA256_PassHash(password, password_salt_from_db, password_hash, sizeof(password_hash));			
+			password_hash = hash(password);
 			if(str_eq(password_hash_from_db, password_hash)) {
 				SendClientMessage(playerid, COLOR_LAWNGREEN, "* Login using password successfull.");
 				//restore player props from db

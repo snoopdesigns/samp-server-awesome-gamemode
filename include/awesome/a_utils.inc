@@ -36,6 +36,21 @@ new argValChar;
 	
 new clientFormattedMessage[128];
 
+stock hash(string[]) {
+    new const len = strlen(string);
+    new s[2] = {2, 5};
+    s[1] *= len;
+    new str1[32];
+    new str2[3];
+
+    for(new i = 0; i < len; i++) {
+        s[0] += (string[i] & ((i+2) ^ len));
+        format(str2, sizeof(str2), "%x", s[1] += (s[0] * 4));
+        strcat(str1, str2);
+    }
+    return str1;
+}
+
 stock gen_random(s[], const len) {
     static alphanum[] =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
