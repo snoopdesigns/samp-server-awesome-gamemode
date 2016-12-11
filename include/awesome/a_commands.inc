@@ -5,7 +5,7 @@
 
 #include "include/awesome/a_vehutils.inc"
 #include "include/awesome/a_config.inc"
-//#include "include/awesome/a_menus.inc"
+#include "include/awesome/a_dialog.inc"
 #include "include/awesome/a_props.inc"
 #include "include/awesome/a_reg.inc"
 #include "include/awesome/a_utils.inc"
@@ -65,6 +65,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(setlevel, 8, cmdtext, 2);
 	dcmd(setcfg, 6, cmdtext, 2);
 	dcmd(cfg, 3, cmdtext, 2);
+	dcmd(showdialog, 10, cmdtext, 2);
 	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
 	return 1;
 }
@@ -92,7 +93,7 @@ dcmd_kill(const playerid, const params[]) {
 
 dcmd_help(const playerid, const params[]) {
 	strlen(params);//just to handle compile warning
-	//MENUS_showPlayerMenu(playerid, PLAYER_MENU_HELP);
+	DIALOG_showPlayerDialog(playerid, PLAYER_DIALOG_HELP);
 	return 1;
 }
 
@@ -368,6 +369,11 @@ dcmd_cfg(playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	CFG_printAvailableConfiguration(playerid);
 	return 1;
+}
+
+dcmd_showdialog(playerid, params[]) {
+	strlen(params);//just to handle compile warning
+	ShowPlayerDialog(playerid, 4, DIALOG_STYLE_MSGBOX, "heading", "text", "oo", "tttt");
 }
 
 MODULE_FUNCTION(OnGameModeInit()) {}

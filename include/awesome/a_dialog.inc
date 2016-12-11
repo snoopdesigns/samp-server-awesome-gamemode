@@ -22,7 +22,7 @@ enum DIALOG_INFO {
 new dialogs[3][DIALOG_INFO];
 
 /* public functions declaration */
-forward MENUS_showPlayerMenu(const playerid, const dialogid);
+forward DIALOG_showPlayerDialog(const playerid, const dialogid);
 
 MODULE_FUNCTION(OnGameModeInit()) {
 	LOG_write("Dialog Subsystem initializing");
@@ -66,37 +66,32 @@ MODULE_FUNCTION(OnDialogResponse(playerid, dialogid, response, listitem, inputte
 		switch(dialogid)  {
 			case PLAYER_DIALOG_HELP: {
 				switch(listitem) {
-					case 0:
-					{
-						MENUS_showPlayerMenu(playerid, PLAYER_DIALOG_VEHICLES);
+					case 0: {
+						DIALOG_showPlayerDialog(playerid, PLAYER_DIALOG_VEHICLES);
 					}
-					case 1:
-					{
+					case 1: {
 						SendClientMessage(playerid, COLOR_ERROR, "Sorry, nothing here :(");
 					}
-					case 2:
-					{
-						MENUS_showPlayerMenu(playerid, PLAYER_DIALOG_PROPS);
+					case 2: {
+						DIALOG_showPlayerDialog(playerid, PLAYER_DIALOG_PROPS);
 					}
 				}
 			}
-			case PLAYER_DIALOG_VEHICLES:
-				switch(listitem)
-				{
-					case 0:
-					{
+			case PLAYER_DIALOG_VEHICLES: {
+				switch(listitem) {
+					case 0: {
 						dcmd_car(playerid, "");
 					}
-					case 1:
-					{
+					case 1: {
 						dcmd_fix(playerid, "");
 					}
 				}
+			}
 		}
 	}
 }
 
-public MENUS_showPlayerMenu(const playerid, const dialogid) {
+public DIALOG_showPlayerDialog(const playerid, const dialogid) {
 	if(dialogs[dialogid][playerDialogType] == DIALOG_STYLE_LIST) {
 		ShowPlayerDialog(playerid, dialogid, dialogs[dialogid][playerDialogType], dialogs[dialogid][playerDialogHeading], dialogs[dialogid][playerDialogText], "Select", "Cancel");
 	} else if(dialogs[dialogid][playerDialogType] == DIALOG_STYLE_MSGBOX) {
