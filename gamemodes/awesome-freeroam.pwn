@@ -18,6 +18,8 @@
 #include "include/awesome/a_log.inc"
 #include "include/awesome/a_callbacks.inc"
 
+#include <crashdetect>
+
 //TODO auto-repair on-off
 //TODO auto-flip on-off
 //TODO reorder forwards, constants, etc in all files
@@ -28,6 +30,10 @@ main() {
 	print("\n----------------------------------");
 	print(" Awesome Freeroam v0.1 by snoopdesigns");
 	print("----------------------------------\n");
+}
+
+public OnRuntimeError(code, &bool:suppress) {
+	LOG_writeFormatted("Runtime error: %d", code);
 }
 
 public OnGameModeInit() {
@@ -201,7 +207,7 @@ public OnRconLoginAttempt(ip[], password[], success) {
 }
 
 public OnPlayerUpdate(playerid) {
-	callModulesCallback("OnPlayerUpdate", playerid);
+	//callModulesCallback("OnPlayerUpdate", playerid);
 	return 1;
 }
 
@@ -226,7 +232,15 @@ public OnVehicleStreamOut(vehicleid, forplayerid) {
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
+	SendClientMessageToAll(COLOR_MG, "00000");
+	SendClientMessageToAllFormatted(COLOR_MG, "OnDialogResponse: %d", playerid);
+	SendClientMessageToAllFormatted(COLOR_MG, "OnDialogResponse: %d", dialogid);
+	SendClientMessageToAllFormatted(COLOR_MG, "OnDialogResponse: %d", response);
+	SendClientMessageToAllFormatted(COLOR_MG, "OnDialogResponse: %d", listitem);
+	SendClientMessageToAllFormatted(COLOR_MG, "OnDialogResponse: %s", inputtext);
+	SendClientMessageToAllFormatted(COLOR_MG, "OnDialogResponse: %d", strlen(inputtext));
 	callModulesCallback("OnDialogResponse", playerid, dialogid, response, listitem, inputtext);
+	SendClientMessageToAll(COLOR_MG, "Returning 1");
 	return 1;
 }
 

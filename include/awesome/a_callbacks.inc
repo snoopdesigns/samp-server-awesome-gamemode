@@ -101,6 +101,7 @@ public callModulesCallback(const callback[],...) {
 				EXTRACT_ARRAY_ARG(arg3Val, 3);
 				EXTRACT_ARRAY_ARG(arg4Val, 4);
 				EXTRACT_ARRAY_ARG(arg5Val, 5);
+				if (strlen(arg5Val)) strins(arg5Val, "a", 0); // temp fix for OnPlayerDialog
 				CallRemoteFunction(functionName, callbacks[callback_format_j][callback_format], arg1Val, arg2Val, arg3Val, arg4Val, arg5Val);
 			}
 		}
