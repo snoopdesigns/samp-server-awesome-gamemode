@@ -65,6 +65,7 @@ MODULE_FUNCTION(OnPlayerCommandText(playerid, cmdtext[])) {
 	dcmd(setlevel, 8, cmdtext, 2);
 	dcmd(setcfg, 6, cmdtext, 2);
 	dcmd(cfg, 3, cmdtext, 2);
+	dcmd(showtd, 6, cmdtext, 2);
 	SendClientMessage(playerid, COLOR_ERROR, "* Unknown command passed.");
 	return 1;
 }
@@ -367,6 +368,17 @@ dcmd_setcfg(playerid, params[]) {
 dcmd_cfg(playerid, params[]) {
 	strlen(params);//just to handle compile warning
 	CFG_printAvailableConfiguration(playerid);
+	return 1;
+}
+
+dcmd_showtd(playerid, params[]) {
+	new	id;
+	if (sscanf(params, "d", id)) {
+		SendClientMessage(playerid, COLOR_ERROR, "* Usage: \"/showtd <tdid>\"");
+	} else {
+		SendClientMessageFormatted(playerid, COLOR_IMPROVEMENT, "* Showing textdraw (ID = %d)", id);
+		TEXTDRAW_showTextdraw(playerid, id);
+	}
 	return 1;
 }
 

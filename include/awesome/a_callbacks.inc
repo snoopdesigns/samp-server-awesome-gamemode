@@ -8,6 +8,8 @@
 
 forward callModulesCallback(const callback[],{Float,_}:...);
 
+//todo enums upper case names
+
 enum callback_format_enum {
     callback_name[32],
 	callback_format[16]
@@ -44,7 +46,8 @@ new modules[][modules_item] = {
 	{"CD","Countdown Implementation"},
 	{"CFG","Configuration Module"},
 	{"RMSG","Random Messages and Announcments Module"},
-	{"DIALOG","Ingame Dialog Module"}
+	{"DIALOG","Ingame Dialog Module"},
+	{"TEXTDRAW","Textdraw Module"}
 	/*{"MG","Minigames Module"}*/
 };
 
